@@ -1,36 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout";
 import { ProductMedia } from "@/components/product-media";
 import { Button } from "@/components/ui/button";
-import { BUNDLES, type BundleLine } from "@/data/content";
-import { type Product } from "@/data/catalogue";
-import { useCatalogue } from "@/components/catalogue";
+import { BUNDLES } from "@/data/content";
+import { loadBundle } from "@/lib/products";
 import { formatZar } from "@/lib/format";
 import { useCart } from "@/lib/cart-store";
 
-export const Route = createFileRoute("/bundles/$slug")({ component: BundlePage });
-
-function resolveLine(products: Product[], line: BundleLine): Product | undefined {
-  const rows = products.filter(
-    (p) => p.categorySlug === line.categorySlug && p.productType === line.productType,
-  );
-  return rows.find((p) => p.colourFinish === line.colour) ?? rows[0];
-}
+export const Route = createFileRoute("/bundles/$slug")({
+  loader: ({ params }) => loadBundle({ data: { slug: params.slug } }),
+  component: BundlePage,
+});
 
 function BundlePage() {
   const { slug } = Route.useParams();
   const bundle = BUNDLES.find((b) => b.slug === slug);
+  const picks = Route.useLoaderData();
   const add = useCart((s) => s.add);
-  const catalogue = useCatalogue();
-  const picks = useMemo(() => {
-    if (!bundle) return [];
-    return bundle.lines.flatMap((line) => {
-      const product = resolveLine(catalogue, line);
-      return product ? [{ line, product }] : [];
-    });
-  }, [bundle, catalogue]);
 
   if (!bundle) {
     return (
@@ -43,14 +30,14 @@ function BundlePage() {
     );
   }
 
-  const total = picks.reduce((n, p) => n + p.product.retailPrice * p.line.qty, 0);
+  const total = picks.reduce((n, p) => n + p.product.retailPrice * p.qty, 0);
 
   return (
     <>
       <PageHeader kicker={bundle.tag} title={bundle.name} body={bundle.blurb} />
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 lg:grid-cols-[1fr_20rem] sm:px-6">
         <ul className="space-y-3">
-          {picks.map(({ line, product }) => (
+          {picks.map(({ qty, product }) => (
             <li key={product.sku} className="flex gap-4 rounded-xl bg-paper p-4 shadow-[var(--shadow-card)]">
               <ProductMedia product={product} labelled={false} className="size-20 shrink-0 rounded-lg" />
               <div className="min-w-0">
@@ -58,9 +45,9 @@ function BundlePage() {
                   {product.productType}
                 </Link>
                 <p className="text-sm text-muted">
-                  {product.sku} · {product.colourFinish} · qty {line.qty}
+                  {product.sku} · {product.colourFinish} · qty {qty}
                 </p>
-                <p className="mt-1 text-sm tabular-nums">{formatZar(product.retailPrice * line.qty)}</p>
+                <p className="mt-1 text-sm tabular-nums">{formatZar(product.retailPrice * qty)}</p>
               </div>
             </li>
           ))}
@@ -75,7 +62,7 @@ function BundlePage() {
             size="lg"
             disabled={!picks.length}
             onClick={() => {
-              for (const { line, product } of picks) add(product.sku, line.qty);
+              for (const { qty, product } of picks) add(product.sku, qty);
               toast.success(`${bundle.name} added to your load`);
             }}
           >

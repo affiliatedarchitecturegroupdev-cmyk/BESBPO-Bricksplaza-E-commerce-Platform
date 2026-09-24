@@ -1,15 +1,12 @@
 import { createRootRoute, HeadContent, Outlet, Scripts, useRouterState } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
-import { CatalogueProvider } from "@/components/catalogue";
 import { DeskShell, StoreShell } from "@/components/layout";
-import { loadCatalogue } from "@/lib/products";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Bricksplaza";
 
 export const Route = createRootRoute({
-  beforeLoad: async () => ({ products: await loadCatalogue() }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -47,7 +44,6 @@ export const Route = createRootRoute({
 });
 
 function RootDocument() {
-  const { products } = Route.useRouteContext();
   return (
     <html lang="en-ZA" className="antialiased" suppressHydrationWarning>
       <head>
@@ -55,11 +51,9 @@ function RootDocument() {
       </head>
       <body className="bg-cream text-kiln">
         <PreviewHostBridge />
-        <CatalogueProvider products={products}>
-          <AuthProvider>
-            <Shell />
-          </AuthProvider>
-        </CatalogueProvider>
+        <AuthProvider>
+          <Shell />
+        </AuthProvider>
         <Scripts />
       </body>
     </html>

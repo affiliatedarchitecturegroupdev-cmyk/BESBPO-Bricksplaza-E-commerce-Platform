@@ -1,12 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCatalogue } from "@/components/catalogue";
 import { deskOrders } from "@/lib/commerce";
+import { loadDeskSummary } from "@/lib/products";
 import { useEffect, useState } from "react";
 import { formatZar } from "@/lib/format";
 
-export const Route = createFileRoute("/desk/")({ component: DeskHome });
+export const Route = createFileRoute("/desk/")({
+  loader: () => loadDeskSummary(),
+  component: DeskHome,
+});
 
 function DeskHome() {
+  const summary = Route.useLoaderData();
   const [data, setData] = useState<Awaited<ReturnType<typeof deskOrders>> | null>(null);
   useEffect(() => {
     deskOrders()
@@ -14,22 +18,20 @@ function DeskHome() {
       .catch(() => setData({ orders: [], rfqs: [], returns: [] }));
   }, []);
 
-  const cat = useCatalogue();
-  const low = cat.filter((p) => p.fulfilmentType === "Stock Item" && p.stock < 80).length;
   const revenue = (data?.orders ?? []).reduce((n, o) => n + o.total, 0);
 
   const tiles = [
     ["Orders (yours)", String(data?.orders.length ?? 0)],
     ["Revenue captured", formatZar(revenue, true)],
     ["Open RFQs", String(data?.rfqs.length ?? 0)],
-    ["Low stock SKUs", String(low)],
+    ["Low stock SKUs", String(summary.low)],
   ];
 
   return (
     <div>
       <h1 className="font-display text-3xl">Yard dashboard</h1>
       <p className="mt-1 text-sm text-dim">
-        Live catalogue of {cat.length.toLocaleString("en-ZA")} SKUs · HITL ops console
+        Live catalogue of {summary.count.toLocaleString("en-ZA")} SKUs · HITL ops console
       </p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map(([k, v]) => (

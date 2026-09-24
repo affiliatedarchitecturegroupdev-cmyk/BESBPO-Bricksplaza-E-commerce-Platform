@@ -1,12 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { COLOURS } from "@/data/taxonomy";
-import { useCatalogue } from "@/components/catalogue";
+import { loadColourIndex } from "@/lib/products";
 
-export const Route = createFileRoute("/collections")({ component: Collections });
+export const Route = createFileRoute("/collections")({
+  loader: () => loadColourIndex(),
+  component: Collections,
+});
 
 function Collections() {
-  const cat = useCatalogue();
+  const index = Route.useLoaderData();
+  const skuByName = new Map(index.map((row) => [row.name, row.sku]));
   return (
     <>
       <PageHeader
@@ -16,13 +20,13 @@ function Collections() {
       />
       <div className="mx-auto grid max-w-7xl gap-4 px-4 py-10 sm:px-6 sm:grid-cols-2 lg:grid-cols-3">
         {COLOURS.map((c) => {
-          const face = cat.find((p) => p.categorySlug === "clay-face-bricks" && p.colourFinish === c.name);
-          if (face) {
+          const sku = skuByName.get(c.name);
+          if (sku) {
             return (
               <Link
                 key={c.slug}
                 to="/product/$sku"
-                params={{ sku: face.sku }}
+                params={{ sku }}
                 className="overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]"
               >
                 <div className="h-24" style={{ background: c.hex }} />
@@ -38,6 +42,7 @@ function Collections() {
               <div className="h-24" style={{ background: c.hex }} />
               <div className="p-4">
                 <h2 className="font-display text-xl">{c.name}</h2>
+                <p className="text-sm text-mortar">This finish is not fired as a face brick.</p>
               </div>
             </div>
           );

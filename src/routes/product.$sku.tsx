@@ -1,12 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import {
-  colourMatched,
-  frequentlyBought,
-  findProduct,
-  relatedProducts,
-} from "@/data/catalogue";
-import { useCatalogue } from "@/components/catalogue";
+import { useEffect, useState } from "react";
 import { SAMPLE_REVIEWS } from "@/data/content";
 import { formatNumber, formatZar } from "@/lib/format";
 import { quoteDelivery } from "@/lib/delivery";
@@ -23,13 +16,15 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AdBanner } from "@/components/ad-banner";
 import { crossSellBanner } from "@/data/ads";
+import { loadProductView } from "@/lib/products";
 
-export const Route = createFileRoute("/product/$sku")({ component: ProductPage });
+export const Route = createFileRoute("/product/$sku")({
+  loader: ({ params }) => loadProductView({ data: { sku: params.sku } }),
+  component: ProductPage,
+});
 
 function ProductPage() {
-  const { sku } = Route.useParams();
-  const catalogue = useCatalogue();
-  const product = findProduct(catalogue, sku);
+  const { product, swatches, matched, fbt, related } = Route.useLoaderData();
   const navigate = useNavigate();
   const add = useCart((s) => s.add);
   const viewed = useViewed((s) => s.push);
@@ -45,16 +40,6 @@ function ProductPage() {
     if (product) viewed(product.sku);
   }, [product, viewed]);
 
-  const swatches = useMemo(() => {
-    if (!product) return [];
-    return catalogue
-      .filter((p) => p.productType === product.productType && p.sizeMm === product.sizeMm)
-      .reduce<typeof product[]>((acc, p) => {
-        if (!acc.some((x) => x.colourFinish === p.colourFinish)) acc.push(p);
-        return acc;
-      }, []);
-  }, [catalogue, product]);
-
   if (!product) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
@@ -69,9 +54,6 @@ function ProductPage() {
   const unitsFromM2 =
     product.coveragePerM2 && Number(m2) > 0 ? Math.ceil(Number(m2) * product.coveragePerM2 * 1.08) : null;
   const quote = quoteDelivery(postcode, "delivery");
-  const matched = colourMatched(catalogue, product);
-  const fbt = frequentlyBought(catalogue, product);
-  const related = relatedProducts(catalogue, product);
 
   function addToCart(n = qty) {
     add(product!.sku, n);

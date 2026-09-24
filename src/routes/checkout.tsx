@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useCart } from "@/lib/cart-store";
-import { findProduct } from "@/data/catalogue";
-import { useCatalogue } from "@/components/catalogue";
+import { useProductsBySku } from "@/lib/use-products";
 import { PAYMENT_METHODS } from "@/data/content";
 import { formatZar, vatInclusive, round2 } from "@/lib/format";
 import { priceFor } from "@/lib/pricing";
@@ -39,15 +38,11 @@ function Checkout() {
     notes: "",
   });
 
-  const catalogue = useCatalogue();
-  const items = useMemo(
-    () =>
-      lines.flatMap((l) => {
-        const p = findProduct(catalogue, l.sku);
-        return p ? [{ ...l, product: p, price: priceFor(p, "retail") }] : [];
-      }),
-    [catalogue, lines],
-  );
+  const { products, ready } = useProductsBySku(lines.map((l) => l.sku));
+  const items = lines.flatMap((l) => {
+    const p = products.find((row) => row.sku === l.sku);
+    return p ? [{ ...l, product: p, price: priceFor(p, "retail") }] : [];
+  });
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const quote = quoteDelivery(form.postal_code, method);
   const delivery = (quote.fee ?? 0) + craneSurcharge(hiab);
@@ -91,6 +86,14 @@ function Checkout() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (lines.length > 0 && !ready) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-20 text-center">
+        <h1 className="font-display text-3xl">Loading your load…</h1>
+      </div>
+    );
   }
 
   if (!items.length && step < 4) {

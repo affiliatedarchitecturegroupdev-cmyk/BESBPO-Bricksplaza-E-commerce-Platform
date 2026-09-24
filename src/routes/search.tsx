@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { Listing } from "@/components/listing";
-import { useCatalogue } from "@/components/catalogue";
-import { closestCategory, searchProducts } from "@/lib/search";
+import { closestCategory } from "@/lib/search";
+import { queryListing } from "@/lib/products";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdBanner } from "@/components/ad-banner";
@@ -16,14 +16,18 @@ export const Route = createFileRoute("/search")({
     colour: typeof s.colour === "string" ? s.colour : undefined,
     category: typeof s.category === "string" ? s.category : undefined,
   }),
+  loaderDeps: ({ search }) => search,
+  loader: ({ deps }) =>
+    queryListing({
+      data: { q: deps.q, scopeColour: deps.colour, category: deps.category },
+    }),
   component: SearchPage,
 });
 
 function SearchPage() {
   const { q = "", colour, category } = Route.useSearch();
+  const initial = Route.useLoaderData();
   const navigate = useNavigate();
-  const catalogue = useCatalogue();
-  const results = searchProducts(catalogue, { q, colour, category });
   const fallback = closestCategory(q);
 
   return (
@@ -44,7 +48,7 @@ function SearchPage() {
         <div className="mb-8">
           <AdBanner slot={searchBanner(q)} contained />
         </div>
-        {results.length === 0 ? (
+        {initial.total === 0 ? (
           <div className="rounded-xl bg-card px-6 py-16 text-center">
             <p className="font-display text-2xl">No exact matches</p>
             <p className="mt-2 text-mortar">
@@ -64,7 +68,7 @@ function SearchPage() {
             </div>
           </div>
         ) : (
-          <Listing products={results} />
+          <Listing scope={{ q, colour, category }} initial={initial} />
         )}
       </div>
     </>

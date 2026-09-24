@@ -4,8 +4,8 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCart } from "@/lib/cart-store";
 import { CATEGORIES, FAMILIES, SECTORS } from "@/data/taxonomy";
 import { CONTACTS, GROUP } from "@/data/content";
-import { useCatalogue } from "@/components/catalogue";
-import { suggest } from "@/lib/search";
+import type { Product } from "@/data/catalogue";
+import { suggestProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
 import {
   ChevronDown,
@@ -17,7 +17,7 @@ import {
   Phone,
   MessageCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { ProductMedia } from "@/components/product-media";
 import { formatZar } from "@/lib/format";
@@ -168,9 +168,30 @@ function Header() {
 function SearchBox() {
   const [q, setQ] = useState("");
   const [focus, setFocus] = useState(false);
+  const [hits, setHits] = useState<Product[]>([]);
   const navigate = useNavigate();
-  const catalogue = useCatalogue();
-  const hits = useMemo(() => (q.trim().length >= 2 ? suggest(catalogue, q, 6) : []), [catalogue, q]);
+
+  useEffect(() => {
+    const qv = q.trim();
+    if (qv.length < 2) {
+      setHits([]);
+      return;
+    }
+    let cancel = false;
+    const t = window.setTimeout(() => {
+      suggestProducts({ data: { q: qv } })
+        .then((rows) => {
+          if (!cancel) setHits(rows);
+        })
+        .catch(() => {
+          if (!cancel) setHits([]);
+        });
+    }, 120);
+    return () => {
+      cancel = true;
+      window.clearTimeout(t);
+    };
+  }, [q]);
 
   return (
     <div className="relative ml-auto hidden min-w-0 flex-1 max-w-md md:block">

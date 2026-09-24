@@ -1,17 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CATEGORIES, TIER_DISCOUNT } from "@/data/taxonomy";
-import { useCatalogue } from "@/components/catalogue";
+import { TIER_DISCOUNT } from "@/data/taxonomy";
+import { loadDeskSummary } from "@/lib/products";
 import { formatZar } from "@/lib/format";
 
-export const Route = createFileRoute("/desk/pricing")({ component: Pricing });
+export const Route = createFileRoute("/desk/pricing")({
+  loader: () => loadDeskSummary(),
+  component: Pricing,
+});
 
 function Pricing() {
-  const cat = useCatalogue();
-  const rows = CATEGORIES.map((c) => {
-    const items = cat.filter((p) => p.categorySlug === c.slug);
-    const avg = items.reduce((n, p) => n + p.retailPrice, 0) / (items.length || 1);
-    return { ...c, count: items.length, avg };
-  });
+  const { categories } = Route.useLoaderData();
   return (
     <div>
       <h1 className="font-display text-3xl">Pricing engine</h1>
@@ -29,7 +27,7 @@ function Pricing() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {categories.map((r) => (
               <tr key={r.slug} className="border-t border-bisque/10">
                 <td className="px-4 py-2">{r.name}</td>
                 <td>{r.count}</td>

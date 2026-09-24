@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { useCart } from "@/lib/cart-store";
-import { findProduct } from "@/data/catalogue";
-import { useCatalogue } from "@/components/catalogue";
+import { useProductsBySku } from "@/lib/use-products";
 import { ProductMedia } from "@/components/product-media";
 import { formatZar } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -14,9 +13,9 @@ export const Route = createFileRoute("/cart")({ component: CartPage });
 
 function CartPage() {
   const { lines, setQty, remove } = useCart();
-  const catalogue = useCatalogue();
+  const { products, ready } = useProductsBySku(lines.map((l) => l.sku));
   const items = lines.flatMap((l) => {
-    const p = findProduct(catalogue, l.sku);
+    const p = products.find((row) => row.sku === l.sku);
     if (!p) return [];
     return [{ ...l, product: p, price: priceFor(p, "retail") }];
   });
@@ -36,7 +35,7 @@ function CartPage() {
       </div>
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 lg:grid-cols-[1fr_20rem] sm:px-6">
         <div className="space-y-4">
-          {items.length === 0 && (
+          {lines.length === 0 && (
             <div className="rounded-xl bg-card px-6 py-16 text-center">
               <p className="font-display text-2xl">Cart is empty</p>
               <Link to="/shop" className="mt-3 inline-block text-clay">
@@ -44,6 +43,7 @@ function CartPage() {
               </Link>
             </div>
           )}
+          {lines.length > 0 && !ready && <p className="text-mortar">Loading your load…</p>}
           {items.map((i) => (
             <div key={i.sku} className="flex gap-4 rounded-xl bg-paper p-4 shadow-[var(--shadow-card)]">
               <ProductMedia product={i.product} labelled={false} className="size-24 shrink-0 rounded-lg" />

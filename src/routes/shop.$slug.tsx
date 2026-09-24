@@ -1,16 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { Listing } from "@/components/listing";
-import { productsByCategory } from "@/data/catalogue";
-import { useCatalogue } from "@/components/catalogue";
 import { CATEGORY_BY_SLUG } from "@/data/taxonomy";
+import { queryListing } from "@/lib/products";
 
-export const Route = createFileRoute("/shop/$slug")({ component: CategoryPage });
+export const Route = createFileRoute("/shop/$slug")({
+  loader: ({ params }) => queryListing({ data: { category: params.slug } }),
+  component: CategoryPage,
+});
 
 function CategoryPage() {
   const { slug } = Route.useParams();
+  const initial = Route.useLoaderData();
   const cat = CATEGORY_BY_SLUG[slug];
-  const products = productsByCategory(useCatalogue(), slug);
   if (!cat) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center">
@@ -35,7 +37,7 @@ function CategoryPage() {
             {cat.newRange && <p className="text-mortar">New to the range — AAC, CSEB, brick slips and braai kits.</p>}
           </div>
         )}
-        <Listing products={products} title={cat.name} />
+        <Listing scope={{ category: slug }} initial={initial} title={cat.name} />
       </div>
     </>
   );

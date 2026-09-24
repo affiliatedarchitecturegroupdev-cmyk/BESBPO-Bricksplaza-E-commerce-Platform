@@ -16,8 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { PROVINCES, TIER_LABEL } from "@/data/taxonomy";
 import { useWishlistLocal } from "@/lib/cart-store";
-import { findProduct } from "@/data/catalogue";
-import { useCatalogue } from "@/components/catalogue";
+import { useProductsBySku } from "@/lib/use-products";
 import { ProductCard } from "@/components/product-card";
 import { toast } from "sonner";
 
@@ -30,7 +29,7 @@ function Account() {
   const [orders, setOrders] = useState<Awaited<ReturnType<typeof listMyOrders>>>([]);
   const [addresses, setAddresses] = useState<Awaited<ReturnType<typeof listAddresses>>>([]);
   const wish = useWishlistLocal((s) => s.skus);
-  const catalogue = useCatalogue();
+  const { products: wished } = useProductsBySku(wish);
 
   useEffect(() => {
     if (!user) return;
@@ -170,10 +169,9 @@ function Account() {
 
       {tab === "wishlist" && (
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {wish.map((sku) => {
-            const p = findProduct(catalogue, sku);
-            return p ? <ProductCard key={sku} product={p} /> : null;
-          })}
+          {wished.map((p) => (
+            <ProductCard key={p.sku} product={p} />
+          ))}
           {wish.length === 0 && <p className="text-mortar">No saved SKUs yet.</p>}
         </div>
       )}

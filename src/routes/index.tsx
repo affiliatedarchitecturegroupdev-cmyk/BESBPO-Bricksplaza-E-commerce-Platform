@@ -3,29 +3,24 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, MapPin, Pause, Play } from "lucide-react";
 import { HERO_SLIDES, BUNDLES, PROJECTS, GROUP } from "@/data/content";
 import { CATEGORIES, COLOURS, FAMILIES, PROVINCES, SECTORS } from "@/data/taxonomy";
-import { findProduct, type Product } from "@/data/catalogue";
+import { type Product } from "@/data/catalogue";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { useViewed } from "@/lib/cart-store";
-import { useCatalogue } from "@/components/catalogue";
+import { useProductsBySku } from "@/lib/use-products";
+import { loadHome } from "@/lib/products";
 import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
 import { formatZar } from "@/lib/format";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  loader: () => loadHome(),
+  component: Home,
+});
 
 function Home() {
-  const catalogue = useCatalogue();
-  const trending = catalogue.filter((p) => p.isTrending).slice(0, 8);
-  const arrivals = [...catalogue].reverse().filter((p) => p.isNew).slice(0, 8);
-  const clearance = catalogue.filter((p) => p.isClearance).slice(0, 8);
-  const best = catalogue.filter((p) => p.isBestSeller).slice(0, 8);
-  const favs = catalogue.filter((p) => p.rating >= 4.5).slice(0, 8);
-  const colours = ["Autumn Red", "Imperial", "Sandstone", "Kalahari", "Slate", "Burgundy"];
-  const editorial = editorialPicks(catalogue);
-  const value = valuePicks(catalogue);
-  const bulk = bulkSpecials(catalogue);
-  const restocked = restockedPicks(catalogue);
+  const { trending, arrivals, clearance, best, favs, editorial, value, bulk, restocked, colours } =
+    Route.useLoaderData();
 
   return (
     <>
@@ -345,8 +340,11 @@ function ShopBySector() {
   );
 }
 
-function ColourCollections({ colours }: { colours: string[] }) {
-  const catalogue = useCatalogue();
+function ColourCollections({
+  colours,
+}: {
+  colours: { colour: string; face: Product; semi?: Product; paver?: Product }[];
+}) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <p className="text-[11px] uppercase tracking-[0.18em] text-clay">The core differentiator</p>
@@ -355,11 +353,8 @@ function ColourCollections({ colours }: { colours: string[] }) {
         Face brick, semi-face and clay paver fired in the same colourway — specify once, lay three surfaces.
       </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {colours.map((colour) => {
-          const face = catalogue.find((p) => p.categorySlug === "clay-face-bricks" && p.colourFinish === colour);
-          const semi = catalogue.find((p) => p.categorySlug === "semi-face-bricks" && p.colourFinish === colour);
-          const paver = catalogue.find((p) => p.categorySlug === "clay-pavers" && p.colourFinish === colour);
-          if (!face) return null;
+        {colours.map((row) => {
+          const { colour, face, semi, paver } = row;
           return (
             <Link
               key={colour}
@@ -417,54 +412,6 @@ function NewToRange() {
       </div>
     </section>
   );
-}
-
-function firstOf(catalogue: Product[], categorySlug: string, colour?: string) {
-  return catalogue.find((p) => p.categorySlug === categorySlug && (!colour || p.colourFinish === colour));
-}
-
-function editorialPicks(catalogue: Product[]) {
-  return [
-    firstOf(catalogue, "clay-face-bricks", "Autumn Red"),
-    firstOf(catalogue, "clay-pavers", "Sandstone"),
-    firstOf(catalogue, "brick-slips", "Slate"),
-    firstOf(catalogue, "braai-kits", "Autumn Red"),
-  ].filter(Boolean) as Product[];
-}
-
-function valuePicks(catalogue: Product[]) {
-  const slugs = ["stock-bricks", "concrete-blocks", "concrete-maxi", "mortar-accessories"];
-  return slugs
-    .map((slug) =>
-      catalogue
-        .filter((p) => p.categorySlug === slug && !p.isClearance)
-        .sort((a, b) => a.retailPrice - b.retailPrice)[0],
-    )
-    .filter(Boolean) as Product[];
-}
-
-function bulkSpecials(catalogue: Product[]) {
-  return [
-    firstOf(catalogue, "clay-face-bricks", "Autumn Red"),
-    firstOf(catalogue, "concrete-blocks", "White"),
-    firstOf(catalogue, "clay-pavers", "Autumn Red"),
-    firstOf(catalogue, "stock-bricks"),
-  ].filter(Boolean) as Product[];
-}
-
-function restockedPicks(catalogue: Product[]) {
-  const seen = new Set<string>();
-  const picks = [];
-  const ranked = catalogue
-    .filter((p) => p.fulfilmentType === "Stock Item" && !p.isNew && !p.isClearance && p.stock > 200)
-    .sort((a, b) => b.stock - a.stock);
-  for (const p of ranked) {
-    if (seen.has(p.categorySlug)) continue;
-    seen.add(p.categorySlug);
-    picks.push(p);
-    if (picks.length === 4) break;
-  }
-  return picks;
 }
 
 function BrowseByColour() {
@@ -700,16 +647,15 @@ function Newsletter() {
 }
 
 function RecentlyViewed() {
-  const skus = useViewed((s) => s.skus);
-  const catalogue = useCatalogue();
-  const products = skus.map((sku) => findProduct(catalogue, sku)).filter((p) => p != null).slice(0, 4);
-  if (!products.length) return null;
+  const skus = useViewed((s) => s.skus).slice(0, 4);
+  const { products, ready } = useProductsBySku(skus);
+  if (!ready || !products.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
       <h2 className="font-display text-3xl">Recently viewed</h2>
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((p) => (
-          <ProductCard key={p!.sku} product={p!} />
+          <ProductCard key={p.sku} product={p} />
         ))}
       </div>
     </section>

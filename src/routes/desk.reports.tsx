@@ -1,15 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCatalogue } from "@/components/catalogue";
-import { CATEGORIES } from "@/data/taxonomy";
+import { loadDeskSummary } from "@/lib/products";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-export const Route = createFileRoute("/desk/reports")({ component: Reports });
+export const Route = createFileRoute("/desk/reports")({
+  loader: () => loadDeskSummary(),
+  component: Reports,
+});
 
 function Reports() {
-  const cat = useCatalogue();
-  const data = CATEGORIES.map((c) => ({
+  const data = Route.useLoaderData().categories.map((c) => ({
     name: c.prefix,
-    skus: cat.filter((p) => p.categorySlug === c.slug).length,
+    skus: c.count,
   }));
   return (
     <div>
