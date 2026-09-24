@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useCart } from "@/lib/cart-store";
-import { getProduct } from "@/data/catalogue";
+import { findProduct } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { PAYMENT_METHODS } from "@/data/content";
 import { formatZar, vatInclusive, round2 } from "@/lib/format";
 import { priceFor } from "@/lib/pricing";
@@ -38,13 +39,14 @@ function Checkout() {
     notes: "",
   });
 
+  const catalogue = useCatalogue();
   const items = useMemo(
     () =>
       lines.flatMap((l) => {
-        const p = getProduct(l.sku);
+        const p = findProduct(catalogue, l.sku);
         return p ? [{ ...l, product: p, price: priceFor(p, "retail") }] : [];
       }),
-    [lines],
+    [catalogue, lines],
   );
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const quote = quoteDelivery(form.postal_code, method);

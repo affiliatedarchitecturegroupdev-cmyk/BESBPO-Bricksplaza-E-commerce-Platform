@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCatalogue } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { CATEGORIES } from "@/data/taxonomy";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export const Route = createFileRoute("/desk/reports")({ component: Reports });
 
 function Reports() {
-  const cat = getCatalogue();
+  const cat = useCatalogue();
   const data = CATEGORIES.map((c) => ({
     name: c.prefix,
     skus: cat.filter((p) => p.categorySlug === c.slug).length,

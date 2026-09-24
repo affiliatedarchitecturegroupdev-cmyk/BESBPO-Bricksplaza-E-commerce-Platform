@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCatalogue } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { CATEGORIES } from "@/data/taxonomy";
 import { useMemo, useState } from "react";
 import { Input, Select } from "@/components/ui/input";
@@ -10,12 +10,13 @@ export const Route = createFileRoute("/desk/inventory")({ component: Inventory }
 function Inventory() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
+  const catalogue = useCatalogue();
   const rows = useMemo(() => {
-    return getCatalogue()
+    return catalogue
       .filter((p) => (!cat || p.categorySlug === cat) && (!q || `${p.sku} ${p.productName}`.toLowerCase().includes(q.toLowerCase())))
       .slice(0, 80);
-  }, [q, cat]);
-  const low = getCatalogue().filter((p) => p.fulfilmentType === "Stock Item" && p.stock < 80).length;
+  }, [catalogue, q, cat]);
+  const low = catalogue.filter((p) => p.fulfilmentType === "Stock Item" && p.stock < 80).length;
   return (
     <div>
       <h1 className="font-display text-3xl">Inventory</h1>

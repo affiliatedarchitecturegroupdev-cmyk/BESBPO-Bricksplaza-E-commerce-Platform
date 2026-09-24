@@ -4,6 +4,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCart } from "@/lib/cart-store";
 import { CATEGORIES, FAMILIES, SECTORS } from "@/data/taxonomy";
 import { CONTACTS, GROUP } from "@/data/content";
+import { useCatalogue } from "@/components/catalogue";
 import { suggest } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import {
@@ -168,7 +169,8 @@ function SearchBox() {
   const [q, setQ] = useState("");
   const [focus, setFocus] = useState(false);
   const navigate = useNavigate();
-  const hits = useMemo(() => (q.trim().length >= 2 ? suggest(q, 6) : []), [q]);
+  const catalogue = useCatalogue();
+  const hits = useMemo(() => (q.trim().length >= 2 ? suggest(catalogue, q, 6) : []), [catalogue, q]);
 
   return (
     <div className="relative ml-auto hidden min-w-0 flex-1 max-w-md md:block">

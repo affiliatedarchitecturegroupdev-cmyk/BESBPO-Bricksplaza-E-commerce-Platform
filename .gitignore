@@ -12,6 +12,7 @@ artifacts/
 .env
 .env.*
 !.env.example
+.database-url
 .DS_Store
 *.local
 .pglite/

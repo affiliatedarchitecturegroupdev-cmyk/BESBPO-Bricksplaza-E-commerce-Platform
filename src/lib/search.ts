@@ -1,4 +1,4 @@
-import { getCatalogue, type Product } from "@/data/catalogue";
+import type { Product } from "@/data/catalogue";
 import { CATEGORIES } from "@/data/taxonomy";
 
 export type Facets = {
@@ -38,7 +38,7 @@ export function applyQueryIntel(facets: Facets): Facets {
   return extra;
 }
 
-export function searchProducts(raw: Facets): Product[] {
+export function searchProducts(products: Product[], raw: Facets): Product[] {
   const f = applyQueryIntel(raw);
   const q = f.q?.trim().toLowerCase();
   const intelApplied = Boolean(
@@ -46,7 +46,7 @@ export function searchProducts(raw: Facets): Product[] {
       (f.duty && f.duty !== raw.duty) ||
       (f.family && f.family !== raw.family),
   );
-  return getCatalogue().filter((p) => {
+  return products.filter((p) => {
     if (f.category && p.categorySlug !== f.category) return false;
     if (f.family && p.family !== f.family) return false;
     if (f.colour && p.colourFinish !== f.colour) return false;
@@ -69,9 +69,9 @@ export function searchProducts(raw: Facets): Product[] {
   });
 }
 
-export function suggest(q: string, limit = 8): Product[] {
+export function suggest(products: Product[], q: string, limit = 8): Product[] {
   if (!q.trim()) return [];
-  return searchProducts({ q }).slice(0, limit);
+  return searchProducts(products, { q }).slice(0, limit);
 }
 
 export function closestCategory(q: string) {

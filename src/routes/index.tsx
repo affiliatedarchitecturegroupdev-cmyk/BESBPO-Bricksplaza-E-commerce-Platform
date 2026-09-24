@@ -3,11 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight, MapPin, Pause, Play } from "lucide-react";
 import { HERO_SLIDES, BUNDLES, PROJECTS, GROUP } from "@/data/content";
 import { CATEGORIES, COLOURS, FAMILIES, PROVINCES, SECTORS } from "@/data/taxonomy";
-import { getCatalogue } from "@/data/catalogue";
+import { findProduct, type Product } from "@/data/catalogue";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { useViewed } from "@/lib/cart-store";
-import { getProduct } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
 import { formatZar } from "@/lib/format";
@@ -15,7 +15,7 @@ import { formatZar } from "@/lib/format";
 export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
-  const catalogue = getCatalogue();
+  const catalogue = useCatalogue();
   const trending = catalogue.filter((p) => p.isTrending).slice(0, 8);
   const arrivals = [...catalogue].reverse().filter((p) => p.isNew).slice(0, 8);
   const clearance = catalogue.filter((p) => p.isClearance).slice(0, 8);
@@ -224,7 +224,7 @@ function Rail({
   title: string;
   kicker: string;
   href: string;
-  products: ReturnType<typeof getCatalogue>;
+  products: Product[];
 }) {
   if (!products.length) return null;
   return (
@@ -346,7 +346,7 @@ function ShopBySector() {
 }
 
 function ColourCollections({ colours }: { colours: string[] }) {
-  const catalogue = getCatalogue();
+  const catalogue = useCatalogue();
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <p className="text-[11px] uppercase tracking-[0.18em] text-clay">The core differentiator</p>
@@ -419,20 +419,20 @@ function NewToRange() {
   );
 }
 
-function firstOf(catalogue: ReturnType<typeof getCatalogue>, categorySlug: string, colour?: string) {
+function firstOf(catalogue: Product[], categorySlug: string, colour?: string) {
   return catalogue.find((p) => p.categorySlug === categorySlug && (!colour || p.colourFinish === colour));
 }
 
-function editorialPicks(catalogue: ReturnType<typeof getCatalogue>) {
+function editorialPicks(catalogue: Product[]) {
   return [
     firstOf(catalogue, "clay-face-bricks", "Autumn Red"),
     firstOf(catalogue, "clay-pavers", "Sandstone"),
     firstOf(catalogue, "brick-slips", "Slate"),
     firstOf(catalogue, "braai-kits", "Autumn Red"),
-  ].filter(Boolean) as ReturnType<typeof getCatalogue>;
+  ].filter(Boolean) as Product[];
 }
 
-function valuePicks(catalogue: ReturnType<typeof getCatalogue>) {
+function valuePicks(catalogue: Product[]) {
   const slugs = ["stock-bricks", "concrete-blocks", "concrete-maxi", "mortar-accessories"];
   return slugs
     .map((slug) =>
@@ -440,19 +440,19 @@ function valuePicks(catalogue: ReturnType<typeof getCatalogue>) {
         .filter((p) => p.categorySlug === slug && !p.isClearance)
         .sort((a, b) => a.retailPrice - b.retailPrice)[0],
     )
-    .filter(Boolean) as ReturnType<typeof getCatalogue>;
+    .filter(Boolean) as Product[];
 }
 
-function bulkSpecials(catalogue: ReturnType<typeof getCatalogue>) {
+function bulkSpecials(catalogue: Product[]) {
   return [
     firstOf(catalogue, "clay-face-bricks", "Autumn Red"),
     firstOf(catalogue, "concrete-blocks", "White"),
     firstOf(catalogue, "clay-pavers", "Autumn Red"),
     firstOf(catalogue, "stock-bricks"),
-  ].filter(Boolean) as ReturnType<typeof getCatalogue>;
+  ].filter(Boolean) as Product[];
 }
 
-function restockedPicks(catalogue: ReturnType<typeof getCatalogue>) {
+function restockedPicks(catalogue: Product[]) {
   const seen = new Set<string>();
   const picks = [];
   const ranked = catalogue
@@ -544,7 +544,7 @@ function ShopByProject() {
   );
 }
 
-function TradeBulk({ products }: { products: ReturnType<typeof getCatalogue> }) {
+function TradeBulk({ products }: { products: Product[] }) {
   return (
     <section className="bg-kiln py-16 text-bisque">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -701,7 +701,8 @@ function Newsletter() {
 
 function RecentlyViewed() {
   const skus = useViewed((s) => s.skus);
-  const products = skus.map(getProduct).filter(Boolean).slice(0, 4);
+  const catalogue = useCatalogue();
+  const products = skus.map((sku) => findProduct(catalogue, sku)).filter((p) => p != null).slice(0, 4);
   if (!products.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">

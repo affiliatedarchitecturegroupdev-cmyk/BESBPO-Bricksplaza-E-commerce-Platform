@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   colourMatched,
   frequentlyBought,
-  getCatalogue,
-  getProduct,
+  findProduct,
   relatedProducts,
 } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { SAMPLE_REVIEWS } from "@/data/content";
 import { formatNumber, formatZar } from "@/lib/format";
 import { quoteDelivery } from "@/lib/delivery";
@@ -28,7 +28,8 @@ export const Route = createFileRoute("/product/$sku")({ component: ProductPage }
 
 function ProductPage() {
   const { sku } = Route.useParams();
-  const product = getProduct(sku);
+  const catalogue = useCatalogue();
+  const product = findProduct(catalogue, sku);
   const navigate = useNavigate();
   const add = useCart((s) => s.add);
   const viewed = useViewed((s) => s.push);
@@ -46,13 +47,13 @@ function ProductPage() {
 
   const swatches = useMemo(() => {
     if (!product) return [];
-    return getCatalogue()
+    return catalogue
       .filter((p) => p.productType === product.productType && p.sizeMm === product.sizeMm)
       .reduce<typeof product[]>((acc, p) => {
         if (!acc.some((x) => x.colourFinish === p.colourFinish)) acc.push(p);
         return acc;
       }, []);
-  }, [product]);
+  }, [catalogue, product]);
 
   if (!product) {
     return (
@@ -68,9 +69,9 @@ function ProductPage() {
   const unitsFromM2 =
     product.coveragePerM2 && Number(m2) > 0 ? Math.ceil(Number(m2) * product.coveragePerM2 * 1.08) : null;
   const quote = quoteDelivery(postcode, "delivery");
-  const matched = colourMatched(product);
-  const fbt = frequentlyBought(product);
-  const related = relatedProducts(product);
+  const matched = colourMatched(catalogue, product);
+  const fbt = frequentlyBought(catalogue, product);
+  const related = relatedProducts(catalogue, product);
 
   function addToCart(n = qty) {
     add(product!.sku, n);

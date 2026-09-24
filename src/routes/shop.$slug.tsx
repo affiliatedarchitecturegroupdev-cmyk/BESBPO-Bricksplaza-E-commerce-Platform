@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { Listing } from "@/components/listing";
 import { productsByCategory } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { CATEGORY_BY_SLUG } from "@/data/taxonomy";
 
 export const Route = createFileRoute("/shop/$slug")({ component: CategoryPage });
@@ -9,7 +10,7 @@ export const Route = createFileRoute("/shop/$slug")({ component: CategoryPage })
 function CategoryPage() {
   const { slug } = Route.useParams();
   const cat = CATEGORY_BY_SLUG[slug];
-  const products = productsByCategory(slug);
+  const products = productsByCategory(useCatalogue(), slug);
   if (!cat) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center">

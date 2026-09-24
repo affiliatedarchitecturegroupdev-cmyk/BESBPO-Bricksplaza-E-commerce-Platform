@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { COLOURS } from "@/data/taxonomy";
-import { getCatalogue } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 
 export const Route = createFileRoute("/collections")({ component: Collections });
 
 function Collections() {
-  const cat = getCatalogue();
+  const cat = useCatalogue();
   return (
     <>
       <PageHeader

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getCatalogue } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { deskOrders } from "@/lib/commerce";
 import { useEffect, useState } from "react";
 import { formatZar } from "@/lib/format";
@@ -14,7 +14,7 @@ function DeskHome() {
       .catch(() => setData({ orders: [], rfqs: [], returns: [] }));
   }, []);
 
-  const cat = getCatalogue();
+  const cat = useCatalogue();
   const low = cat.filter((p) => p.fulfilmentType === "Stock Item" && p.stock < 80).length;
   const revenue = (data?.orders ?? []).reduce((n, o) => n + o.total, 0);
 

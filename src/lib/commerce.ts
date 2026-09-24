@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
-import { getProduct } from "@/data/catalogue";
 import { priceFor } from "@/lib/pricing";
 import { quoteDelivery, craneSurcharge } from "@/lib/delivery";
 import { round2, vatInclusive } from "@/lib/format";
@@ -149,14 +148,16 @@ export const placeOrder = createServerFn({ method: "POST" })
     const customer = await loadCustomer(context.userId);
     const tier = customer.tier;
     let subtotal = 0;
-    const resolved = data.lines.map((l) => {
-      const p = getProduct(l.sku);
+    const { fetchProduct } = await import("@/lib/products.server");
+    const resolved = [];
+    for (const l of data.lines) {
+      const p = await fetchProduct(l.sku);
       if (!p) throw new Error(`Unknown SKU ${l.sku}`);
       const unit = priceFor(p, tier);
       const line = round2(unit * l.qty);
       subtotal = round2(subtotal + line);
-      return { ...l, name: p.productName, unit, fulfilment: p.fulfilmentType };
-    });
+      resolved.push({ ...l, name: p.productName, unit, fulfilment: p.fulfilmentType });
+    }
     const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method);
     const delivery = (quote.fee ?? 0) + craneSurcharge(Boolean(data.hiab));
     const totalEx = round2(subtotal + delivery);

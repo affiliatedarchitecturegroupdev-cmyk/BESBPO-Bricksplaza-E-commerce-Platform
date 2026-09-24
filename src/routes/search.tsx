@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { Listing } from "@/components/listing";
+import { useCatalogue } from "@/components/catalogue";
 import { closestCategory, searchProducts } from "@/lib/search";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,8 @@ export const Route = createFileRoute("/search")({
 function SearchPage() {
   const { q = "", colour, category } = Route.useSearch();
   const navigate = useNavigate();
-  const results = searchProducts({ q, colour, category });
+  const catalogue = useCatalogue();
+  const results = searchProducts(catalogue, { q, colour, category });
   const fallback = closestCategory(q);
 
   return (

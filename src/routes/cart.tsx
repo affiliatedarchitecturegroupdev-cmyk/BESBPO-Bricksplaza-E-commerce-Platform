@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { useCart } from "@/lib/cart-store";
-import { getProduct } from "@/data/catalogue";
+import { findProduct } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { ProductMedia } from "@/components/product-media";
 import { formatZar } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,9 @@ export const Route = createFileRoute("/cart")({ component: CartPage });
 
 function CartPage() {
   const { lines, setQty, remove } = useCart();
+  const catalogue = useCatalogue();
   const items = lines.flatMap((l) => {
-    const p = getProduct(l.sku);
+    const p = findProduct(catalogue, l.sku);
     if (!p) return [];
     return [{ ...l, product: p, price: priceFor(p, "retail") }];
   });

@@ -2,4 +2,4 @@
 
 South African e-commerce storefront for bricks, pavers, blocks and related masonry.
 
-The 2,044-SKU catalogue is generated in the app and can be loaded into the `products` table with `node scripts/seed-products.mjs` when `DATABASE_URL` is set. Accounts, carts, orders and reviews use Postgres (PGLite in local preview, Supabase when `DATABASE_URL` is set). Do not commit secrets or connection strings.
+Product pages read the `products` table. The generated SKU list has been removed from the shop. `node scripts/seed-products.mjs` only reports how many rows are already loaded. Accounts, carts, orders and reviews use Postgres (PGLite in local preview when `DATABASE_URL` is unset, Supabase when it is set). Do not commit secrets or connection strings.

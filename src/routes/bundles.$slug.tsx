@@ -5,14 +5,15 @@ import { PageHeader } from "@/components/layout";
 import { ProductMedia } from "@/components/product-media";
 import { Button } from "@/components/ui/button";
 import { BUNDLES, type BundleLine } from "@/data/content";
-import { getCatalogue, type Product } from "@/data/catalogue";
+import { type Product } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { formatZar } from "@/lib/format";
 import { useCart } from "@/lib/cart-store";
 
 export const Route = createFileRoute("/bundles/$slug")({ component: BundlePage });
 
-function resolveLine(line: BundleLine): Product | undefined {
-  const rows = getCatalogue().filter(
+function resolveLine(products: Product[], line: BundleLine): Product | undefined {
+  const rows = products.filter(
     (p) => p.categorySlug === line.categorySlug && p.productType === line.productType,
   );
   return rows.find((p) => p.colourFinish === line.colour) ?? rows[0];
@@ -22,13 +23,14 @@ function BundlePage() {
   const { slug } = Route.useParams();
   const bundle = BUNDLES.find((b) => b.slug === slug);
   const add = useCart((s) => s.add);
+  const catalogue = useCatalogue();
   const picks = useMemo(() => {
     if (!bundle) return [];
     return bundle.lines.flatMap((line) => {
-      const product = resolveLine(line);
+      const product = resolveLine(catalogue, line);
       return product ? [{ line, product }] : [];
     });
-  }, [bundle]);
+  }, [bundle, catalogue]);
 
   if (!bundle) {
     return (

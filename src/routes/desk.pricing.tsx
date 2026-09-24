@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CATEGORIES, TIER_DISCOUNT } from "@/data/taxonomy";
-import { getCatalogue } from "@/data/catalogue";
+import { useCatalogue } from "@/components/catalogue";
 import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/desk/pricing")({ component: Pricing });
 
 function Pricing() {
-  const cat = getCatalogue();
+  const cat = useCatalogue();
   const rows = CATEGORIES.map((c) => {
     const items = cat.filter((p) => p.categorySlug === c.slug);
     const avg = items.reduce((n, p) => n + p.retailPrice, 0) / (items.length || 1);
