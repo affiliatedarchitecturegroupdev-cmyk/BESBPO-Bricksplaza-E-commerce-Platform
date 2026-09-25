@@ -70,6 +70,8 @@ const g = globalThis as typeof globalThis & {
   __bpCatalogue?: { at: number; products: Product[] };
   __bpCatalogueFlight?: Promise<Product[]>;
 };
+// A hot reload must not keep stock figures from the previous module instance.
+g.__bpCatalogue = undefined;
 
 async function readProducts(): Promise<Product[]> {
   const sql = await getSql();
@@ -101,6 +103,16 @@ export async function fetchProducts(): Promise<Product[]> {
 export async function fetchProduct(sku: string): Promise<Product | undefined> {
   const products = await cachedProducts();
   return products.find((p) => p.sku === sku);
+}
+
+/** Keep the in-memory catalogue aligned after a stock update in this process. */
+export function noteStock(sku: string, delta: number) {
+  const hit = g.__bpCatalogue;
+  if (!hit) return;
+  const product = hit.products.find((p) => p.sku === sku);
+  if (product && product.fulfilmentType === "Stock Item") {
+    product.stock = Math.max(0, product.stock + delta);
+  }
 }
 
 const PAGE_SIZE = 24;

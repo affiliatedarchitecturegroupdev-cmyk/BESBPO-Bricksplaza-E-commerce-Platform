@@ -141,53 +141,157 @@ export type OrderInput = {
   notes?: string;
 };
 
-export const placeOrder = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((d: OrderInput) => d)
-  .handler(async ({ context, data }) => {
-    const customer = await loadCustomer(context.userId);
-    const tier = customer.tier;
-    let subtotal = 0;
-    const { fetchProduct } = await import("@/lib/products.server");
-    const resolved = [];
-    for (const l of data.lines) {
-      const p = await fetchProduct(l.sku);
-      if (!p) throw new Error(`Unknown SKU ${l.sku}`);
-      const unit = priceFor(p, tier);
-      const line = round2(unit * l.qty);
-      subtotal = round2(subtotal + line);
-      resolved.push({ ...l, name: p.productName, unit, fulfilment: p.fulfilmentType });
+const ORDER_STATUSES = [
+  "processing",
+  "dispatched",
+  "in_transit",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+] as const;
+
+type ResolvedLine = {
+  sku: string;
+  qty: number;
+  name: string;
+  unit: number;
+  fulfilment: string;
+};
+
+async function reserveStock(lines: ResolvedLine[]) {
+  const sql = await getSql();
+  const { noteStock } = await import("@/lib/products.server");
+  const applied: { sku: string; qty: number }[] = [];
+  try {
+    for (const line of lines) {
+      if (line.fulfilment !== "Stock Item") continue;
+      const updated = await sql<{ sku: string }>`
+        update products set stock = stock - ${line.qty}
+        where sku = ${line.sku} and fulfilment_type = 'Stock Item' and stock >= ${line.qty}
+        returning sku
+      `;
+      if (!updated[0]) throw new Error(`Not enough stock for ${line.sku}`);
+      applied.push({ sku: line.sku, qty: line.qty });
+      noteStock(line.sku, -line.qty);
     }
-    const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method);
-    const delivery = (quote.fee ?? 0) + craneSurcharge(Boolean(data.hiab));
-    const totalEx = round2(subtotal + delivery);
-    const total = vatInclusive(totalEx);
-    const vat = round2(total - totalEx);
-    if (tier !== "retail" && customer.credit_limit > 0 && data.payment_method === "trade") {
-      if (total > customer.credit_limit) throw new Error("Order exceeds trade credit limit");
+  } catch (err) {
+    for (const row of applied) {
+      await sql`update products set stock = stock + ${row.qty} where sku = ${row.sku}`;
+      noteStock(row.sku, row.qty);
     }
-    if (data.payment_method === "float") {
-      if (total > customer.float_balance) throw new Error("Insufficient float balance");
-    }
-    const id = `BP-${Date.now().toString(36).toUpperCase()}`;
-    const carrier = quote.band === "collection" ? "Collection" : "DSV South Africa";
-    const sql = await getSql();
+    throw err;
+  }
+}
+
+async function restoreStock(orderId: string) {
+  const sql = await getSql();
+  const { noteStock } = await import("@/lib/products.server");
+  const lines = await sql<{ sku: string; qty: number; fulfilment: string }>`
+    select sku, qty, fulfilment from order_lines where order_id = ${orderId}
+  `;
+  for (const line of lines) {
+    if (line.fulfilment !== "Stock Item") continue;
+    const qty = num(line.qty);
+    await sql`update products set stock = stock + ${qty} where sku = ${line.sku}`;
+    noteStock(line.sku, qty);
+  }
+}
+
+async function commitOrder(opts: {
+  userId: string | null;
+  tier: CustomerTier;
+  data: OrderInput;
+  creditLimit?: number | null;
+  floatBalance?: number | null;
+}) {
+  const { userId, tier, data } = opts;
+  if (!data.email || !data.email.includes("@")) throw new Error("An email is required so the yard can confirm the load");
+  if (!Array.isArray(data.lines) || data.lines.length === 0 || data.lines.length > 40) {
+    throw new Error("Add between 1 and 40 lines");
+  }
+  let subtotal = 0;
+  const { fetchProduct } = await import("@/lib/products.server");
+  const resolved: ResolvedLine[] = [];
+  for (const l of data.lines) {
+    const qty = Math.floor(Number(l.qty));
+    if (!Number.isFinite(qty) || qty < 1 || qty > 100000) throw new Error(`Invalid quantity for ${l.sku}`);
+    const p = await fetchProduct(l.sku);
+    if (!p) throw new Error(`Unknown SKU ${l.sku}`);
+    const unit = priceFor(p, tier);
+    subtotal = round2(subtotal + round2(unit * qty));
+    resolved.push({ sku: l.sku, qty, name: p.productName, unit, fulfilment: p.fulfilmentType });
+  }
+  const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method);
+  const delivery = (quote.fee ?? 0) + craneSurcharge(Boolean(data.hiab));
+  const totalEx = round2(subtotal + delivery);
+  const total = vatInclusive(totalEx);
+  const vat = round2(total - totalEx);
+  if (opts.creditLimit != null && opts.creditLimit > 0 && total > opts.creditLimit) {
+    throw new Error("Order exceeds trade credit limit");
+  }
+  if (opts.floatBalance != null && total > opts.floatBalance) {
+    throw new Error("Insufficient float balance");
+  }
+  await reserveStock(resolved);
+  const id = `BP-${Date.now().toString(36).toUpperCase()}`;
+  const carrier = quote.band === "collection" ? "Collection" : "DSV South Africa";
+  const sql = await getSql();
+  try {
     await sql`insert into orders (
       id, user_id, status, email, phone, delivery_method, address_json, payment_method,
-      subtotal, delivery_fee, vat, total, tier, carrier, tracking_ref, notes
+      payment_status, stock_applied, subtotal, delivery_fee, vat, total, tier, carrier, tracking_ref, notes
     ) values (
-      ${id}, ${context.userId}, ${"processing"}, ${data.email}, ${data.phone}, ${data.delivery_method},
+      ${id}, ${userId}, ${"processing"}, ${data.email}, ${data.phone}, ${data.delivery_method},
       ${JSON.stringify({ ...data.address, quote })}, ${data.payment_method},
+      ${"simulated"}, ${true},
       ${subtotal}, ${delivery}, ${vat}, ${total}, ${tier}, ${carrier}, ${id.replace("BP-", "TRK-")}, ${data.notes ?? ""}
     )`;
     for (const line of resolved) {
       await sql`insert into order_lines (order_id, sku, name, qty, unit_price, fulfilment)
         values (${id}, ${line.sku}, ${line.name}, ${line.qty}, ${line.unit}, ${line.fulfilment})`;
     }
-    if (data.payment_method === "float") {
-      await sql`update customers set float_balance = float_balance - ${total} where user_id = ${context.userId}`;
+    await sql`insert into order_events (order_id, status, note)
+      values (${id}, ${"processing"}, ${"Order saved. Payment is simulated and has not been captured."})`;
+    if (opts.floatBalance != null && userId) {
+      await sql`update customers set float_balance = float_balance - ${total} where user_id = ${userId}`;
     }
-    return { id, total, vat, delivery, subtotal, tier, carrier };
+  } catch (err) {
+    const { noteStock } = await import("@/lib/products.server");
+    for (const line of resolved) {
+      if (line.fulfilment !== "Stock Item") continue;
+      await sql`update products set stock = stock + ${line.qty} where sku = ${line.sku}`;
+      noteStock(line.sku, line.qty);
+    }
+    await sql`delete from order_lines where order_id = ${id}`;
+    await sql`delete from order_events where order_id = ${id}`;
+    await sql`delete from orders where id = ${id}`;
+    throw err;
+  }
+  return { id, total, vat, delivery, subtotal, tier, carrier, payment_status: "simulated" as const };
+}
+
+export const placeOrder = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: OrderInput) => d)
+  .handler(async ({ context, data }) => {
+    const customer = await loadCustomer(context.userId);
+    return commitOrder({
+      userId: context.userId,
+      tier: customer.tier,
+      data,
+      creditLimit: data.payment_method === "trade" ? customer.credit_limit : null,
+      floatBalance: data.payment_method === "float" ? customer.float_balance : null,
+    });
+  });
+
+/** Guest checkout. No account, so no client-supplied user id — retail price only, and no trade or float. */
+export const placeGuestOrder = createServerFn({ method: "POST" })
+  .validator((d: OrderInput) => d)
+  .handler(async ({ data }) => {
+    if (data.payment_method === "trade" || data.payment_method === "float") {
+      throw new Error("Sign in to use a trade or float account");
+    }
+    return commitOrder({ userId: null, tier: "retail", data });
   });
 
 function mapOrder(r: Record<string, unknown>) {
@@ -206,6 +310,7 @@ function mapOrder(r: Record<string, unknown>) {
     tier: String(r.tier),
     carrier: r.carrier == null ? null : String(r.carrier),
     tracking_ref: r.tracking_ref == null ? null : String(r.tracking_ref),
+    payment_status: r.payment_status == null ? "simulated" : String(r.payment_status),
     notes: r.notes == null ? null : String(r.notes),
     created_at: String(r.created_at),
   };
@@ -341,14 +446,78 @@ export const submitReturn = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const trackOrder = createServerFn({ method: "POST" })
+  .validator((id: string) => String(id ?? "").trim().slice(0, 40))
+  .handler(async ({ data: id }) => {
+    if (!/^BP-[A-Z0-9]+$/.test(id)) return null;
+    const sql = await getSql();
+    const orders = await sql<Record<string, unknown>>`
+      select id, status, delivery_method, payment_status, carrier, tracking_ref, created_at, total
+      from orders where id = ${id}
+    `;
+    const order = orders[0];
+    if (!order) return null;
+    const lines = await sql<{ sku: string; name: string; qty: number }>`
+      select sku, name, qty from order_lines where order_id = ${id} order by id
+    `;
+    const events = await sql<{ status: string; note: string | null; created_at: string }>`
+      select status, note, created_at from order_events where order_id = ${id} order by id
+    `;
+    return {
+      id: String(order.id),
+      status: String(order.status),
+      delivery_method: String(order.delivery_method),
+      payment_status: String(order.payment_status ?? "simulated"),
+      carrier: order.carrier == null ? null : String(order.carrier),
+      tracking_ref: order.tracking_ref == null ? null : String(order.tracking_ref),
+      created_at: String(order.created_at),
+      total: num(order.total),
+      lines: lines.map((l) => ({ sku: String(l.sku), name: String(l.name), qty: num(l.qty) })),
+      events: events.map((e) => ({
+        status: String(e.status),
+        note: e.note == null ? null : String(e.note),
+        created_at: String(e.created_at),
+      })),
+    };
+  });
+
+async function isYard(userId: string) {
+  const sql = await getSql();
+  const rows = await sql<{ yard_role: string }>`select yard_role from customers where user_id = ${userId}`;
+  const role = String(rows[0]?.yard_role ?? "customer");
+  return role === "owner" || role === "staff";
+}
+
+export const claimYard = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const sql = await getSql();
+    const owners = await sql<{ user_id: string }>`select user_id from customers where yard_role = 'owner' limit 1`;
+    const owner = owners[0];
+    if (owner && owner.user_id !== context.userId) throw new Error("The yard desk is already claimed");
+    await sql`insert into customers (user_id, yard_role) values (${context.userId}, ${"owner"})
+      on conflict (user_id) do update set yard_role = 'owner'`;
+    return { ok: true as const };
+  });
+
 export const deskOrders = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    const orders = await sql<Record<string, unknown>>`select * from orders where user_id = ${context.userId} order by created_at desc`;
-    const rfqs = await sql<Record<string, unknown>>`select id, name, company, status, created_at from rfqs where user_id = ${context.userId} order by id desc`;
-    const returns = await sql<Record<string, unknown>>`select id, order_id, reason, status, created_at from returns where user_id = ${context.userId} order by id desc`;
+    const yard = await isYard(context.userId);
+    const owners = await sql`select user_id from customers where yard_role = 'owner' limit 1`;
+    const orders = yard
+      ? await sql<Record<string, unknown>>`select * from orders order by created_at desc limit 100`
+      : await sql<Record<string, unknown>>`select * from orders where user_id = ${context.userId} order by created_at desc`;
+    const rfqs = yard
+      ? await sql<Record<string, unknown>>`select id, name, company, status, created_at from rfqs order by id desc limit 50`
+      : await sql<Record<string, unknown>>`select id, name, company, status, created_at from rfqs where user_id = ${context.userId} order by id desc`;
+    const returns = yard
+      ? await sql<Record<string, unknown>>`select id, order_id, reason, status, created_at from returns order by id desc limit 50`
+      : await sql<Record<string, unknown>>`select id, order_id, reason, status, created_at from returns where user_id = ${context.userId} order by id desc`;
     return {
+      yard,
+      unclaimed: !owners[0],
       orders: orders.map(mapOrder),
       rfqs: rfqs.map((r) => ({
         id: Number(r.id),
@@ -367,13 +536,42 @@ export const deskOrders = createServerFn({ method: "GET" })
     };
   });
 
-
 export const setOrderStatus = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: { id: string; status: string }) => d)
   .handler(async ({ context, data }) => {
+    if (!ORDER_STATUSES.includes(data.status as (typeof ORDER_STATUSES)[number])) {
+      throw new Error("Unknown status");
+    }
+    if (!(await isYard(context.userId))) throw new Error("Only the yard desk can move an order");
     const sql = await getSql();
-    await sql`update orders set status = ${data.status} where id = ${data.id} and user_id = ${context.userId}`;
+    const rows = await sql<Record<string, unknown>>`select status, stock_applied from orders where id = ${data.id}`;
+    const current = rows[0];
+    if (!current) throw new Error("Order not found");
+    const previous = String(current.status);
+    const applied = Boolean(current.stock_applied);
+    if (previous === data.status) return { ok: true as const };
+    if (data.status === "cancelled" && applied) {
+      await restoreStock(data.id);
+      await sql`update orders set stock_applied = false where id = ${data.id}`;
+    }
+    if (previous === "cancelled" && data.status !== "cancelled" && !applied) {
+      const lines = await sql<{ sku: string; name: string; qty: number; fulfilment: string }>`
+        select sku, name, qty, fulfilment from order_lines where order_id = ${data.id}
+      `;
+      await reserveStock(
+        lines.map((l) => ({
+          sku: String(l.sku),
+          qty: num(l.qty),
+          name: String(l.name),
+          unit: 0,
+          fulfilment: String(l.fulfilment),
+        })),
+      );
+      await sql`update orders set stock_applied = true where id = ${data.id}`;
+    }
+    await sql`update orders set status = ${data.status} where id = ${data.id}`;
+    await sql`insert into order_events (order_id, status, note) values (${data.id}, ${data.status}, ${"Updated from the yard desk"})`;
     return { ok: true as const };
   });
 

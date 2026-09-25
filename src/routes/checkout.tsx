@@ -8,7 +8,7 @@ import { priceFor } from "@/lib/pricing";
 import { craneSurcharge, quoteDelivery } from "@/lib/delivery";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
-import { placeOrder } from "@/lib/commerce";
+import { placeGuestOrder, placeOrder } from "@/lib/commerce";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PROVINCES } from "@/data/taxonomy";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ function Checkout() {
   const [hiab, setHiab] = useState(false);
   const [pay, setPay] = useState("payfast");
   const [busy, setBusy] = useState(false);
+  const [placed, setPlaced] = useState(false);
   const [form, setForm] = useState({
     recipient: "",
     email: "",
@@ -70,22 +71,29 @@ function Checkout() {
         hiab,
         notes: form.notes,
       };
-      if (user) {
-        const res = await placeOrder({ data: payload });
-        clear();
-        navigate({ to: "/order/$id", params: { id: res.id } });
-      } else {
-        const id = `GUEST-${Date.now().toString(36).toUpperCase()}`;
-        const order = { id, ...payload, subtotal, delivery, vat, total, status: "processing", created_at: new Date().toISOString() };
-        localStorage.setItem(`bp-order-${id}`, JSON.stringify(order));
-        clear();
-        navigate({ to: "/order/$id", params: { id } });
+      if (!form.email.includes("@")) {
+        toast.error("Add an email so the yard can confirm the load");
+        setStep(1);
+        return;
       }
+      setPlaced(true);
+      const res = user ? await placeOrder({ data: payload }) : await placeGuestOrder({ data: payload });
+      clear();
+      navigate({ to: "/order/$id", params: { id: res.id } });
     } catch (err) {
+      setPlaced(false);
       toast.error(err instanceof Error ? err.message : "Could not place order");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (placed) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-20 text-center">
+        <h1 className="font-display text-3xl">Saving your load…</h1>
+      </div>
+    );
   }
 
   if (lines.length > 0 && !ready) {
@@ -171,7 +179,9 @@ function Checkout() {
           {step === 2 && (
             <div>
               <h1 className="font-display text-2xl">Payment</h1>
-              <p className="mt-1 text-sm text-mortar">15 methods at launch. This demo confirms instantly except EFT (marked pending proof).</p>
+              <p className="mt-1 text-sm text-mortar">
+                Choose how this load will be paid. Nothing is charged yet — PayFast and the other merchant accounts are not connected, so the order is saved for the yard as simulated.
+              </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {PAYMENT_METHODS.map((p) => (
                   <button
@@ -228,10 +238,10 @@ function Checkout() {
                   Back
                 </Button>
                 <Button size="lg" disabled={busy} onClick={place}>
-                  {busy ? "Placing…" : "Place order"}
+                  {busy ? "Saving…" : "Place order"}
                 </Button>
               </div>
-              <p className="mt-3 text-[11px] uppercase tracking-wider text-muted">PayFast · Ozow · PCI-DSS · SSL</p>
+              <p className="mt-3 text-sm text-mortar">Nothing is charged. The yard can see the load and move it. Capture waits until PayFast is connected.</p>
             </div>
           )}
         </div>
