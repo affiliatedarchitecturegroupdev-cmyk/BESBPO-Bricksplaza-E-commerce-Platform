@@ -422,8 +422,8 @@ export const addReview = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const sql = await getSql();
     const bought = await sql`select o.id from orders o join order_lines l on l.order_id = o.id where o.user_id = ${context.userId} and l.sku = ${data.sku} limit 1`;
-    await sql`insert into reviews (user_id, sku, rating, title, body, verified)
-      values (${context.userId}, ${data.sku}, ${data.rating}, ${data.title}, ${data.body}, ${Boolean(bought[0])})`;
+    await sql`insert into reviews (user_id, sku, rating, title, body, verified, status)
+      values (${context.userId}, ${data.sku}, ${data.rating}, ${data.title}, ${data.body}, ${Boolean(bought[0])}, ${"pending"})`;
     return { ok: true as const };
   });
 
@@ -448,6 +448,211 @@ export const addQuestion = createServerFn({ method: "POST" })
     await sql`insert into questions (user_id, sku, body) values (${context.userId}, ${data.sku}, ${data.body})`;
     return { ok: true as const };
   });
+
+async function yardGate(userId: string) {
+  const sql = await getSql();
+  const yard = await isYard(userId);
+  const owners = await sql`select user_id from customers where yard_role = 'owner' limit 1`;
+  return { sql, yard, unclaimed: !owners[0] };
+}
+
+export const listYardRfqs = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { sql, yard, unclaimed } = await yardGate(context.userId);
+    if (!yard) return { yard, unclaimed, rows: [] as YardRfq[] };
+    const rows = await sql<Record<string, unknown>>`
+      select id, name, email, company, phone, province, message, sku_list, status, created_at
+      from rfqs
+      order by case status when 'open' then 0 when 'quoted' then 1 else 2 end, id desc
+      limit 80
+    `;
+    return {
+      yard,
+      unclaimed,
+      rows: rows.map((r) => ({
+        id: Number(r.id),
+        name: String(r.name ?? ""),
+        email: String(r.email ?? ""),
+        company: r.company == null ? "" : String(r.company),
+        phone: r.phone == null ? "" : String(r.phone),
+        province: r.province == null ? "" : String(r.province),
+        message: String(r.message ?? ""),
+        sku_list: r.sku_list == null ? "" : String(r.sku_list),
+        status: String(r.status ?? "open"),
+        created_at: String(r.created_at ?? ""),
+      })),
+    };
+  });
+
+export const listYardQuestions = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { sql, yard, unclaimed } = await yardGate(context.userId);
+    if (!yard) return { yard, unclaimed, rows: [] as YardQuestion[] };
+    const rows = await sql<Record<string, unknown>>`
+      select id, sku, body, answer, created_at
+      from questions
+      order by case when answer is null or answer = '' then 0 else 1 end, id desc
+      limit 80
+    `;
+    return {
+      yard,
+      unclaimed,
+      rows: rows.map((r) => ({
+        id: Number(r.id),
+        sku: String(r.sku ?? ""),
+        body: String(r.body ?? ""),
+        answer: r.answer == null ? "" : String(r.answer),
+        created_at: String(r.created_at ?? ""),
+      })),
+    };
+  });
+
+export const answerQuestion = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { id: number; answer: string }) => d)
+  .handler(async ({ context, data }) => {
+    await assertYard(context.userId);
+    const answer = String(data.answer ?? "").trim().slice(0, 2000);
+    if (!answer) throw new Error("Write an answer");
+    const sql = await getSql();
+    const rows = await sql`select id from questions where id = ${data.id}`;
+    if (!rows[0]) throw new Error("Question not found");
+    await sql`update questions set answer = ${answer}, answered_by = ${"Bricksplaza Team"} where id = ${data.id}`;
+    return { ok: true as const };
+  });
+
+export const listYardReviews = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { sql, yard, unclaimed } = await yardGate(context.userId);
+    if (!yard) return { yard, unclaimed, rows: [] as YardReview[] };
+    const rows = await sql<Record<string, unknown>>`
+      select id, sku, rating, title, body, verified, status, created_at
+      from reviews
+      order by case status when 'pending' then 0 when 'published' then 1 else 2 end, id desc
+      limit 80
+    `;
+    return {
+      yard,
+      unclaimed,
+      rows: rows.map((r) => ({
+        id: Number(r.id),
+        sku: String(r.sku ?? ""),
+        rating: num(r.rating),
+        title: r.title == null ? "" : String(r.title),
+        body: String(r.body ?? ""),
+        verified: Boolean(r.verified),
+        status: String(r.status ?? "pending"),
+        created_at: String(r.created_at ?? ""),
+      })),
+    };
+  });
+
+export const setReviewStatus = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { id: number; status: "published" | "hidden" }) => d)
+  .handler(async ({ context, data }) => {
+    if (data.status !== "published" && data.status !== "hidden") throw new Error("Unknown decision");
+    await assertYard(context.userId);
+    const sql = await getSql();
+    const rows = await sql`select id from reviews where id = ${data.id}`;
+    if (!rows[0]) throw new Error("Review not found");
+    await sql`update reviews set status = ${data.status} where id = ${data.id}`;
+    return { ok: true as const };
+  });
+
+export const submitContact = createServerFn({ method: "POST" })
+  .validator((d: { name: string; email: string; message: string }) => d)
+  .handler(async ({ data }) => {
+    const name = String(data.name ?? "").trim().slice(0, 80);
+    const email = String(data.email ?? "").trim().toLowerCase().slice(0, 160);
+    const message = String(data.message ?? "").trim().slice(0, 2000);
+    if (!name) throw new Error("Enter your name");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email");
+    if (message.length < 8) throw new Error("Say a bit more so the desk can reply");
+    const sql = await getSql();
+    await sql`insert into contacts (name, email, message) values (${name}, ${email}, ${message})`;
+    return { ok: true as const };
+  });
+
+export const listContacts = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { sql, yard, unclaimed } = await yardGate(context.userId);
+    if (!yard) return { yard, unclaimed, rows: [] as YardContact[] };
+    const rows = await sql<Record<string, unknown>>`
+      select id, name, email, message, status, created_at
+      from contacts
+      order by case status when 'open' then 0 else 1 end, id desc
+      limit 80
+    `;
+    return {
+      yard,
+      unclaimed,
+      rows: rows.map((r) => ({
+        id: Number(r.id),
+        name: String(r.name ?? ""),
+        email: String(r.email ?? ""),
+        message: String(r.message ?? ""),
+        status: String(r.status ?? "open"),
+        created_at: String(r.created_at ?? ""),
+      })),
+    };
+  });
+
+export const setContactStatus = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { id: number; status: "open" | "closed" }) => d)
+  .handler(async ({ context, data }) => {
+    if (data.status !== "open" && data.status !== "closed") throw new Error("Unknown status");
+    await assertYard(context.userId);
+    const sql = await getSql();
+    await sql`update contacts set status = ${data.status} where id = ${data.id}`;
+    return { ok: true as const };
+  });
+
+type YardRfq = {
+  id: number;
+  name: string;
+  email: string;
+  company: string;
+  phone: string;
+  province: string;
+  message: string;
+  sku_list: string;
+  status: string;
+  created_at: string;
+};
+
+type YardQuestion = {
+  id: number;
+  sku: string;
+  body: string;
+  answer: string;
+  created_at: string;
+};
+
+type YardReview = {
+  id: number;
+  sku: string;
+  rating: number;
+  title: string;
+  body: string;
+  verified: boolean;
+  status: string;
+  created_at: string;
+};
+
+type YardContact = {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  status: string;
+  created_at: string;
+};
 
 export const submitRfq = createServerFn({ method: "POST" })
   .middleware([authMiddleware])

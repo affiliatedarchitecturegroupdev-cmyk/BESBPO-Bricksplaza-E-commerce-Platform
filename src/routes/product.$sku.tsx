@@ -389,7 +389,7 @@ function Reviews({ sku, rating, count }: { sku: string; rating: number; count: n
                 body: String(fd.get("body")),
               },
             });
-            toast.success("Review submitted");
+            toast.success("Review sent to the yard. It appears once they publish it.");
             e.currentTarget.reset();
           }}
         >
@@ -397,7 +397,7 @@ function Reviews({ sku, rating, count }: { sku: string; rating: number; count: n
           <Input name="title" placeholder="Title" required />
           <Input name="rating" type="number" min={1} max={5} defaultValue={5} />
           <Textarea name="body" required placeholder="How did it lay? Colour match? Yard experience?" />
-          <Button type="submit">Publish</Button>
+          <Button type="submit">Submit for review</Button>
         </form>
       )}
     </div>

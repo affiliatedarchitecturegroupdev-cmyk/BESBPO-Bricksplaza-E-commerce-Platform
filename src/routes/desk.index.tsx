@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { deskOrders } from "@/lib/commerce";
 import { loadDeskSummary } from "@/lib/products";
 import { useEffect, useState } from "react";
@@ -21,11 +21,12 @@ function DeskHome() {
   const revenue = (data?.orders ?? []).reduce((n, o) => n + o.total, 0);
 
   const tiles = [
-    ["Orders", String(data?.orders.length ?? 0)],
-    ["Revenue recorded", formatZar(revenue, true)],
-    ["Open RFQs", String(data?.rfqs.length ?? 0)],
-    ["Low stock SKUs", String(summary.low)],
-  ];
+    ["/desk/orders", "Orders", String(data?.orders.length ?? 0)],
+    ["/desk/orders", "Revenue recorded", formatZar(revenue, true)],
+    ["/desk/rfqs", "Open quotes", String(data?.rfqs.filter((r) => r.status === "open").length ?? 0)],
+    ["/desk/returns", "Open returns", String(data?.returns.filter((r) => r.status === "requested").length ?? 0)],
+    ["/desk/inventory", "Low stock SKUs", String(summary.low)],
+  ] as const;
 
   return (
     <div>
@@ -34,12 +35,12 @@ function DeskHome() {
         Live catalogue of {summary.count.toLocaleString("en-ZA")} SKUs
         {data?.yard ? " · yard desk" : ""} · payment capture is still off
       </p>
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {tiles.map(([k, v]) => (
-          <div key={k} className="rounded-xl bg-kiln-2 p-4">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {tiles.map(([href, k, v]) => (
+          <Link key={k} to={href} className="rounded-xl bg-kiln-2 p-4 hover:bg-bisque/10">
             <p className="text-[11px] uppercase tracking-[0.16em] text-gold">{k}</p>
             <p className="mt-2 font-display text-2xl">{v}</p>
-          </div>
+          </Link>
         ))}
       </div>
       <div className="mt-8 overflow-hidden rounded-xl bg-kiln-2">

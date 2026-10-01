@@ -37,12 +37,16 @@ import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BundlesSlugRouteImport } from './routes/bundles.$slug'
 import { Route as DeskIndexRouteImport } from './routes/desk.index'
 import { Route as DeskCustomersRouteImport } from './routes/desk.customers'
+import { Route as DeskInboxRouteImport } from './routes/desk.inbox'
 import { Route as DeskInventoryRouteImport } from './routes/desk.inventory'
 import { Route as DeskOrdersRouteImport } from './routes/desk.orders'
 import { Route as DeskPricingRouteImport } from './routes/desk.pricing'
 import { Route as DeskPromotionsRouteImport } from './routes/desk.promotions'
+import { Route as DeskQuestionsRouteImport } from './routes/desk.questions'
 import { Route as DeskReportsRouteImport } from './routes/desk.reports'
+import { Route as DeskReturnsRouteImport } from './routes/desk.returns'
 import { Route as DeskReviewsRouteImport } from './routes/desk.reviews'
+import { Route as DeskRfqsRouteImport } from './routes/desk.rfqs'
 import { Route as InvoiceIdRouteImport } from './routes/invoice.$id'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as LocationsSlugRouteImport } from './routes/locations.$slug'
@@ -192,6 +196,11 @@ const DeskCustomersRoute = DeskCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => DeskRoute,
 } as any)
+const DeskInboxRoute = DeskInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => DeskRoute,
+} as any)
 const DeskInventoryRoute = DeskInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -212,14 +221,29 @@ const DeskPromotionsRoute = DeskPromotionsRouteImport.update({
   path: '/promotions',
   getParentRoute: () => DeskRoute,
 } as any)
+const DeskQuestionsRoute = DeskQuestionsRouteImport.update({
+  id: '/questions',
+  path: '/questions',
+  getParentRoute: () => DeskRoute,
+} as any)
 const DeskReportsRoute = DeskReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
   getParentRoute: () => DeskRoute,
 } as any)
+const DeskReturnsRoute = DeskReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
+  getParentRoute: () => DeskRoute,
+} as any)
 const DeskReviewsRoute = DeskReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
+  getParentRoute: () => DeskRoute,
+} as any)
+const DeskRfqsRoute = DeskRfqsRouteImport.update({
+  id: '/rfqs',
+  path: '/rfqs',
   getParentRoute: () => DeskRoute,
 } as any)
 const InvoiceIdRoute = InvoiceIdRouteImport.update({
@@ -291,12 +315,16 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
   '/desk/customers': typeof DeskCustomersRoute
+  '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
   '/desk/promotions': typeof DeskPromotionsRoute
+  '/desk/questions': typeof DeskQuestionsRoute
   '/desk/reports': typeof DeskReportsRoute
+  '/desk/returns': typeof DeskReturnsRoute
   '/desk/reviews': typeof DeskReviewsRoute
+  '/desk/rfqs': typeof DeskRfqsRoute
   '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
@@ -334,12 +362,16 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
   '/desk/customers': typeof DeskCustomersRoute
+  '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
   '/desk/promotions': typeof DeskPromotionsRoute
+  '/desk/questions': typeof DeskQuestionsRoute
   '/desk/reports': typeof DeskReportsRoute
+  '/desk/returns': typeof DeskReturnsRoute
   '/desk/reviews': typeof DeskReviewsRoute
+  '/desk/rfqs': typeof DeskRfqsRoute
   '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
@@ -379,12 +411,16 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
   '/desk/customers': typeof DeskCustomersRoute
+  '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
   '/desk/promotions': typeof DeskPromotionsRoute
+  '/desk/questions': typeof DeskQuestionsRoute
   '/desk/reports': typeof DeskReportsRoute
+  '/desk/returns': typeof DeskReturnsRoute
   '/desk/reviews': typeof DeskReviewsRoute
+  '/desk/rfqs': typeof DeskRfqsRoute
   '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
@@ -425,12 +461,16 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/bundles/$slug'
     | '/desk/customers'
+    | '/desk/inbox'
     | '/desk/inventory'
     | '/desk/orders'
     | '/desk/pricing'
     | '/desk/promotions'
+    | '/desk/questions'
     | '/desk/reports'
+    | '/desk/returns'
     | '/desk/reviews'
+    | '/desk/rfqs'
     | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
@@ -468,12 +508,16 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/bundles/$slug'
     | '/desk/customers'
+    | '/desk/inbox'
     | '/desk/inventory'
     | '/desk/orders'
     | '/desk/pricing'
     | '/desk/promotions'
+    | '/desk/questions'
     | '/desk/reports'
+    | '/desk/returns'
     | '/desk/reviews'
+    | '/desk/rfqs'
     | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
@@ -512,12 +556,16 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/bundles/$slug'
     | '/desk/customers'
+    | '/desk/inbox'
     | '/desk/inventory'
     | '/desk/orders'
     | '/desk/pricing'
     | '/desk/promotions'
+    | '/desk/questions'
     | '/desk/reports'
+    | '/desk/returns'
     | '/desk/reviews'
+    | '/desk/rfqs'
     | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
@@ -762,6 +810,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskCustomersRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/desk/inbox': {
+      id: '/desk/inbox'
+      path: '/inbox'
+      fullPath: '/desk/inbox'
+      preLoaderRoute: typeof DeskInboxRouteImport
+      parentRoute: typeof DeskRoute
+    }
     '/desk/inventory': {
       id: '/desk/inventory'
       path: '/inventory'
@@ -790,6 +845,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskPromotionsRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/desk/questions': {
+      id: '/desk/questions'
+      path: '/questions'
+      fullPath: '/desk/questions'
+      preLoaderRoute: typeof DeskQuestionsRouteImport
+      parentRoute: typeof DeskRoute
+    }
     '/desk/reports': {
       id: '/desk/reports'
       path: '/reports'
@@ -797,11 +859,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskReportsRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/desk/returns': {
+      id: '/desk/returns'
+      path: '/returns'
+      fullPath: '/desk/returns'
+      preLoaderRoute: typeof DeskReturnsRouteImport
+      parentRoute: typeof DeskRoute
+    }
     '/desk/reviews': {
       id: '/desk/reviews'
       path: '/reviews'
       fullPath: '/desk/reviews'
       preLoaderRoute: typeof DeskReviewsRouteImport
+      parentRoute: typeof DeskRoute
+    }
+    '/desk/rfqs': {
+      id: '/desk/rfqs'
+      path: '/rfqs'
+      fullPath: '/desk/rfqs'
+      preLoaderRoute: typeof DeskRfqsRouteImport
       parentRoute: typeof DeskRoute
     }
     '/invoice/$id': {
@@ -875,23 +951,31 @@ const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
 interface DeskRouteChildren {
   DeskCustomersRoute: typeof DeskCustomersRoute
+  DeskInboxRoute: typeof DeskInboxRoute
   DeskInventoryRoute: typeof DeskInventoryRoute
   DeskOrdersRoute: typeof DeskOrdersRoute
   DeskPricingRoute: typeof DeskPricingRoute
   DeskPromotionsRoute: typeof DeskPromotionsRoute
+  DeskQuestionsRoute: typeof DeskQuestionsRoute
   DeskReportsRoute: typeof DeskReportsRoute
+  DeskReturnsRoute: typeof DeskReturnsRoute
   DeskReviewsRoute: typeof DeskReviewsRoute
+  DeskRfqsRoute: typeof DeskRfqsRoute
   DeskIndexRoute: typeof DeskIndexRoute
 }
 
 const DeskRouteChildren: DeskRouteChildren = {
   DeskCustomersRoute: DeskCustomersRoute,
+  DeskInboxRoute: DeskInboxRoute,
   DeskInventoryRoute: DeskInventoryRoute,
   DeskOrdersRoute: DeskOrdersRoute,
   DeskPricingRoute: DeskPricingRoute,
   DeskPromotionsRoute: DeskPromotionsRoute,
+  DeskQuestionsRoute: DeskQuestionsRoute,
   DeskReportsRoute: DeskReportsRoute,
+  DeskReturnsRoute: DeskReturnsRoute,
   DeskReviewsRoute: DeskReviewsRoute,
+  DeskRfqsRoute: DeskRfqsRoute,
   DeskIndexRoute: DeskIndexRoute,
 }
 

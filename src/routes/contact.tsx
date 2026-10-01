@@ -4,7 +4,9 @@ import { CONTACTS } from "@/data/content";
 import { PROVINCES } from "@/data/taxonomy";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
+import { submitContact } from "@/lib/commerce";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/contact")({ component: Contact });
 
@@ -43,9 +45,21 @@ function Contact() {
         ) : (
           <form
             className="space-y-3"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              setSent(true);
+              const fd = new FormData(e.currentTarget);
+              try {
+                await submitContact({
+                  data: {
+                    name: String(fd.get("name")),
+                    email: String(fd.get("email")),
+                    message: String(fd.get("message")),
+                  },
+                });
+                setSent(true);
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Could not send");
+              }
             }}
           >
             <div>

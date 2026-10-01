@@ -18,9 +18,11 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
-import { Toaster } from "sonner";
+import { Toaster, toast } from "sonner";
 import { ProductMedia } from "@/components/product-media";
 import { formatZar } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { claimYard } from "@/lib/commerce";
 
 export function StoreShell({ children }: { children: ReactNode }) {
   return (
@@ -525,6 +527,10 @@ export function DeskShell({ children }: { children: ReactNode }) {
   const links = [
     ["/desk", "Dashboard"],
     ["/desk/orders", "Orders"],
+    ["/desk/rfqs", "Quotes"],
+    ["/desk/returns", "Returns"],
+    ["/desk/questions", "Questions"],
+    ["/desk/inbox", "Inbox"],
     ["/desk/inventory", "Inventory"],
     ["/desk/customers", "Trade & customers"],
     ["/desk/pricing", "Pricing engine"],
@@ -562,9 +568,46 @@ export function DeskShell({ children }: { children: ReactNode }) {
           <p className="text-sm text-dim">Yard desk · stock, trade and banners are saved for every visitor</p>
           <UserButton />
         </div>
+        <nav className="flex gap-1 overflow-x-auto border-b border-bisque/10 px-3 py-2 md:hidden">
+          {links.map(([href, label]) => (
+            <Link
+              key={href}
+              to={href}
+              className={cn(
+                "shrink-0 rounded-md px-3 py-1.5 text-xs text-dim",
+                pathname === href && "bg-bisque/10 text-bisque",
+              )}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
         <div className="flex-1 overflow-auto p-4 md:p-8">{children}</div>
       </div>
       <Toaster position="top-center" />
+    </div>
+  );
+}
+
+export function YardClaim({ unclaimed, onClaimed }: { unclaimed: boolean; onClaimed: () => void }) {
+  if (!unclaimed) return null;
+  return (
+    <div className="mt-4 rounded-xl bg-kiln-2 p-4">
+      <p className="text-sm">Claim the yard desk before you can work this queue.</p>
+      <Button
+        className="mt-3"
+        onClick={async () => {
+          try {
+            await claimYard();
+            toast.success("This account is the yard operator");
+            onClaimed();
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Could not claim the desk");
+          }
+        }}
+      >
+        Claim the yard desk
+      </Button>
     </div>
   );
 }
