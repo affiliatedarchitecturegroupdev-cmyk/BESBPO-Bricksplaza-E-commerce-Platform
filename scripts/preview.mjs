@@ -295,7 +295,7 @@ async function waitForReady(failure) {
 
 function copyPgliteAssets() {
   const srcDir = join(ROOT, "node_modules/@electric-sql/pglite/dist");
-  const destDir = join(ROOT, ".vercel/output/functions/__server.func/_libs");
+  const destDir = join(ROOT, ".output/server/_libs");
   if (!existsSync(srcDir) || !existsSync(dirname(destDir))) return;
   mkdirSync(destDir, { recursive: true });
   for (const file of ["pglite.data", "pglite.wasm", "initdb.wasm"]) {

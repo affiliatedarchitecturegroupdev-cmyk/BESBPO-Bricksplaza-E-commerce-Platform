@@ -51,22 +51,49 @@ function pgliteBootstrapPlugin(): Plugin {
   };
 }
 
-/** Nitro bundles PGLite but not its WASM payload — copy it next to the chunk. */
+/** Nitro's Node server looks for these beside the bundled PGLite chunk. */
 function pgliteAssetsPlugin(): Plugin {
   return {
     name: "app-builder:pglite-assets",
     apply: "build",
+    enforce: "post",
     closeBundle() {
       const srcDir = join(process.cwd(), "node_modules/@electric-sql/pglite/dist");
-      const destDir = join(
-        process.cwd(),
-        ".vercel/output/functions/__server.func/_libs",
-      );
+      const destDir = join(process.cwd(), ".output/server/_libs");
       if (!existsSync(srcDir) || !existsSync(destDir)) return;
       for (const file of ["pglite.data", "pglite.wasm", "initdb.wasm"]) {
         const from = join(srcDir, file);
         if (existsSync(from)) copyFileSync(from, join(destDir, file));
       }
+    },
+  };
+}
+
+/**
+ * `pg` and PGLite are server-only. The client graph reaches them through
+ * server-function modules; leaving them in the browser build emits ~16MB of
+ * WASM into the static output and can exhaust Render's build memory.
+ */
+function serverDepsOffClientPlugin(): Plugin {
+  const stub = "\0bricksplaza-server-dep";
+  return {
+    name: "bricksplaza:server-deps-off-client",
+    enforce: "pre",
+    resolveId(id) {
+      if (this.environment?.name !== "client") return null;
+      if (
+        id === "pg" ||
+        id.startsWith("pg/") ||
+        id === "@electric-sql/pglite" ||
+        id.startsWith("@electric-sql/pglite/")
+      ) {
+        return stub;
+      }
+      return null;
+    },
+    load(id) {
+      if (id !== stub) return null;
+      return "export default {};\nexport class Pool { async end() {} }\nexport const types = { setTypeParser() {} };\n";
     },
   };
 }
@@ -178,6 +205,7 @@ export default defineConfig(({ command, isPreview }) => ({
   },
   resolve: { tsconfigPaths: true },
   plugins: [
+    serverDepsOffClientPlugin(),
     pgliteBootstrapPlugin(),
     pgliteAssetsPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
@@ -191,11 +219,9 @@ export default defineConfig(({ command, isPreview }) => ({
     ...(command === "build" || isPreview
       ? [
           nitro({
-            // Render Blueprint sets NITRO_PRESET=render-com (and RENDER=true).
-            // The sandbox publisher stays on the Vercel preset.
-            preset:
-              process.env.NITRO_PRESET?.trim() ||
-              (process.env.RENDER === "true" ? "render-com" : "vercel"),
+            // Node server for Render. Do not use the Vercel preset — Render
+            // starts `.output/server/index.mjs`, which that preset never writes.
+            preset: "render-com",
             // Auto-registers server/middleware/* (the PWA install page +
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.

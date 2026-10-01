@@ -18,14 +18,6 @@ const databaseUrl =
  */
 export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
 
-// Render's disk is ephemeral. An embedded database would look healthy and then
-// lose every order on the next spin-down. Refuse to boot without Postgres.
-if (typeof process !== "undefined" && process.env.RENDER === "true" && !databaseUrl) {
-  throw new Error(
-    "DATABASE_URL is required on Render. Set the Supabase session-pooler URI in the Blueprint environment.",
-  );
-}
-
 /**
  * Minimal shared SQL surface, satisfied by both Neon and PGLite. Both the
  * tagged-template and `.query()` forms resolve to an array of row objects:
@@ -186,6 +178,11 @@ async function createSql(): Promise<Sql> {
     throw new Error(
       "@/lib/db is server-only — call getSql() from a createServerFn handler " +
         "or a server route loader, never from client code.",
+    );
+  }
+  if (process.env.RENDER === "true" && !databaseUrl) {
+    throw new Error(
+      "DATABASE_URL is required on Render. Use the Supabase session pooler URI (the host contains pooler.supabase.com).",
     );
   }
   return dbSource === "neon" ? createNeonSql() : createPgliteSql();

@@ -2,9 +2,10 @@
 /**
  * Deploy-time database migrator (node-postgres, `pg`).
  *
- * Runs during `npm run build` — on every Vercel deploy — applying pending files
- * in ../migrations to DATABASE_URL. Each file is applied in one transaction and
- * recorded in a `_migrations` table, so it runs once and is safe to re-run.
+ * Runs on Render boot (`scripts/render-start.mjs`), not during `vite build`,
+ * so a database timeout cannot fail the compile. Pending files in
+ * ../migrations are applied to DATABASE_URL. Each file is one transaction and
+ * recorded in `_migrations`.
  *
  * The read is non-recursive, so the opt-in auth schema under migrations/auth/
  * is not applied to an app that never asked for sign-in.
@@ -42,7 +43,12 @@ async function main() {
     return;
   }
 
-  const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  const pool = new pg.Pool({
+    connectionString: databaseUrl,
+    max: 1,
+    // Supabase's pooler chain is not in Node's default trust store.
+    ssl: databaseUrl.includes("supabase") ? { rejectUnauthorized: false } : undefined,
+  });
   const client = await pool.connect();
   try {
     await client.query(
