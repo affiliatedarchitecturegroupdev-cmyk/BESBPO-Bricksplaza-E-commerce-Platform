@@ -411,15 +411,15 @@ export const CONTACTS = {
 
 /** Besbpo Group profiles. LinkedIn, YouTube and Behance are being registered on these handles. */
 export const GROUP_SOCIAL = [
-  { id: "x", name: "X", href: "https://x.com/BesbpoGroup" },
-  { id: "threads", name: "Threads", href: "https://www.threads.net/@besbpo_group" },
-  { id: "instagram", name: "Instagram", href: "https://www.instagram.com/besbpo_group" },
-  { id: "tiktok", name: "TikTok", href: "https://www.tiktok.com/@besbpo.group" },
-  { id: "facebook", name: "Facebook", href: "https://www.facebook.com/share/1HgNpvXCRd/" },
-  { id: "linkedin", name: "LinkedIn", href: "https://www.linkedin.com/company/besbpo-group" },
-  { id: "youtube", name: "YouTube", href: "https://www.youtube.com/@BesbpoGroup" },
-  { id: "behance", name: "Behance", href: "https://www.behance.net/besbpogroup" },
-  { id: "whatsapp", name: "WhatsApp", href: "https://wa.me/27683676276" },
+  { id: "x", name: "X", href: "https://x.com/BesbpoGroup", icon: "/brand/social/x.svg" },
+  { id: "threads", name: "Threads", href: "https://www.threads.net/@besbpo_group", icon: "/brand/social/threads.svg" },
+  { id: "instagram", name: "Instagram", href: "https://www.instagram.com/besbpo_group", icon: "/brand/social/instagram.png" },
+  { id: "tiktok", name: "TikTok", href: "https://www.tiktok.com/@besbpo.group", icon: "/brand/social/tiktok.svg" },
+  { id: "facebook", name: "Facebook", href: "https://www.facebook.com/share/1HgNpvXCRd/", icon: "/brand/social/facebook.png" },
+  { id: "linkedin", name: "LinkedIn", href: "https://www.linkedin.com/company/besbpo-group", icon: "/brand/social/linkedin.png" },
+  { id: "youtube", name: "YouTube", href: "https://www.youtube.com/@BesbpoGroup", icon: "/brand/social/youtube.svg" },
+  { id: "behance", name: "Behance", href: "https://www.behance.net/besbpogroup", icon: "/brand/social/behance.svg" },
+  { id: "whatsapp", name: "WhatsApp", href: "https://wa.me/27683676276", icon: "/brand/social/whatsapp.svg" },
 ] as const;
 
 export const LEGAL: Record<
