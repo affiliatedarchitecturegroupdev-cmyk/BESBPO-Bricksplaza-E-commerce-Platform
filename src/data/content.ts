@@ -406,7 +406,18 @@ export const CONTACTS = {
   supply: "supply@bricksplaza.co.za",
   sales: "sales.bricksplaza@besbpo.co.za",
   partners: "partners@besbpo.co.za",
+  whatsapp: "+27 68 367 6276",
 };
+
+/** Live Besbpo Group profiles only. LinkedIn, YouTube and Behance are not registered yet, so they are not linked. */
+export const GROUP_SOCIAL = [
+  { id: "x", name: "X", href: "https://x.com/BesbpoGroup" },
+  { id: "threads", name: "Threads", href: "https://www.threads.net/@besbpo_group" },
+  { id: "instagram", name: "Instagram", href: "https://www.instagram.com/besbpo_group" },
+  { id: "tiktok", name: "TikTok", href: "https://www.tiktok.com/@besbpo.group" },
+  { id: "facebook", name: "Facebook", href: "https://www.facebook.com/share/1HgNpvXCRd/" },
+  { id: "whatsapp", name: "WhatsApp", href: "https://wa.me/27683676276" },
+] as const;
 
 export const LEGAL: Record<
   string,

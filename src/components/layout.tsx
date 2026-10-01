@@ -3,7 +3,7 @@ import { SignedIn, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCart } from "@/lib/cart-store";
 import { CATEGORIES, FAMILIES, SECTORS } from "@/data/taxonomy";
-import { CONTACTS, GROUP } from "@/data/content";
+import { CONTACTS, GROUP, GROUP_SOCIAL } from "@/data/content";
 import type { Product } from "@/data/catalogue";
 import { suggestProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
@@ -314,6 +314,50 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
   );
 }
 
+function SocialMark({ id }: { id: (typeof GROUP_SOCIAL)[number]["id"] }) {
+  const common = { viewBox: "0 0 24 24", className: "size-4", fill: "currentColor", "aria-hidden": true } as const;
+  if (id === "x") {
+    return (
+      <svg {...common}>
+        <path d="M14.7 10.3 22.4 1.5h-1.8l-6.7 7.6L8.6 1.5H1.7l8.1 11.5L1.7 22.5h1.8l7.1-8.1 5.7 8.1h6.9L14.7 10.3Zm-2.5 2.8-.8-1.2-6.6-9.2h2.8l5.3 7.4.8 1.2 6.9 9.6h-2.8l-5.6-7.8Z" />
+      </svg>
+    );
+  }
+  if (id === "instagram") {
+    return (
+      <svg {...common}>
+        <path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5Zm8 1.8H8A3.2 3.2 0 0 0 4.8 8v8A3.2 3.2 0 0 0 8 19.2h8a3.2 3.2 0 0 0 3.2-3.2V8A3.2 3.2 0 0 0 16 4.8ZM12 8.2A3.8 3.8 0 1 1 8.2 12 3.8 3.8 0 0 1 12 8.2Zm0 1.6A2.2 2.2 0 1 0 14.2 12 2.2 2.2 0 0 0 12 9.8Zm4.35-2.55a.9.9 0 1 1-.9.9.9.9 0 0 1 .9-.9Z" />
+      </svg>
+    );
+  }
+  if (id === "threads") {
+    return (
+      <svg {...common}>
+        <path d="M16.4 11.2c-.2-2.4-1.6-4-4.1-4.2-2.2-.2-3.8.8-4.4 2.4l1.6.5c.4-1 .1-1.7 2.5-1.6 1.5.1 2.3.8 2.4 2.1-1-.1-2.1 0-3 .4-1.8.7-2.9 2-2.7 3.6.2 1.6 1.5 2.6 3.3 2.6 1.5 0 2.6-.6 3.2-1.7.4.9 1 1.5 2.1 1.7l.4-1.6c-.7-.2-1.1-.6-1.3-1.2.7-.4 1.1-1.1 1.1-2 .1-.7-.1-1.3-.3-1.6Zm-2.2 3.2c-.4.7-1.1 1.1-2 .1-.7-.1-1.1-.6-1.2-1.2-.1-.8.4-1.5 1.4-1.8.7-.2 1.4-.2 2.1 0 .1.9-.1 1.6-.3 2Z" />
+      </svg>
+    );
+  }
+  if (id === "tiktok") {
+    return (
+      <svg {...common}>
+        <path d="M14.2 3.2c.4 2.2 1.7 3.6 3.8 3.9v2.2c-1.3 0-2.5-.4-3.6-1.2v6.4c0 3.3-2.4 5.6-5.6 5.6S3.2 17.8 3.2 14.6c0-3.1 2.3-5.5 5.4-5.6v2.3c-1.7.1-3 1.4-3 3.2 0 1.9 1.4 3.3 3.3 3.3s3.2-1.4 3.2-3.4V3.2h2.1Z" />
+      </svg>
+    );
+  }
+  if (id === "facebook") {
+    return (
+      <svg {...common}>
+        <path d="M14.2 21v-7.2h2.4l.4-2.8h-2.8V9.2c0-.8.2-1.4 1.4-1.4H17V5.3c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2h-2.5v2.8H11V21h3.2Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <path d="M12.1 3.2A8.7 8.7 0 0 0 4.6 16.3L3.4 20.8l4.6-1.2A8.7 8.7 0 1 0 12.1 3.2Zm4.8 12.3c-.2.6-1.2 1.1-1.7 1.2-.4.1-.9.2-3-.6-2.5-1-4.1-3.5-4.2-3.7-.2-.2-1.3-1.7-1.3-3.2s.8-2.3 1.1-2.6c.3-.3.6-.4.9-.4h.6c.2 0 .4 0 .6.5.2.6.8 2 .8 2.1.1.2.1.3 0 .5-.1.2-.2.4-.3.5l-.4.5c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1.2-.2.7-.8.9-1.1.2-.3.4-.2.6-.1.3.1 1.6.8 1.9.9.3.2.5.2.6.3.1.2.1.8-.1 1.4Z" />
+    </svg>
+  );
+}
+
 function Footer() {
   return (
     <footer className="mt-16 bg-kiln text-bisque">
@@ -329,6 +373,25 @@ function Footer() {
           <p className="mt-1 flex items-center gap-2 text-sm text-dim">
             <Phone className="size-4" /> {CONTACTS.sales}
           </p>
+          <p className="mt-6 text-[11px] uppercase tracking-[0.16em] text-gold">Besbpo Group</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {GROUP_SOCIAL.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${item.name}, Besbpo Group`}
+                  className="flex size-9 items-center justify-center rounded-full border border-bisque/20 text-dim hover:border-bisque/50 hover:text-bisque"
+                >
+                  <SocialMark id={item.id} />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a href="https://wa.me/27683676276" className="mt-2 inline-block text-xs text-dim hover:text-bisque" target="_blank" rel="noreferrer">
+            WhatsApp {CONTACTS.whatsapp}
+          </a>
         </div>
         <div>
           <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Shop</p>
