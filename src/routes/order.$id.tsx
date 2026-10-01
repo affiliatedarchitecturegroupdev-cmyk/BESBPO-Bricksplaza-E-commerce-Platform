@@ -60,11 +60,7 @@ function OrderPage() {
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <p className="text-[11px] uppercase tracking-[0.18em] text-ok">Order saved</p>
       <h1 className="mt-2 font-display text-4xl">{order.id}</h1>
-      <p className="mt-2 text-mortar">
-        Status: <span className="font-medium capitalize text-kiln">{order.status.replaceAll("_", " ")}</span>
-        {order.carrier ? ` · ${order.carrier}` : ""}
-        {order.tracking_ref ? ` · ${order.tracking_ref}` : ""}
-      </p>
+      <Fulfilment status={order.status} carrier={order.carrier} tracking={order.tracking_ref} />
       <p className="mt-1 font-display text-3xl tabular-nums">{formatZar(order.total)}</p>
       <p className="mt-2 text-sm text-mortar">
         Payment: {paymentCopy[order.payment_status] ?? order.payment_status}
@@ -131,6 +127,32 @@ function OrderPage() {
           <Button variant="outline">Track</Button>
         </Link>
       </div>
+    </div>
+  );
+}
+
+const STEPS = ["processing", "dispatched", "in_transit", "out_for_delivery", "delivered"] as const;
+
+function Fulfilment({ status, carrier, tracking }: { status: string; carrier: string | null; tracking: string | null }) {
+  const ref = tracking && !tracking.startsWith("TRK-") ? tracking : null;
+  if (status === "cancelled") {
+    return <p className="mt-2 text-sm text-mortar">This order is cancelled.</p>;
+  }
+  const at = STEPS.indexOf(status as (typeof STEPS)[number]);
+  return (
+    <div className="mt-4">
+      <ol className="grid gap-2 sm:grid-cols-5">
+        {STEPS.map((step, i) => (
+          <li key={step} className={i <= at ? "text-kiln" : "text-muted"}>
+            <p className="text-[11px] uppercase tracking-[0.12em]">{i < at ? "Done" : i === at ? "Now" : "Waiting"}</p>
+            <p className="text-sm font-medium capitalize">{step.replaceAll("_", " ")}</p>
+          </li>
+        ))}
+      </ol>
+      <p className="mt-3 text-sm text-mortar">
+        {carrier ? carrier : "No carrier assigned yet."}
+        {ref ? ` · ${ref}` : " · No carrier reference yet."}
+      </p>
     </div>
   );
 }

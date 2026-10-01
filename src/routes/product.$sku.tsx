@@ -215,9 +215,9 @@ function ProductPage() {
                 ? `In stock · ${formatNumber(product.stock)} units`
                 : "Made-to-Order · 15% surcharge in price"}
             </span>
-            <a href="#" className="inline-flex items-center gap-1 text-clay" onClick={(e) => e.preventDefault()}>
-              <FileDown className="size-4" /> Spec sheet PDF
-            </a>
+            <Link to="/spec/$sku" params={{ sku: product.sku }} className="inline-flex items-center gap-1 text-clay">
+              <FileDown className="size-4" /> Spec sheet
+            </Link>
           </div>
 
           <div className="mt-6 rounded-xl border border-line p-4">
@@ -231,6 +231,9 @@ function ProductPage() {
               {quote.quoted
                 ? `${quote.yard} · ${quote.time} · ${quote.fee === 0 ? "Free" : formatZar(quote.fee ?? 0)}`
                 : "Quote will be confirmed within 1 business day (250 km+)."}
+              {product.unitsPerPallet > 0
+                ? ` · ${Math.ceil(qty / product.unitsPerPallet)} pallet${Math.ceil(qty / product.unitsPerPallet) === 1 ? "" : "s"} at this quantity. The band fee is a flat rate for a standard load, not a rate per pallet.`
+                : ""}
             </p>
           </div>
         </div>

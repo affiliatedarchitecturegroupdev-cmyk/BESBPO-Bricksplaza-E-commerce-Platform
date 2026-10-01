@@ -43,6 +43,7 @@ import { Route as DeskBrandsRouteImport } from './routes/desk.brands'
 import { Route as DeskCustomersRouteImport } from './routes/desk.customers'
 import { Route as DeskInboxRouteImport } from './routes/desk.inbox'
 import { Route as DeskInventoryRouteImport } from './routes/desk.inventory'
+import { Route as DeskLogisticsRouteImport } from './routes/desk.logistics'
 import { Route as DeskOrdersRouteImport } from './routes/desk.orders'
 import { Route as DeskPricingRouteImport } from './routes/desk.pricing'
 import { Route as DeskPromotionsRouteImport } from './routes/desk.promotions'
@@ -58,6 +59,7 @@ import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductSkuRouteImport } from './routes/product.$sku'
 import { Route as SectorsSlugRouteImport } from './routes/sectors.$slug'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
+import { Route as SpecSkuRouteImport } from './routes/spec.$sku'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -230,6 +232,11 @@ const DeskInventoryRoute = DeskInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => DeskRoute,
 } as any)
+const DeskLogisticsRoute = DeskLogisticsRouteImport.update({
+  id: '/logistics',
+  path: '/logistics',
+  getParentRoute: () => DeskRoute,
+} as any)
 const DeskOrdersRoute = DeskOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -305,6 +312,11 @@ const ShopSlugRoute = ShopSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => ShopRoute,
 } as any)
+const SpecSkuRoute = SpecSkuRouteImport.update({
+  id: '/spec/$sku',
+  path: '/spec/$sku',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -344,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
   '/desk/promotions': typeof DeskPromotionsRoute
@@ -359,6 +372,7 @@ export interface FileRoutesByFullPath {
   '/product/$sku': typeof ProductSkuRoute
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/spec/$sku': typeof SpecSkuRoute
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -394,6 +408,7 @@ export interface FileRoutesByTo {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
   '/desk/promotions': typeof DeskPromotionsRoute
@@ -409,6 +424,7 @@ export interface FileRoutesByTo {
   '/product/$sku': typeof ProductSkuRoute
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/spec/$sku': typeof SpecSkuRoute
   '/brands': typeof BrandsIndexRoute
   '/desk': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -447,6 +463,7 @@ export interface FileRoutesById {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
   '/desk/promotions': typeof DeskPromotionsRoute
@@ -462,6 +479,7 @@ export interface FileRoutesById {
   '/product/$sku': typeof ProductSkuRoute
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/spec/$sku': typeof SpecSkuRoute
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -501,6 +519,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/logistics'
     | '/desk/orders'
     | '/desk/pricing'
     | '/desk/promotions'
@@ -516,6 +535,7 @@ export interface FileRouteTypes {
     | '/product/$sku'
     | '/sectors/$slug'
     | '/shop/$slug'
+    | '/spec/$sku'
     | '/brands/'
     | '/desk/'
     | '/api/auth/$'
@@ -551,6 +571,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/logistics'
     | '/desk/orders'
     | '/desk/pricing'
     | '/desk/promotions'
@@ -566,6 +587,7 @@ export interface FileRouteTypes {
     | '/product/$sku'
     | '/sectors/$slug'
     | '/shop/$slug'
+    | '/spec/$sku'
     | '/brands'
     | '/desk'
     | '/api/auth/$'
@@ -603,6 +625,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/logistics'
     | '/desk/orders'
     | '/desk/pricing'
     | '/desk/promotions'
@@ -618,6 +641,7 @@ export interface FileRouteTypes {
     | '/product/$sku'
     | '/sectors/$slug'
     | '/shop/$slug'
+    | '/spec/$sku'
     | '/brands/'
     | '/desk/'
     | '/api/auth/$'
@@ -656,6 +680,7 @@ export interface RootRouteChildren {
   OrderIdRoute: typeof OrderIdRoute
   ProductSkuRoute: typeof ProductSkuRoute
   SectorsSlugRoute: typeof SectorsSlugRoute
+  SpecSkuRoute: typeof SpecSkuRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -899,6 +924,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskInventoryRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/desk/logistics': {
+      id: '/desk/logistics'
+      path: '/logistics'
+      fullPath: '/desk/logistics'
+      preLoaderRoute: typeof DeskLogisticsRouteImport
+      parentRoute: typeof DeskRoute
+    }
     '/desk/orders': {
       id: '/desk/orders'
       path: '/orders'
@@ -1004,6 +1036,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopSlugRouteImport
       parentRoute: typeof ShopRoute
     }
+    '/spec/$sku': {
+      id: '/spec/$sku'
+      path: '/spec/$sku'
+      fullPath: '/spec/$sku'
+      preLoaderRoute: typeof SpecSkuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -1042,6 +1081,7 @@ interface DeskRouteChildren {
   DeskCustomersRoute: typeof DeskCustomersRoute
   DeskInboxRoute: typeof DeskInboxRoute
   DeskInventoryRoute: typeof DeskInventoryRoute
+  DeskLogisticsRoute: typeof DeskLogisticsRoute
   DeskOrdersRoute: typeof DeskOrdersRoute
   DeskPricingRoute: typeof DeskPricingRoute
   DeskPromotionsRoute: typeof DeskPromotionsRoute
@@ -1058,6 +1098,7 @@ const DeskRouteChildren: DeskRouteChildren = {
   DeskCustomersRoute: DeskCustomersRoute,
   DeskInboxRoute: DeskInboxRoute,
   DeskInventoryRoute: DeskInventoryRoute,
+  DeskLogisticsRoute: DeskLogisticsRoute,
   DeskOrdersRoute: DeskOrdersRoute,
   DeskPricingRoute: DeskPricingRoute,
   DeskPromotionsRoute: DeskPromotionsRoute,
@@ -1114,6 +1155,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrderIdRoute: OrderIdRoute,
   ProductSkuRoute: ProductSkuRoute,
   SectorsSlugRoute: SectorsSlugRoute,
+  SpecSkuRoute: SpecSkuRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

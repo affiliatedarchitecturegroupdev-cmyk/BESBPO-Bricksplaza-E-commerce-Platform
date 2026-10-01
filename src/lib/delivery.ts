@@ -88,6 +88,19 @@ export const COLLECTION_SLOTS = [
   { id: "afternoon", label: "Afternoon · 14:00–16:30" },
 ] as const;
 
+export const CARRIERS = [
+  "DSV South Africa",
+  "Faber Vervoer",
+  "Panamax Bulk Carriers",
+  "Besfleet",
+  "Collection",
+] as const;
+
+export function palletCount(qty: number, unitsPerPallet: number) {
+  const per = unitsPerPallet > 0 ? unitsPerPallet : 1;
+  return Math.ceil(Math.max(0, qty) / per);
+}
+
 export function collectionSlotLabel(id: string | null | undefined) {
   return COLLECTION_SLOTS.find((s) => s.id === id)?.label ?? null;
 }

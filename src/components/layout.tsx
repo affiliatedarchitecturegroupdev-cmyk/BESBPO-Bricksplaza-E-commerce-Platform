@@ -538,6 +538,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
   const links = [
     ["/desk", "Dashboard"],
     ["/desk/orders", "Orders"],
+    ["/desk/logistics", "Logistics"],
     ["/desk/rfqs", "Quotes"],
     ["/desk/returns", "Returns"],
     ["/desk/questions", "Questions"],

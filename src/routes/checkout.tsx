@@ -5,7 +5,7 @@ import { useProductsBySku } from "@/lib/use-products";
 import { PAYMENT_METHODS } from "@/data/content";
 import { formatZar, vatInclusive, round2 } from "@/lib/format";
 import { priceFor } from "@/lib/pricing";
-import { craneSurcharge, quoteDelivery, COLLECTION_SLOTS } from "@/lib/delivery";
+import { craneSurcharge, quoteDelivery, palletCount, COLLECTION_SLOTS } from "@/lib/delivery";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { placeGuestOrder, placeOrder } from "@/lib/commerce";
@@ -46,6 +46,7 @@ function Checkout() {
     return p ? [{ ...l, product: p, price: priceFor(p, "retail") }] : [];
   });
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
+  const pallets = items.reduce((n, i) => n + palletCount(i.qty, i.product.unitsPerPallet), 0);
   const quote = quoteDelivery(form.postal_code, method);
   const delivery = (quote.fee ?? 0) + craneSurcharge(hiab);
   const totalEx = round2(subtotal + delivery);
@@ -266,6 +267,7 @@ function Checkout() {
           <dl className="mt-3 space-y-1 text-sm">
             <Row k="Subtotal" v={formatZar(subtotal)} />
             <Row k="Delivery" v={quote.quoted ? formatZar(delivery) : "Quoted"} />
+            <Row k="Pallets" v={String(pallets)} />
             <Row k="VAT (15%)" v={formatZar(vat)} />
             <Row k="Total" v={formatZar(total)} big />
           </dl>

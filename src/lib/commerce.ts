@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { priceFor } from "@/lib/pricing";
-import { quoteDelivery, craneSurcharge } from "@/lib/delivery";
+import { quoteDelivery, craneSurcharge, palletCount, CARRIERS } from "@/lib/delivery";
 import { round2, vatInclusive } from "@/lib/format";
 import type { CustomerTier } from "@/data/taxonomy";
 
@@ -236,6 +236,7 @@ async function commitOrder(opts: {
     throw new Error("Add between 1 and 40 lines");
   }
   let subtotal = 0;
+  let pallets = 0;
   const { fetchProduct } = await import("@/lib/products.server");
   const resolved: ResolvedLine[] = [];
   for (const l of data.lines) {
@@ -245,6 +246,7 @@ async function commitOrder(opts: {
     if (!p) throw new Error(`Unknown SKU ${l.sku}`);
     const unit = priceFor(p, tier);
     subtotal = round2(subtotal + round2(unit * qty));
+    pallets += palletCount(qty, p.unitsPerPallet);
     resolved.push({ sku: l.sku, qty, name: p.productName, unit, fulfilment: p.fulfilmentType });
   }
   const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method);
@@ -266,7 +268,9 @@ async function commitOrder(opts: {
   }
   await reserveStock(resolved);
   const id = `BP-${Date.now().toString(36).toUpperCase()}`;
-  const carrier = quote.band === "collection" ? "Collection" : "DSV South Africa";
+  const carrier = data.delivery_method === "collection" ? "Collection" : null;
+  const loadNote = `Load count: ${pallets} pallet${pallets === 1 ? "" : "s"}. The band fee is the published flat rate; it is not a weighed quote.`;
+  const notes = [data.notes?.trim(), loadNote].filter(Boolean).join("\n");
   const sql = await getSql();
   try {
     await sql`insert into orders (
@@ -276,7 +280,7 @@ async function commitOrder(opts: {
       ${id}, ${userId}, ${"processing"}, ${data.email}, ${data.phone}, ${data.delivery_method},
       ${JSON.stringify({ ...data.address, quote })}, ${data.payment_method},
       ${paymentStatus}, ${null}, ${true},
-      ${subtotal}, ${delivery}, ${vat}, ${total}, ${tier}, ${carrier}, ${id.replace("BP-", "TRK-")}, ${data.notes ?? ""}, ${collectionSlot}
+      ${subtotal}, ${delivery}, ${vat}, ${total}, ${tier}, ${carrier}, ${null}, ${notes}, ${collectionSlot}
     )`;
     for (const line of resolved) {
       await sql`insert into order_lines (order_id, sku, name, qty, unit_price, fulfilment)
@@ -835,6 +839,26 @@ export const setOrderStatus = createServerFn({ method: "POST" })
     }
     await sql`update orders set status = ${data.status} where id = ${data.id}`;
     await sql`insert into order_events (order_id, status, note) values (${data.id}, ${data.status}, ${"Updated from the yard desk"})`;
+    return { ok: true as const };
+  });
+
+export const setShipment = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { id: string; carrier: string; tracking_ref: string }) => ({
+    id: String(d?.id ?? "").trim().slice(0, 40),
+    carrier: String(d?.carrier ?? "").trim().slice(0, 80),
+    tracking_ref: String(d?.tracking_ref ?? "").trim().slice(0, 80),
+  }))
+  .handler(async ({ context, data }) => {
+    if (!CARRIERS.includes(data.carrier as (typeof CARRIERS)[number])) throw new Error("Unknown carrier");
+    if (data.tracking_ref.length < 3) throw new Error("Enter the reference the carrier gave the yard");
+    if (!(await isYard(context.userId))) throw new Error("Only the yard desk can assign a carrier");
+    const sql = await getSql();
+    const rows = await sql`select id from orders where id = ${data.id}`;
+    if (!rows[0]) throw new Error("Order not found");
+    await sql`update orders set carrier = ${data.carrier}, tracking_ref = ${data.tracking_ref} where id = ${data.id}`;
+    await sql`insert into order_events (order_id, status, note)
+      values (${data.id}, ${"shipment"}, ${`Carrier ${data.carrier}. Reference ${data.tracking_ref}. Recorded by the yard. This is not a live carrier feed.`})`;
     return { ok: true as const };
   });
 
