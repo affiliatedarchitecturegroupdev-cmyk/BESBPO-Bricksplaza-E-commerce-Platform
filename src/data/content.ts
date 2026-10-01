@@ -409,13 +409,16 @@ export const CONTACTS = {
   whatsapp: "+27 68 367 6276",
 };
 
-/** Live Besbpo Group profiles only. LinkedIn, YouTube and Behance are not registered yet, so they are not linked. */
+/** Besbpo Group profiles. LinkedIn, YouTube and Behance are being registered on these handles. */
 export const GROUP_SOCIAL = [
   { id: "x", name: "X", href: "https://x.com/BesbpoGroup" },
   { id: "threads", name: "Threads", href: "https://www.threads.net/@besbpo_group" },
   { id: "instagram", name: "Instagram", href: "https://www.instagram.com/besbpo_group" },
   { id: "tiktok", name: "TikTok", href: "https://www.tiktok.com/@besbpo.group" },
   { id: "facebook", name: "Facebook", href: "https://www.facebook.com/share/1HgNpvXCRd/" },
+  { id: "linkedin", name: "LinkedIn", href: "https://www.linkedin.com/company/besbpo-group" },
+  { id: "youtube", name: "YouTube", href: "https://www.youtube.com/@BesbpoGroup" },
+  { id: "behance", name: "Behance", href: "https://www.behance.net/besbpogroup" },
   { id: "whatsapp", name: "WhatsApp", href: "https://wa.me/27683676276" },
 ] as const;
 
