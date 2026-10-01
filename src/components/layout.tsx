@@ -17,7 +17,8 @@ import {
   Phone,
   MessageCircle,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Toaster, toast } from "sonner";
 import { ProductMedia } from "@/components/product-media";
 import { formatZar } from "@/lib/format";
@@ -62,36 +63,87 @@ function TopBar() {
 function Header() {
   const [open, setOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [sectorOpen, setSectorOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
   const count = useCart((s) => s.lines.reduce((n, l) => n + l.qty, 0));
   const { user } = useCurrentUserState();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  useEffect(() => {
+    setOpen(false);
+    setShopOpen(false);
+    setSectorOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    function close(event: MouseEvent) {
+      if (!navRef.current?.contains(event.target as Node)) {
+        setShopOpen(false);
+        setSectorOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl min-w-0 items-center gap-3 px-4 py-3 sm:px-6">
-        <button
-          className="inline-flex size-11 items-center justify-center rounded-md hover:bg-card lg:hidden"
-          aria-label="Open menu"
-          onClick={() => setOpen(true)}
-        >
-          <Menu className="size-5" />
-        </button>
-        <Link to="/" className="flex shrink-0 items-center">
-          <img src="/brand/lockup_light.svg" alt="Bricksplaza" className="h-9 w-auto sm:h-10" />
-        </Link>
-        <nav className="ml-4 hidden items-center gap-1 lg:flex">
-          <div
-            className="relative"
-            onMouseEnter={() => setShopOpen(true)}
-            onMouseLeave={() => setShopOpen(false)}
+    <header className="sticky top-0 z-40">
+      <div className="border-b border-line/80 bg-paper/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
+          <button
+            type="button"
+            className="inline-flex size-11 items-center justify-center rounded-md hover:bg-card lg:hidden"
+            aria-label="Open menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
           >
-            <Link
-              to="/shop"
+            <Menu className="size-5" />
+          </button>
+          <Link to="/" className="flex shrink-0 items-center">
+            <img src="/brand/lockup_light.svg" alt="Bricksplaza" className="h-9 w-auto sm:h-10" />
+          </Link>
+          <SearchBox />
+          <div className="ml-auto flex items-center gap-1">
+            {user ? (
+              <SignedIn>
+                <Link to="/account" className="hidden h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card sm:inline-flex">
+                  Account
+                </Link>
+                <UserButton />
+              </SignedIn>
+            ) : (
+              <Link to="/login" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
+                Sign in
+              </Link>
+            )}
+            <Link to="/cart" className="relative inline-flex size-11 items-center justify-center rounded-md hover:bg-card" aria-label="Cart">
+              <ShoppingCart className="size-5" />
+              {count > 0 && (
+                <span className="absolute right-1.5 top-1.5 min-w-4 rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-paper tabular-nums">
+                  {count}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+        <nav ref={navRef} className="mx-auto hidden max-w-7xl items-center gap-1 px-4 pb-2 lg:flex sm:px-6">
+          <div className="relative">
+            <button
+              type="button"
+              aria-expanded={shopOpen}
               className="inline-flex h-11 items-center gap-1 rounded-md px-3 text-sm font-medium hover:bg-card"
+              onClick={() => {
+                setShopOpen((v) => !v);
+                setSectorOpen(false);
+              }}
             >
               Shop <ChevronDown className="size-3.5" />
-            </Link>
+            </button>
             {shopOpen && (
-              <div className="absolute left-0 top-full z-50 w-[640px] rounded-xl bg-paper p-5 shadow-[var(--shadow-card-hover)]">
+              <div className="absolute left-0 top-full z-50 w-[min(40rem,calc(100vw-2rem))] rounded-xl bg-paper p-5 shadow-[var(--shadow-card-hover)]">
+                <Link to="/shop" className="mb-3 inline-block text-sm font-medium text-clay">
+                  All products
+                </Link>
                 <div className="grid grid-cols-2 gap-5">
                   {FAMILIES.map((f) => (
                     <div key={f.slug}>
@@ -99,11 +151,7 @@ function Header() {
                       <ul className="space-y-1">
                         {CATEGORIES.filter((c) => c.family === f.slug).map((c) => (
                           <li key={c.slug}>
-                            <Link
-                              to="/shop/$slug"
-                              params={{ slug: c.slug }}
-                              className="block rounded-md px-2 py-1.5 text-sm hover:bg-card hover:text-clay"
-                            >
+                            <Link to="/shop/$slug" params={{ slug: c.slug }} className="block rounded-md px-2 py-1.5 text-sm hover:bg-card hover:text-clay">
                               {c.name}
                             </Link>
                           </li>
@@ -118,11 +166,38 @@ function Header() {
           <Link to="/brands" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Brands
           </Link>
-          <Link to="/sectors/$slug" params={{ slug: "residential" }} className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
-            Sectors
-          </Link>
+          <div className="relative">
+            <button
+              type="button"
+              aria-expanded={sectorOpen}
+              className="inline-flex h-11 items-center gap-1 rounded-md px-3 text-sm font-medium hover:bg-card"
+              onClick={() => {
+                setSectorOpen((v) => !v);
+                setShopOpen(false);
+              }}
+            >
+              Sectors <ChevronDown className="size-3.5" />
+            </button>
+            {sectorOpen && (
+              <div className="absolute left-0 top-full z-50 w-56 rounded-xl bg-paper p-3 shadow-[var(--shadow-card-hover)]">
+                {SECTORS.map((sector) => (
+                  <Link
+                    key={sector}
+                    to="/sectors/$slug"
+                    params={{ slug: sector.toLowerCase() }}
+                    className="block rounded-md px-2 py-2 text-sm hover:bg-card hover:text-clay"
+                  >
+                    {sector}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
           <Link to="/projects" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Projects
+          </Link>
+          <Link to="/blog" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
+            Blog
           </Link>
           <Link to="/trade" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Trade
@@ -131,41 +206,10 @@ function Header() {
             Help
           </Link>
         </nav>
-        <SearchBox />
-        <div className="ml-auto flex items-center gap-1">
-          {user ? (
-            <SignedIn>
-              <Link
-                to="/account"
-                className="hidden h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card sm:inline-flex"
-              >
-                Account
-              </Link>
-              <UserButton />
-            </SignedIn>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card"
-            >
-              Sign in
-            </Link>
-          )}
-          <Link
-            to="/cart"
-            className="relative inline-flex size-11 items-center justify-center rounded-md hover:bg-card"
-            aria-label="Cart"
-          >
-            <ShoppingCart className="size-5" />
-            {count > 0 && (
-              <span className="absolute right-1.5 top-1.5 min-w-4 rounded-full bg-clay px-1 text-center text-[10px] font-semibold leading-4 text-paper tabular-nums">
-                {count}
-              </span>
-            )}
-          </Link>
-        </div>
       </div>
-      {open && <MobileMenu onClose={() => setOpen(false)} />}
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(<MobileMenu onClose={() => setOpen(false)} />, document.body)}
     </header>
   );
 }
@@ -251,13 +295,25 @@ function SearchBox() {
 }
 
 function MobileMenu({ onClose }: { onClose: () => void }) {
+  const links = [
+    ["/shop", "Shop"],
+    ["/brands", "Brands"],
+    ["/blog", "Blog"],
+    ["/projects", "Projects"],
+    ["/trade", "Trade"],
+    ["/partners", "Partners"],
+    ["/help", "Help"],
+    ["/contact", "Contact"],
+    ["/ways-to-pay", "Ways to pay"],
+    ["/careers", "Careers"],
+  ] as const;
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      <button className="absolute inset-0 bg-kiln/40" aria-label="Close menu" onClick={onClose} />
+    <div className="fixed inset-0 z-[80] lg:hidden">
+      <button type="button" className="absolute inset-0 bg-kiln/40" aria-label="Close menu" onClick={onClose} />
       <div className="absolute inset-y-0 left-0 w-[min(100%,20rem)] overflow-y-auto bg-paper p-5 shadow-[var(--shadow-card-hover)]">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between">
           <img src="/brand/lockup_light.svg" alt="Bricksplaza" className="h-8" />
-          <button className="size-11" aria-label="Close" onClick={onClose}>
+          <button type="button" className="inline-flex size-11 items-center justify-center" aria-label="Close" onClick={onClose}>
             <X />
           </button>
         </div>
@@ -269,40 +325,29 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
             window.location.href = `/search?q=${encodeURIComponent(q)}`;
           }}
         >
-          <input
-            name="q"
-            placeholder="Search catalogue"
-            className="h-11 w-full rounded-md border border-line bg-card px-3 text-sm"
-          />
+          <input name="q" placeholder="Search catalogue" className="h-11 w-full rounded-md border border-line bg-card px-3 text-sm" />
         </form>
+        {links.map(([to, label]) => (
+          <Link key={to} to={to} onClick={onClose} className="block py-2 font-medium">
+            {label}
+          </Link>
+        ))}
+        <p className="mb-1 mt-4 text-[11px] uppercase tracking-[0.16em] text-muted">Sectors</p>
+        {SECTORS.map((sector) => (
+          <Link key={sector} to="/sectors/$slug" params={{ slug: sector.toLowerCase() }} onClick={onClose} className="block py-2 text-sm">
+            {sector}
+          </Link>
+        ))}
         {FAMILIES.map((f) => (
-          <div key={f.slug} className="mb-4">
+          <div key={f.slug} className="mb-4 mt-4">
             <p className="mb-1 text-[11px] uppercase tracking-[0.16em] text-muted">{f.name}</p>
             {CATEGORIES.filter((c) => c.family === f.slug).map((c) => (
-              <Link
-                key={c.slug}
-                to="/shop/$slug"
-                params={{ slug: c.slug }}
-                onClick={onClose}
-                className="block py-2 text-sm"
-              >
+              <Link key={c.slug} to="/shop/$slug" params={{ slug: c.slug }} onClick={onClose} className="block py-2 text-sm">
                 {c.name}
               </Link>
             ))}
           </div>
         ))}
-        <Link to="/brands" onClick={onClose} className="block py-2 font-medium">
-          Manufacturer shops
-        </Link>
-        <Link to="/projects" onClick={onClose} className="block py-2 font-medium">
-          Projects
-        </Link>
-        <Link to="/trade" onClick={onClose} className="block py-2 font-medium">
-          Trade
-        </Link>
-        <Link to="/partners" onClick={onClose} className="block py-2 font-medium">
-          Partners
-        </Link>
         <Link to="/account" onClick={onClose} className="block py-2 font-medium">
           Account
         </Link>
@@ -381,6 +426,11 @@ function Footer() {
             <li>
               <Link to="/help" className="text-dim hover:text-bisque">
                 Help centre
+              </Link>
+            </li>
+            <li>
+              <Link to="/blog" className="text-dim hover:text-bisque">
+                Blog
               </Link>
             </li>
             <li>
@@ -607,6 +657,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
     ["/desk/customers", "Trade & customers"],
     ["/desk/pricing", "Pricing engine"],
     ["/desk/promotions", "Promotions"],
+    ["/desk/journal", "Journal"],
     ["/desk/reviews", "Reviews"],
     ["/desk/leads", "Leads"],
     ["/desk/reports", "Reports"],

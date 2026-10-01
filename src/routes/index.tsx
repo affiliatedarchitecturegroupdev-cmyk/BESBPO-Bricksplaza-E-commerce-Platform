@@ -12,12 +12,17 @@ import { loadHome } from "@/lib/products";
 import { listBrandShops } from "@/lib/brands";
 import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
+import { listPublishedPosts } from "@/lib/posts";
 import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
-    const [home, brands] = await Promise.all([loadHome(), listBrandShops()]);
-    return { home, brands };
+    const [home, brands, notes] = await Promise.all([
+      loadHome(),
+      listBrandShops(),
+      listPublishedPosts().catch(() => []),
+    ]);
+    return { home, brands, notes };
   },
   component: Home,
 });
@@ -26,6 +31,7 @@ function Home() {
   const { trending, arrivals, clearance, best, favs, editorial, value, bulk, restocked, colours } =
     Route.useLoaderData().home;
   const brands = Route.useLoaderData().brands;
+  const notes = Route.useLoaderData().notes;
 
   return (
     <>
@@ -56,6 +62,7 @@ function Home() {
       <Gallery />
       <DeliveryMap />
       <TrustStrip />
+      <YardNotes notes={notes} />
       <Newsletter />
       <RecentlyViewed />
     </>
@@ -637,6 +644,35 @@ function TrustStrip() {
           <span key={b} className="rounded-full border border-line px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-mortar">
             {b}
           </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function YardNotes({ notes }: { notes: { slug: string; title: string; tag: string; excerpt: string; image: string }[] }) {
+  if (!notes.length) return null;
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Journal</p>
+          <h2 className="mt-1 font-display text-3xl">From the yard</h2>
+        </div>
+        <Link to="/blog" className="text-sm font-medium text-clay">
+          All notes
+        </Link>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {notes.slice(0, 3).map((note) => (
+          <Link key={note.slug} to="/blog/$slug" params={{ slug: note.slug }} className="overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]">
+            <img src={note.image} alt="" className="aspect-[16/9] w-full object-cover" />
+            <div className="p-4">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-clay">{note.tag}</p>
+              <h3 className="mt-1 font-display text-xl">{note.title}</h3>
+              <p className="mt-2 line-clamp-3 text-sm text-mortar">{note.excerpt}</p>
+            </div>
+          </Link>
         ))}
       </div>
     </section>

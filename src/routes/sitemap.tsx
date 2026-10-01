@@ -2,11 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PageHeader } from "@/components/layout";
 import { CATEGORIES, PROVINCES, SECTORS } from "@/data/taxonomy";
-import { BLOG, LEGAL } from "@/data/content";
+import { LEGAL } from "@/data/content";
+import { listPublishedPosts } from "@/lib/posts";
 
-export const Route = createFileRoute("/sitemap")({ component: HtmlSitemap });
+export const Route = createFileRoute("/sitemap")({
+  loader: () => listPublishedPosts().catch(() => []),
+  component: HtmlSitemap,
+});
 
 function HtmlSitemap() {
+  const posts = Route.useLoaderData();
   return (
     <>
       <PageHeader kicker="Index" title="HTML sitemap" />
@@ -40,7 +45,7 @@ function HtmlSitemap() {
               {p.title}
             </Link>
           ))}
-          {BLOG.map((b) => (
+          {posts.map((b) => (
             <Link key={b.slug} to="/blog/$slug" params={{ slug: b.slug }}>
               {b.title}
             </Link>

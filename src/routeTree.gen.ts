@@ -45,6 +45,7 @@ import { Route as DeskBrandsRouteImport } from './routes/desk.brands'
 import { Route as DeskCustomersRouteImport } from './routes/desk.customers'
 import { Route as DeskInboxRouteImport } from './routes/desk.inbox'
 import { Route as DeskInventoryRouteImport } from './routes/desk.inventory'
+import { Route as DeskJournalRouteImport } from './routes/desk.journal'
 import { Route as DeskLeadsRouteImport } from './routes/desk.leads'
 import { Route as DeskLogisticsRouteImport } from './routes/desk.logistics'
 import { Route as DeskOrdersRouteImport } from './routes/desk.orders'
@@ -65,6 +66,7 @@ import { Route as SectorsSlugRouteImport } from './routes/sectors.$slug'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as SpecSkuRouteImport } from './routes/spec.$sku'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as MediaPostsSlugRouteImport } from './routes/media.posts.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -246,6 +248,11 @@ const DeskInventoryRoute = DeskInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => DeskRoute,
 } as any)
+const DeskJournalRoute = DeskJournalRouteImport.update({
+  id: '/journal',
+  path: '/journal',
+  getParentRoute: () => DeskRoute,
+} as any)
 const DeskLeadsRoute = DeskLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
@@ -346,6 +353,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MediaPostsSlugRoute = MediaPostsSlugRouteImport.update({
+  id: '/media/posts/$slug',
+  path: '/media/posts/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -382,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/journal': typeof DeskJournalRoute
   '/desk/leads': typeof DeskLeadsRoute
   '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
@@ -404,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/media/posts/$slug': typeof MediaPostsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -438,6 +452,7 @@ export interface FileRoutesByTo {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/journal': typeof DeskJournalRoute
   '/desk/leads': typeof DeskLeadsRoute
   '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
@@ -460,6 +475,7 @@ export interface FileRoutesByTo {
   '/brands': typeof BrandsIndexRoute
   '/desk': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/media/posts/$slug': typeof MediaPostsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -497,6 +513,7 @@ export interface FileRoutesById {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/journal': typeof DeskJournalRoute
   '/desk/leads': typeof DeskLeadsRoute
   '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
@@ -519,6 +536,7 @@ export interface FileRoutesById {
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/media/posts/$slug': typeof MediaPostsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -557,6 +575,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/journal'
     | '/desk/leads'
     | '/desk/logistics'
     | '/desk/orders'
@@ -579,6 +598,7 @@ export interface FileRouteTypes {
     | '/brands/'
     | '/desk/'
     | '/api/auth/$'
+    | '/media/posts/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -613,6 +633,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/journal'
     | '/desk/leads'
     | '/desk/logistics'
     | '/desk/orders'
@@ -635,6 +656,7 @@ export interface FileRouteTypes {
     | '/brands'
     | '/desk'
     | '/api/auth/$'
+    | '/media/posts/$slug'
   id:
     | '__root__'
     | '/'
@@ -671,6 +693,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/journal'
     | '/desk/leads'
     | '/desk/logistics'
     | '/desk/orders'
@@ -693,6 +716,7 @@ export interface FileRouteTypes {
     | '/brands/'
     | '/desk/'
     | '/api/auth/$'
+    | '/media/posts/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -733,6 +757,7 @@ export interface RootRouteChildren {
   SectorsSlugRoute: typeof SectorsSlugRoute
   SpecSkuRoute: typeof SpecSkuRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  MediaPostsSlugRoute: typeof MediaPostsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -989,6 +1014,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskInventoryRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/desk/journal': {
+      id: '/desk/journal'
+      path: '/journal'
+      fullPath: '/desk/journal'
+      preLoaderRoute: typeof DeskJournalRouteImport
+      parentRoute: typeof DeskRoute
+    }
     '/desk/leads': {
       id: '/desk/leads'
       path: '/leads'
@@ -1129,6 +1161,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/media/posts/$slug': {
+      id: '/media/posts/$slug'
+      path: '/media/posts/$slug'
+      fullPath: '/media/posts/$slug'
+      preLoaderRoute: typeof MediaPostsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1160,6 +1199,7 @@ interface DeskRouteChildren {
   DeskCustomersRoute: typeof DeskCustomersRoute
   DeskInboxRoute: typeof DeskInboxRoute
   DeskInventoryRoute: typeof DeskInventoryRoute
+  DeskJournalRoute: typeof DeskJournalRoute
   DeskLeadsRoute: typeof DeskLeadsRoute
   DeskLogisticsRoute: typeof DeskLogisticsRoute
   DeskOrdersRoute: typeof DeskOrdersRoute
@@ -1178,6 +1218,7 @@ const DeskRouteChildren: DeskRouteChildren = {
   DeskCustomersRoute: DeskCustomersRoute,
   DeskInboxRoute: DeskInboxRoute,
   DeskInventoryRoute: DeskInventoryRoute,
+  DeskJournalRoute: DeskJournalRoute,
   DeskLeadsRoute: DeskLeadsRoute,
   DeskLogisticsRoute: DeskLogisticsRoute,
   DeskOrdersRoute: DeskOrdersRoute,
@@ -1241,6 +1282,7 @@ const rootRouteChildren: RootRouteChildren = {
   SectorsSlugRoute: SectorsSlugRoute,
   SpecSkuRoute: SpecSkuRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  MediaPostsSlugRoute: MediaPostsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
