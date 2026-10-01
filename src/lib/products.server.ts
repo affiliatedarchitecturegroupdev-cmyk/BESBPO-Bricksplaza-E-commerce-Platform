@@ -105,6 +105,12 @@ export async function fetchProduct(sku: string): Promise<Product | undefined> {
   return products.find((p) => p.sku === sku);
 }
 
+/** Drop the catalogue cache so the next read comes from the database. */
+export function bustCatalogue() {
+  g.__bpCatalogue = undefined;
+  g.__bpCatalogueFlight = undefined;
+}
+
 /** Keep the in-memory catalogue aligned after a stock update in this process. */
 export function noteStock(sku: string, delta: number) {
   const hit = g.__bpCatalogue;
@@ -113,6 +119,36 @@ export function noteStock(sku: string, delta: number) {
   if (product && product.fulfilmentType === "Stock Item") {
     product.stock = Math.max(0, product.stock + delta);
   }
+}
+
+/** Yard stock adjustment. Refuses made-to-order SKUs and a negative result. */
+export async function applyStockDelta(sku: string, delta: number, reason: string, userId: string) {
+  const sql = await getSql();
+  const updated = await sql<{ stock: number }>`
+    update products set stock = stock + ${delta}
+    where sku = ${sku}
+      and fulfilment_type = 'Stock Item'
+      and stock + ${delta} >= 0
+    returning stock
+  `;
+  const row = updated[0];
+  if (!row) return null;
+  await sql`insert into stock_events (sku, delta, reason, user_id) values (${sku}, ${delta}, ${reason}, ${userId})`;
+  noteStock(sku, delta);
+  return num(row.stock);
+}
+
+export async function recentStockEvents() {
+  const sql = await getSql();
+  const rows = await sql<{ sku: string; delta: number; reason: string; created_at: string }>`
+    select sku, delta, reason, created_at from stock_events order by id desc limit 12
+  `;
+  return rows.map((r) => ({
+    sku: String(r.sku),
+    delta: num(r.delta),
+    reason: String(r.reason),
+    created_at: String(r.created_at),
+  }));
 }
 
 const PAGE_SIZE = 24;

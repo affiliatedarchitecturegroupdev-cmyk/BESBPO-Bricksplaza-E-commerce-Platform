@@ -559,7 +559,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center justify-between border-b border-bisque/10 px-4 py-3 md:px-8">
-          <p className="text-sm text-dim">Staff console · role-gated in production</p>
+          <p className="text-sm text-dim">Yard desk · stock, trade and banners are saved for every visitor</p>
           <UserButton />
         </div>
         <div className="flex-1 overflow-auto p-4 md:p-8">{children}</div>

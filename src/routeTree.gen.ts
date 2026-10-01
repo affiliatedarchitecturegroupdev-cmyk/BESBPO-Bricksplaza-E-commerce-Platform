@@ -19,6 +19,7 @@ import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DeskRouteImport } from './routes/desk'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NewRouteImport } from './routes/new'
@@ -42,6 +43,7 @@ import { Route as DeskPricingRouteImport } from './routes/desk.pricing'
 import { Route as DeskPromotionsRouteImport } from './routes/desk.promotions'
 import { Route as DeskReportsRouteImport } from './routes/desk.reports'
 import { Route as DeskReviewsRouteImport } from './routes/desk.reviews'
+import { Route as InvoiceIdRouteImport } from './routes/invoice.$id'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as LocationsSlugRouteImport } from './routes/locations.$slug'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
@@ -98,6 +100,11 @@ const DeskRoute = DeskRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HealthzRoute = HealthzRouteImport.update({
+  id: '/healthz',
+  path: '/healthz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -215,6 +222,11 @@ const DeskReviewsRoute = DeskReviewsRouteImport.update({
   path: '/reviews',
   getParentRoute: () => DeskRoute,
 } as any)
+const InvoiceIdRoute = InvoiceIdRouteImport.update({
+  id: '/invoice/$id',
+  path: '/invoice/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalSlugRoute = LegalSlugRouteImport.update({
   id: '/legal/$slug',
   path: '/legal/$slug',
@@ -262,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/desk': typeof DeskRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/new': typeof NewRoute
@@ -284,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/desk/promotions': typeof DeskPromotionsRoute
   '/desk/reports': typeof DeskReportsRoute
   '/desk/reviews': typeof DeskReviewsRoute
+  '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
   '/order/$id': typeof OrderIdRoute
@@ -303,6 +317,7 @@ export interface FileRoutesByTo {
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/new': typeof NewRoute
@@ -325,6 +340,7 @@ export interface FileRoutesByTo {
   '/desk/promotions': typeof DeskPromotionsRoute
   '/desk/reports': typeof DeskReportsRoute
   '/desk/reviews': typeof DeskReviewsRoute
+  '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
   '/order/$id': typeof OrderIdRoute
@@ -346,6 +362,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/desk': typeof DeskRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
+  '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/new': typeof NewRoute
@@ -368,6 +385,7 @@ export interface FileRoutesById {
   '/desk/promotions': typeof DeskPromotionsRoute
   '/desk/reports': typeof DeskReportsRoute
   '/desk/reviews': typeof DeskReviewsRoute
+  '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
   '/order/$id': typeof OrderIdRoute
@@ -390,6 +408,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/desk'
     | '/forgot-password'
+    | '/healthz'
     | '/help'
     | '/login'
     | '/new'
@@ -412,6 +431,7 @@ export interface FileRouteTypes {
     | '/desk/promotions'
     | '/desk/reports'
     | '/desk/reviews'
+    | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
     | '/order/$id'
@@ -431,6 +451,7 @@ export interface FileRouteTypes {
     | '/collections'
     | '/contact'
     | '/forgot-password'
+    | '/healthz'
     | '/help'
     | '/login'
     | '/new'
@@ -453,6 +474,7 @@ export interface FileRouteTypes {
     | '/desk/promotions'
     | '/desk/reports'
     | '/desk/reviews'
+    | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
     | '/order/$id'
@@ -473,6 +495,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/desk'
     | '/forgot-password'
+    | '/healthz'
     | '/help'
     | '/login'
     | '/new'
@@ -495,6 +518,7 @@ export interface FileRouteTypes {
     | '/desk/promotions'
     | '/desk/reports'
     | '/desk/reviews'
+    | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
     | '/order/$id'
@@ -516,6 +540,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DeskRoute: typeof DeskRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HealthzRoute: typeof HealthzRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
   NewRoute: typeof NewRoute
@@ -530,6 +555,7 @@ export interface RootRouteChildren {
   TradeRoute: typeof TradeRoute
   WarrantyRoute: typeof WarrantyRoute
   BundlesSlugRoute: typeof BundlesSlugRoute
+  InvoiceIdRoute: typeof InvoiceIdRoute
   LegalSlugRoute: typeof LegalSlugRoute
   LocationsSlugRoute: typeof LocationsSlugRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -608,6 +634,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/healthz': {
+      id: '/healthz'
+      path: '/healthz'
+      fullPath: '/healthz'
+      preLoaderRoute: typeof HealthzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -771,6 +804,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskReviewsRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/invoice/$id': {
+      id: '/invoice/$id'
+      path: '/invoice/$id'
+      fullPath: '/invoice/$id'
+      preLoaderRoute: typeof InvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/$slug': {
       id: '/legal/$slug'
       path: '/legal/$slug'
@@ -878,6 +918,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DeskRoute: DeskRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HealthzRoute: HealthzRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
   NewRoute: NewRoute,
@@ -892,6 +933,7 @@ const rootRouteChildren: RootRouteChildren = {
   TradeRoute: TradeRoute,
   WarrantyRoute: WarrantyRoute,
   BundlesSlugRoute: BundlesSlugRoute,
+  InvoiceIdRoute: InvoiceIdRoute,
   LegalSlugRoute: LegalSlugRoute,
   LocationsSlugRoute: LocationsSlugRoute,
   OrderIdRoute: OrderIdRoute,

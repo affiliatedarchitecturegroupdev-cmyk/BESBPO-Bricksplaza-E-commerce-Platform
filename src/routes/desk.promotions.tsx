@@ -1,29 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AD_SLOTS } from "@/data/ads";
 import { AdBanner } from "@/components/ad-banner";
-import { readAdSchedule, writeAdSchedule, type AdOverride } from "@/lib/ad-schedule";
+import { invalidateAdSchedule, type AdOverride } from "@/lib/ad-schedule";
+import { loadAdSchedule, saveAdSlot } from "@/lib/ads";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/desk/promotions")({ component: Promotions });
 
 function Promotions() {
   const [schedule, setSchedule] = useState<Record<string, AdOverride>>({});
+  const timers = useRef<Record<string, number>>({});
 
   useEffect(() => {
-    setSchedule(readAdSchedule());
+    loadAdSchedule()
+      .then(setSchedule)
+      .catch(() => setSchedule({}));
+    return () => {
+      for (const id of Object.values(timers.current)) window.clearTimeout(id);
+    };
   }, []);
 
   function patch(id: string, next: AdOverride) {
     const merged = { ...schedule, [id]: { ...schedule[id], ...next } };
     setSchedule(merged);
-    writeAdSchedule(merged);
+    window.clearTimeout(timers.current[id]);
+    timers.current[id] = window.setTimeout(() => {
+      const slot = merged[id] ?? {};
+      saveAdSlot({ data: { slotId: id, ...slot } })
+        .then(() => {
+          invalidateAdSchedule();
+        })
+        .catch((err) => {
+          toast.error(err instanceof Error ? err.message : "Could not save the banner");
+        });
+    }, 400);
   }
 
   return (
     <div>
       <h1 className="font-display text-3xl">Promotions & banners</h1>
       <p className="mt-1 max-w-2xl text-sm text-dim">
-        Eight placement zones. No third-party network — every slot is Bricksplaza creative. Pause a slot or set a date window; the storefront on this browser picks it up immediately. Draft stays off the rail until the window opens.
+        Eight placement zones. No third-party network — every slot is Bricksplaza creative. A pause or a date window is stored for every visitor, not just this browser. Only the yard desk can save a change.
       </p>
       <div className="mt-8 space-y-8">
         {AD_SLOTS.map((slot) => {

@@ -1,0 +1,14 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+/** Render health check. Must not touch the catalogue or the database. */
+export const Route = createFileRoute("/healthz")({
+  server: {
+    handlers: {
+      GET: () =>
+        new Response("ok", {
+          status: 200,
+          headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+        }),
+    },
+  },
+});

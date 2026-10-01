@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AdSlot } from "@/data/ads";
-import { readAdSchedule, slotIsLive, type AdOverride } from "@/lib/ad-schedule";
+import { readLiveSchedule, slotIsLive, type AdOverride } from "@/lib/ad-schedule";
 
 export function AdBanner({
   slot,
@@ -22,9 +22,10 @@ export function AdBanner({
       setOverride(undefined);
       return;
     }
-    const schedule = readAdSchedule();
-    setOverride(schedule[slot.id]);
-    setLive(slotIsLive(slot.id, schedule));
+    readLiveSchedule().then((schedule) => {
+      setOverride(schedule[slot.id]);
+      setLive(slotIsLive(slot.id, schedule));
+    });
   }, [slot.id, preview]);
 
   if (!live) return null;

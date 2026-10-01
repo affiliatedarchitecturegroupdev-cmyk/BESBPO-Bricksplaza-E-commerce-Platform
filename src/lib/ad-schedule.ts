@@ -1,3 +1,5 @@
+import { loadAdSchedule } from "@/lib/ads";
+
 export type AdOverride = {
   paused?: boolean;
   activeFrom?: string;
@@ -7,22 +9,6 @@ export type AdOverride = {
   ctaText?: string;
   ctaLink?: string;
 };
-
-const KEY = "bp-ad-schedule";
-
-export function readAdSchedule(): Record<string, AdOverride> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Record<string, AdOverride>) : {};
-  } catch {
-    return {};
-  }
-}
-
-export function writeAdSchedule(next: Record<string, AdOverride>) {
-  localStorage.setItem(KEY, JSON.stringify(next));
-}
 
 /** Date inputs are calendar days. "To" includes that whole local day. */
 function parseBound(value: string, end: boolean) {
@@ -50,4 +36,23 @@ export function slotIsLive(id: string, schedule: Record<string, AdOverride>, now
     if (to && to < now) return false;
   }
   return true;
+}
+
+let cache: { at: number; data: Record<string, AdOverride> } | null = null;
+
+export function invalidateAdSchedule() {
+  cache = null;
+}
+
+/** Shared schedule from Postgres. A pause on the desk reaches every visitor. */
+export async function readLiveSchedule() {
+  if (typeof window === "undefined") return {};
+  if (cache && Date.now() - cache.at < 15000) return cache.data;
+  try {
+    const data = await loadAdSchedule();
+    cache = { at: Date.now(), data };
+    return data;
+  } catch {
+    return cache?.data ?? {};
+  }
 }

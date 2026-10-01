@@ -5,7 +5,7 @@ import { useProductsBySku } from "@/lib/use-products";
 import { PAYMENT_METHODS } from "@/data/content";
 import { formatZar, vatInclusive, round2 } from "@/lib/format";
 import { priceFor } from "@/lib/pricing";
-import { craneSurcharge, quoteDelivery } from "@/lib/delivery";
+import { craneSurcharge, quoteDelivery, COLLECTION_SLOTS } from "@/lib/delivery";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { placeGuestOrder, placeOrder } from "@/lib/commerce";
@@ -24,6 +24,7 @@ function Checkout() {
   const { user, isPending } = useCurrentUserState();
   const [step, setStep] = useState(1);
   const [method, setMethod] = useState<"delivery" | "collection">("delivery");
+  const [slot, setSlot] = useState<(typeof COLLECTION_SLOTS)[number]["id"]>("morning");
   const [hiab, setHiab] = useState(false);
   const [pay, setPay] = useState("payfast");
   const [busy, setBusy] = useState(false);
@@ -70,6 +71,7 @@ function Checkout() {
         lines: items.map((i) => ({ sku: i.sku, qty: i.qty })),
         hiab,
         notes: form.notes,
+        collection_slot: method === "collection" ? slot : undefined,
       };
       if (!form.email.includes("@")) {
         toast.error("Add an email so the yard can confirm the load");
@@ -167,6 +169,19 @@ function Checkout() {
                 <input type="checkbox" checked={hiab} onChange={(e) => setHiab(e.target.checked)} />
                 Crane / Hiab offload (+ R850)
               </label>
+              {method === "collection" && (
+                <div>
+                  <Label>Collection window</Label>
+                  <Select value={slot} onChange={(e) => setSlot(e.target.value as typeof slot)}>
+                    {COLLECTION_SLOTS.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </Select>
+                  <p className="mt-1 text-xs text-muted">Same day, subject to stock, at the yard quoted above.</p>
+                </div>
+              )}
               <p className="text-sm text-mortar">
                 {quote.quoted
                   ? `${quote.yard} · ${quote.time} · ${formatZar(delivery)}`
@@ -180,7 +195,7 @@ function Checkout() {
             <div>
               <h1 className="font-display text-2xl">Payment</h1>
               <p className="mt-1 text-sm text-mortar">
-                Choose how this load will be paid. Nothing is charged yet — PayFast and the other merchant accounts are not connected, so the order is saved for the yard as simulated.
+                EFT saves the order as awaiting a bank reference. Trade and float use a signed-in account. Every other method is recorded as simulated until that merchant account is connected. Nothing is charged.
               </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {PAYMENT_METHODS.map((p) => (

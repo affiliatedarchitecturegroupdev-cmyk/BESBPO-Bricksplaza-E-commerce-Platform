@@ -81,3 +81,13 @@ export function quoteDelivery(postalCode: string, method: "delivery" | "collecti
 export function craneSurcharge(hasHiab: boolean) {
   return hasHiab ? 850 : 0;
 }
+
+export const COLLECTION_SLOTS = [
+  { id: "morning", label: "Morning · 08:00–11:00" },
+  { id: "midday", label: "Midday · 11:00–14:00" },
+  { id: "afternoon", label: "Afternoon · 14:00–16:30" },
+] as const;
+
+export function collectionSlotLabel(id: string | null | undefined) {
+  return COLLECTION_SLOTS.find((s) => s.id === id)?.label ?? null;
+}

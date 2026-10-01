@@ -62,6 +62,9 @@ function RootDocument() {
 
 function Shell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  if (pathname === "/healthz" || pathname.startsWith("/invoice/")) {
+    return <Outlet />;
+  }
   if (pathname.startsWith("/login") || pathname.startsWith("/forgot-password")) {
     return <Outlet />;
   }

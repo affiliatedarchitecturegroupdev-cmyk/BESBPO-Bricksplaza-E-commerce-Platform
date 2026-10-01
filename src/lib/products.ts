@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { authMiddleware } from "@/lib/auth/middleware";
 import type { Product } from "@/data/catalogue";
 
 /** Guest-visible catalogue queries. No auth middleware: product rows are not per-user data. */
@@ -106,4 +107,38 @@ export const loadInventory = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { inventoryRows } = await import("./products.server");
     return inventoryRows(data.q, data.category);
+  });
+
+export const adjustStock = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { sku?: string; delta?: number; reason?: string }) => ({
+    sku: String(d?.sku ?? "").trim().slice(0, 40),
+    delta: Math.trunc(Number(d?.delta)),
+    reason: String(d?.reason ?? "").trim().slice(0, 160),
+  }))
+  .handler(async ({ context, data }) => {
+    if (!data.sku) throw new Error("Enter a SKU");
+    if (!Number.isFinite(data.delta) || data.delta === 0 || Math.abs(data.delta) > 100000) {
+      throw new Error("Enter a quantity change between -100000 and 100000, not zero");
+    }
+    if (data.reason.length < 3) throw new Error("Say why the stock changed");
+    const { assertYard } = await import("./commerce");
+    await assertYard(context.userId);
+    const { applyStockDelta } = await import("./products.server");
+    const stock = await applyStockDelta(data.sku, data.delta, data.reason, context.userId);
+    if (stock == null) throw new Error("That SKU is not a stock item, or the adjustment would go below zero");
+    return { stock };
+  });
+
+export const loadStockLog = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { assertYard } = await import("./commerce");
+    try {
+      await assertYard(context.userId);
+    } catch {
+      return [];
+    }
+    const { recentStockEvents } = await import("./products.server");
+    return recentStockEvents();
   });

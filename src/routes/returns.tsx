@@ -31,6 +31,7 @@ function Returns() {
                 data: {
                   order_id: String(fd.get("order_id")),
                   sku: String(fd.get("sku") || ""),
+                  qty: Number(fd.get("qty") || 1),
                   reason: String(fd.get("reason")),
                 },
               });
@@ -43,8 +44,12 @@ function Returns() {
               <Input name="order_id" required placeholder="BP-…" />
             </div>
             <div>
-              <Label>SKU (optional)</Label>
-              <Input name="sku" />
+              <Label>SKU</Label>
+              <Input name="sku" required placeholder="The line you are sending back" />
+            </div>
+            <div>
+              <Label>Quantity</Label>
+              <Input name="qty" type="number" min={1} defaultValue={1} required />
             </div>
             <div>
               <Label>Reason</Label>
