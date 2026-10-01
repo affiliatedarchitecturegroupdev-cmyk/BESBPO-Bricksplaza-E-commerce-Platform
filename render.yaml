@@ -10,7 +10,7 @@ services:
     autoDeploy: true
     # Vite and Nitro are devDependencies. Render sets NODE_ENV=production, which
     # would otherwise skip them and fail the build with "vite: not found".
-    buildCommand: npm ci --include=dev && npm run build
+    buildCommand: npm ci --include=dev --legacy-peer-deps && npm run build
     startCommand: node scripts/render-start.mjs
     healthCheckPath: /healthz
     envVars:
