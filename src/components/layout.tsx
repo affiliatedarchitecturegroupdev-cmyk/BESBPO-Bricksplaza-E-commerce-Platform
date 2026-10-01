@@ -3,7 +3,7 @@ import { SignedIn, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCart } from "@/lib/cart-store";
 import { CATEGORIES, FAMILIES, SECTORS } from "@/data/taxonomy";
-import { CONTACTS, GROUP, GROUP_SOCIAL } from "@/data/content";
+import { CONTACTS, GROUP, GROUP_SOCIAL, PAYMENT_METHODS } from "@/data/content";
 import type { Product } from "@/data/catalogue";
 import { suggestProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
@@ -384,6 +384,16 @@ function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/ways-to-pay" className="text-dim hover:text-bisque">
+                Ways to pay
+              </Link>
+            </li>
+            <li>
+              <Link to="/careers" className="text-dim hover:text-bisque">
+                Careers
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" className="text-dim hover:text-bisque">
                 Contact
               </Link>
@@ -439,10 +449,40 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-bisque/10">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Ways to pay</p>
+            <Link to="/ways-to-pay" className="text-xs text-dim hover:text-bisque">
+              All 18 methods
+            </Link>
+          </div>
+          <ul className="mt-3 flex flex-wrap items-center gap-2">
+            {PAYMENT_METHODS.filter((method) => method.logo).map((method) => (
+              <li key={method.id}>
+                <Link to="/ways-to-pay" aria-label={method.name} className="flex h-10 items-center rounded-md bg-bisque px-2">
+                  <img src={method.logo!} alt="" className="h-6 w-auto max-w-[5.5rem] object-contain" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-dim">PayFast, Ozow, Yoco, Happy Pay and the other methods without a mark are on the same page.</p>
+        </div>
+      </div>
+      <div className="border-t border-bisque/10">
         <div className="mx-auto flex max-w-7xl flex-wrap gap-x-4 gap-y-2 px-4 py-4 text-[11px] uppercase tracking-[0.14em] text-dim sm:px-6">
-          {GROUP.map((g) => (
-            <span key={g.name}>{g.name}</span>
-          ))}
+          {GROUP.map((g) =>
+            g.name === "Affiliated Builders" ? (
+              <Link key={g.name} to="/divisions/$slug" params={{ slug: "affiliated-builders" }} className="hover:text-bisque">
+                {g.name}
+              </Link>
+            ) : g.name === "Finishes Construction" ? (
+              <Link key={g.name} to="/divisions/$slug" params={{ slug: "finishes-construction" }} className="hover:text-bisque">
+                {g.name}
+              </Link>
+            ) : (
+              <span key={g.name}>{g.name}</span>
+            ),
+          )}
         </div>
       </div>
       <div className="border-t border-bisque/10">
@@ -568,6 +608,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
     ["/desk/pricing", "Pricing engine"],
     ["/desk/promotions", "Promotions"],
     ["/desk/reviews", "Reviews"],
+    ["/desk/leads", "Leads"],
     ["/desk/reports", "Reports"],
   ] as const;
   return (

@@ -177,6 +177,42 @@ export const AD_SLOTS: AdSlot[] = [
       image: null,
     },
   },
+  {
+    id: "division-affiliated",
+    slotNumber: 9,
+    name: "Affiliated Builders",
+    placement: "homepage",
+    position: "after-projects",
+    width: 1200,
+    height: 250,
+    creativeType: "html",
+    campaign: {
+      eyebrow: "Affiliated Builders",
+      headline: "The brick is in the cart. Who builds the wall?",
+      subtext: "The group contractor for commercial, industrial, civil and residential work. A contract, not a checkout.",
+      ctaText: "See the build",
+      ctaLink: "/divisions/affiliated-builders",
+      image: "/images/projects/commercial.jpg",
+    },
+  },
+  {
+    id: "division-finishes",
+    slotNumber: 10,
+    name: "Finishes Construction",
+    placement: "homepage",
+    position: "after-projects",
+    width: 1200,
+    height: 250,
+    creativeType: "html",
+    campaign: {
+      eyebrow: "Finishes Construction",
+      headline: "From the masonry to the last coat.",
+      subtext: "Fifteen finishing disciplines. The quote comes from the division, not from this catalogue.",
+      ctaText: "See the finishes",
+      ctaLink: "/divisions/finishes-construction",
+      image: "/images/hero/facade.jpg",
+    },
+  },
 ];
 
 export function adSlot(id: string) {

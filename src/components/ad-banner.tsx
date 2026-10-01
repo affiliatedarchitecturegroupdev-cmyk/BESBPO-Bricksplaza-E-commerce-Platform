@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AdSlot } from "@/data/ads";
+import { recordAdEvent } from "@/lib/ads";
 import { readLiveSchedule, slotIsLive, type AdOverride } from "@/lib/ad-schedule";
 
 export function AdBanner({
@@ -15,6 +16,7 @@ export function AdBanner({
 }) {
   const [live, setLive] = useState(true);
   const [override, setOverride] = useState<AdOverride | undefined>();
+  const saw = useRef(false);
 
   useEffect(() => {
     if (preview) {
@@ -27,6 +29,12 @@ export function AdBanner({
       setLive(slotIsLive(slot.id, schedule));
     });
   }, [slot.id, preview]);
+
+  useEffect(() => {
+    if (preview || !live || saw.current) return;
+    saw.current = true;
+    recordAdEvent({ data: { slotId: slot.id, event: "impression", path: window.location.pathname } }).catch(() => undefined);
+  }, [live, preview, slot.id]);
 
   if (!live) return null;
 
@@ -47,6 +55,10 @@ export function AdBanner({
         href={campaign.ctaLink}
         data-slot-id={id}
         data-kind={creativeType}
+        onClick={() => {
+          if (preview) return;
+          recordAdEvent({ data: { slotId: id, event: "click", path: window.location.pathname } }).catch(() => undefined);
+        }}
         data-compact={compact ? "true" : "false"}
         aria-label={`${campaign.headline}. ${campaign.ctaText}`}
         className="ad-frame group relative mx-auto block w-full overflow-hidden rounded-sm bg-kiln"

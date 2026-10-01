@@ -606,6 +606,67 @@ export const listContacts = createServerFn({ method: "GET" })
     };
   });
 
+const ENQUIRY_KINDS = ["career", "affiliated-builders", "finishes-construction"] as const;
+
+export const submitEnquiry = createServerFn({ method: "POST" })
+  .validator((d: { kind?: string; role?: string; name?: string; email?: string; phone?: string; message?: string }) => ({
+    kind: String(d?.kind ?? "").slice(0, 40),
+    role: String(d?.role ?? "").trim().slice(0, 80),
+    name: String(d?.name ?? "").trim().slice(0, 120),
+    email: String(d?.email ?? "").trim().slice(0, 160),
+    phone: String(d?.phone ?? "").trim().slice(0, 40),
+    message: String(d?.message ?? "").trim().slice(0, 2000),
+  }))
+  .handler(async ({ data }) => {
+    if (!ENQUIRY_KINDS.includes(data.kind as (typeof ENQUIRY_KINDS)[number])) throw new Error("Unknown enquiry");
+    if (data.name.length < 2) throw new Error("Add your name");
+    if (!data.email.includes("@")) throw new Error("Add an email");
+    if (data.message.length < 8) throw new Error("Say a little more about the role or the project");
+    const sql = await getSql();
+    await sql`insert into enquiries (kind, role, name, email, phone, message)
+      values (${data.kind}, ${data.role || null}, ${data.name}, ${data.email}, ${data.phone || null}, ${data.message})`;
+    return { ok: true as const };
+  });
+
+export const listEnquiries = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { sql, yard, unclaimed } = await yardGate(context.userId);
+    if (!yard) {
+      return { yard, unclaimed, rows: [] as { id: number; kind: string; role: string; name: string; email: string; phone: string; message: string; status: string; created_at: string }[] };
+    }
+    const rows = await sql<Record<string, unknown>>`
+      select id, kind, role, name, email, phone, message, status, created_at
+      from enquiries order by case status when 'new' then 0 else 1 end, id desc limit 80
+    `;
+    return {
+      yard,
+      unclaimed,
+      rows: rows.map((r) => ({
+        id: Number(r.id),
+        kind: String(r.kind ?? ""),
+        role: r.role == null ? "" : String(r.role),
+        name: String(r.name ?? ""),
+        email: String(r.email ?? ""),
+        phone: r.phone == null ? "" : String(r.phone),
+        message: String(r.message ?? ""),
+        status: String(r.status ?? "new"),
+        created_at: String(r.created_at ?? ""),
+      })),
+    };
+  });
+
+export const setEnquiryStatus = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { id?: number; status?: string }) => ({ id: Number(d?.id), status: String(d?.status ?? "") }))
+  .handler(async ({ context, data }) => {
+    if (!["new", "closed"].includes(data.status)) throw new Error("Unknown status");
+    await assertYard(context.userId);
+    const sql = await getSql();
+    await sql`update enquiries set status = ${data.status} where id = ${data.id}`;
+    return { ok: true as const };
+  });
+
 export const setContactStatus = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: { id: number; status: "open" | "closed" }) => d)

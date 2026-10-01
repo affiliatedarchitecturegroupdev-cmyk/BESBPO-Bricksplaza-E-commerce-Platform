@@ -196,7 +196,10 @@ function Checkout() {
             <div>
               <h1 className="font-display text-2xl">Payment</h1>
               <p className="mt-1 text-sm text-mortar">
-                EFT saves the order as awaiting a bank reference. Trade and float use a signed-in account. Every other method is recorded as simulated until that merchant account is connected. Nothing is charged.
+                EFT saves the order as awaiting a bank reference. Trade and float use a signed-in account. Every other method is recorded as simulated until that merchant account is connected. Nothing is charged.{" "}
+                <Link to="/ways-to-pay" className="text-clay">
+                  Ways to pay
+                </Link>
               </p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {PAYMENT_METHODS.map((p) => (
@@ -208,8 +211,13 @@ function Checkout() {
                       pay === p.id ? "border-clay bg-card" : "border-line",
                     )}
                   >
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-xs text-muted">{p.kind}</p>
+                    <div className="flex items-center gap-3">
+                      {p.logo && <img src={p.logo} alt="" className="h-6 w-auto max-w-[4.5rem] object-contain" />}
+                      <div>
+                        <p className="font-medium">{p.name}</p>
+                        <p className="text-xs text-muted">{p.kind}</p>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>

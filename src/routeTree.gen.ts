@@ -14,6 +14,7 @@ import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BrandsRouteImport } from './routes/brands'
+import { Route as CareersRouteImport } from './routes/careers'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CollectionsRouteImport } from './routes/collections'
@@ -34,6 +35,7 @@ import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as TradeRouteImport } from './routes/trade'
 import { Route as WarrantyRouteImport } from './routes/warranty'
+import { Route as WaysToPayRouteImport } from './routes/ways-to-pay'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BrandsIndexRouteImport } from './routes/brands.index'
 import { Route as BrandsSlugRouteImport } from './routes/brands.$slug'
@@ -43,6 +45,7 @@ import { Route as DeskBrandsRouteImport } from './routes/desk.brands'
 import { Route as DeskCustomersRouteImport } from './routes/desk.customers'
 import { Route as DeskInboxRouteImport } from './routes/desk.inbox'
 import { Route as DeskInventoryRouteImport } from './routes/desk.inventory'
+import { Route as DeskLeadsRouteImport } from './routes/desk.leads'
 import { Route as DeskLogisticsRouteImport } from './routes/desk.logistics'
 import { Route as DeskOrdersRouteImport } from './routes/desk.orders'
 import { Route as DeskPricingRouteImport } from './routes/desk.pricing'
@@ -52,6 +55,7 @@ import { Route as DeskReportsRouteImport } from './routes/desk.reports'
 import { Route as DeskReturnsRouteImport } from './routes/desk.returns'
 import { Route as DeskReviewsRouteImport } from './routes/desk.reviews'
 import { Route as DeskRfqsRouteImport } from './routes/desk.rfqs'
+import { Route as DivisionsSlugRouteImport } from './routes/divisions.$slug'
 import { Route as InvoiceIdRouteImport } from './routes/invoice.$id'
 import { Route as LegalSlugRouteImport } from './routes/legal.$slug'
 import { Route as LocationsSlugRouteImport } from './routes/locations.$slug'
@@ -85,6 +89,11 @@ const BlogRoute = BlogRouteImport.update({
 const BrandsRoute = BrandsRouteImport.update({
   id: '/brands',
   path: '/brands',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CareersRoute = CareersRouteImport.update({
+  id: '/careers',
+  path: '/careers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -187,6 +196,11 @@ const WarrantyRoute = WarrantyRouteImport.update({
   path: '/warranty',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WaysToPayRoute = WaysToPayRouteImport.update({
+  id: '/ways-to-pay',
+  path: '/ways-to-pay',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -230,6 +244,11 @@ const DeskInboxRoute = DeskInboxRouteImport.update({
 const DeskInventoryRoute = DeskInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => DeskRoute,
+} as any)
+const DeskLeadsRoute = DeskLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
   getParentRoute: () => DeskRoute,
 } as any)
 const DeskLogisticsRoute = DeskLogisticsRouteImport.update({
@@ -276,6 +295,11 @@ const DeskRfqsRoute = DeskRfqsRouteImport.update({
   id: '/rfqs',
   path: '/rfqs',
   getParentRoute: () => DeskRoute,
+} as any)
+const DivisionsSlugRoute = DivisionsSlugRouteImport.update({
+  id: '/divisions/$slug',
+  path: '/divisions/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InvoiceIdRoute = InvoiceIdRouteImport.update({
   id: '/invoice/$id',
@@ -329,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/blog': typeof BlogRouteWithChildren
   '/brands': typeof BrandsRouteWithChildren
+  '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
@@ -349,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
   '/warranty': typeof WarrantyRoute
+  '/ways-to-pay': typeof WaysToPayRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/brands/$slug': typeof BrandsSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
@@ -356,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/leads': typeof DeskLeadsRoute
   '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
@@ -365,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/desk/returns': typeof DeskReturnsRoute
   '/desk/reviews': typeof DeskReviewsRoute
   '/desk/rfqs': typeof DeskRfqsRoute
+  '/divisions/$slug': typeof DivisionsSlugRoute
   '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
@@ -382,6 +410,7 @@ export interface FileRoutesByTo {
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
   '/blog': typeof BlogRouteWithChildren
+  '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
@@ -401,6 +430,7 @@ export interface FileRoutesByTo {
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
   '/warranty': typeof WarrantyRoute
+  '/ways-to-pay': typeof WaysToPayRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/brands/$slug': typeof BrandsSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
@@ -408,6 +438,7 @@ export interface FileRoutesByTo {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/leads': typeof DeskLeadsRoute
   '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
@@ -417,6 +448,7 @@ export interface FileRoutesByTo {
   '/desk/returns': typeof DeskReturnsRoute
   '/desk/reviews': typeof DeskReviewsRoute
   '/desk/rfqs': typeof DeskRfqsRoute
+  '/divisions/$slug': typeof DivisionsSlugRoute
   '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
@@ -436,6 +468,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/blog': typeof BlogRouteWithChildren
   '/brands': typeof BrandsRouteWithChildren
+  '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
@@ -456,6 +489,7 @@ export interface FileRoutesById {
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
   '/warranty': typeof WarrantyRoute
+  '/ways-to-pay': typeof WaysToPayRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/brands/$slug': typeof BrandsSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
@@ -463,6 +497,7 @@ export interface FileRoutesById {
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
+  '/desk/leads': typeof DeskLeadsRoute
   '/desk/logistics': typeof DeskLogisticsRoute
   '/desk/orders': typeof DeskOrdersRoute
   '/desk/pricing': typeof DeskPricingRoute
@@ -472,6 +507,7 @@ export interface FileRoutesById {
   '/desk/returns': typeof DeskReturnsRoute
   '/desk/reviews': typeof DeskReviewsRoute
   '/desk/rfqs': typeof DeskRfqsRoute
+  '/divisions/$slug': typeof DivisionsSlugRoute
   '/invoice/$id': typeof InvoiceIdRoute
   '/legal/$slug': typeof LegalSlugRoute
   '/locations/$slug': typeof LocationsSlugRoute
@@ -492,6 +528,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/blog'
     | '/brands'
+    | '/careers'
     | '/cart'
     | '/checkout'
     | '/collections'
@@ -512,6 +549,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/trade'
     | '/warranty'
+    | '/ways-to-pay'
     | '/blog/$slug'
     | '/brands/$slug'
     | '/bundles/$slug'
@@ -519,6 +557,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/leads'
     | '/desk/logistics'
     | '/desk/orders'
     | '/desk/pricing'
@@ -528,6 +567,7 @@ export interface FileRouteTypes {
     | '/desk/returns'
     | '/desk/reviews'
     | '/desk/rfqs'
+    | '/divisions/$slug'
     | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
@@ -545,6 +585,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/account'
     | '/blog'
+    | '/careers'
     | '/cart'
     | '/checkout'
     | '/collections'
@@ -564,6 +605,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/trade'
     | '/warranty'
+    | '/ways-to-pay'
     | '/blog/$slug'
     | '/brands/$slug'
     | '/bundles/$slug'
@@ -571,6 +613,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/leads'
     | '/desk/logistics'
     | '/desk/orders'
     | '/desk/pricing'
@@ -580,6 +623,7 @@ export interface FileRouteTypes {
     | '/desk/returns'
     | '/desk/reviews'
     | '/desk/rfqs'
+    | '/divisions/$slug'
     | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
@@ -598,6 +642,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/blog'
     | '/brands'
+    | '/careers'
     | '/cart'
     | '/checkout'
     | '/collections'
@@ -618,6 +663,7 @@ export interface FileRouteTypes {
     | '/track'
     | '/trade'
     | '/warranty'
+    | '/ways-to-pay'
     | '/blog/$slug'
     | '/brands/$slug'
     | '/bundles/$slug'
@@ -625,6 +671,7 @@ export interface FileRouteTypes {
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
+    | '/desk/leads'
     | '/desk/logistics'
     | '/desk/orders'
     | '/desk/pricing'
@@ -634,6 +681,7 @@ export interface FileRouteTypes {
     | '/desk/returns'
     | '/desk/reviews'
     | '/desk/rfqs'
+    | '/divisions/$slug'
     | '/invoice/$id'
     | '/legal/$slug'
     | '/locations/$slug'
@@ -653,6 +701,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   BlogRoute: typeof BlogRouteWithChildren
   BrandsRoute: typeof BrandsRouteWithChildren
+  CareersRoute: typeof CareersRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRoute
@@ -673,7 +722,9 @@ export interface RootRouteChildren {
   TrackRoute: typeof TrackRoute
   TradeRoute: typeof TradeRoute
   WarrantyRoute: typeof WarrantyRoute
+  WaysToPayRoute: typeof WaysToPayRoute
   BundlesSlugRoute: typeof BundlesSlugRoute
+  DivisionsSlugRoute: typeof DivisionsSlugRoute
   InvoiceIdRoute: typeof InvoiceIdRoute
   LegalSlugRoute: typeof LegalSlugRoute
   LocationsSlugRoute: typeof LocationsSlugRoute
@@ -719,6 +770,13 @@ declare module '@tanstack/react-router' {
       path: '/brands'
       fullPath: '/brands'
       preLoaderRoute: typeof BrandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/careers': {
+      id: '/careers'
+      path: '/careers'
+      fullPath: '/careers'
+      preLoaderRoute: typeof CareersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -861,6 +919,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WarrantyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ways-to-pay': {
+      id: '/ways-to-pay'
+      path: '/ways-to-pay'
+      fullPath: '/ways-to-pay'
+      preLoaderRoute: typeof WaysToPayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$slug': {
       id: '/blog/$slug'
       path: '/$slug'
@@ -922,6 +987,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/desk/inventory'
       preLoaderRoute: typeof DeskInventoryRouteImport
+      parentRoute: typeof DeskRoute
+    }
+    '/desk/leads': {
+      id: '/desk/leads'
+      path: '/leads'
+      fullPath: '/desk/leads'
+      preLoaderRoute: typeof DeskLeadsRouteImport
       parentRoute: typeof DeskRoute
     }
     '/desk/logistics': {
@@ -986,6 +1058,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/desk/rfqs'
       preLoaderRoute: typeof DeskRfqsRouteImport
       parentRoute: typeof DeskRoute
+    }
+    '/divisions/$slug': {
+      id: '/divisions/$slug'
+      path: '/divisions/$slug'
+      fullPath: '/divisions/$slug'
+      preLoaderRoute: typeof DivisionsSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/invoice/$id': {
       id: '/invoice/$id'
@@ -1081,6 +1160,7 @@ interface DeskRouteChildren {
   DeskCustomersRoute: typeof DeskCustomersRoute
   DeskInboxRoute: typeof DeskInboxRoute
   DeskInventoryRoute: typeof DeskInventoryRoute
+  DeskLeadsRoute: typeof DeskLeadsRoute
   DeskLogisticsRoute: typeof DeskLogisticsRoute
   DeskOrdersRoute: typeof DeskOrdersRoute
   DeskPricingRoute: typeof DeskPricingRoute
@@ -1098,6 +1178,7 @@ const DeskRouteChildren: DeskRouteChildren = {
   DeskCustomersRoute: DeskCustomersRoute,
   DeskInboxRoute: DeskInboxRoute,
   DeskInventoryRoute: DeskInventoryRoute,
+  DeskLeadsRoute: DeskLeadsRoute,
   DeskLogisticsRoute: DeskLogisticsRoute,
   DeskOrdersRoute: DeskOrdersRoute,
   DeskPricingRoute: DeskPricingRoute,
@@ -1128,6 +1209,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   BlogRoute: BlogRouteWithChildren,
   BrandsRoute: BrandsRouteWithChildren,
+  CareersRoute: CareersRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRoute,
@@ -1148,7 +1230,9 @@ const rootRouteChildren: RootRouteChildren = {
   TrackRoute: TrackRoute,
   TradeRoute: TradeRoute,
   WarrantyRoute: WarrantyRoute,
+  WaysToPayRoute: WaysToPayRoute,
   BundlesSlugRoute: BundlesSlugRoute,
+  DivisionsSlugRoute: DivisionsSlugRoute,
   InvoiceIdRoute: InvoiceIdRoute,
   LegalSlugRoute: LegalSlugRoute,
   LocationsSlugRoute: LocationsSlugRoute,

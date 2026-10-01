@@ -46,6 +46,8 @@ function Home() {
       <Rail title="Customer favourites" kicker="4.5★ and above" href="/shop" products={favs} />
       <BrowseByColour />
       <ShopByProject />
+      <AdBanner slot={adSlot("division-affiliated")} />
+      <AdBanner slot={adSlot("division-finishes")} />
       <Rail title="Editor’s picks" kicker="Merchandising desk — not the algorithm" href="/shop" products={editorial} />
       <AdBanner slot={adSlot("inrail-banner-2")} />
       <Rail title="Value picks" kicker="Everyday commodity lines — not clearance" href="/shop/stock-bricks" products={value} />

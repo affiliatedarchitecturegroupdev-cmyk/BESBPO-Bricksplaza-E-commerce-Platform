@@ -70,6 +70,21 @@ function Partners() {
             Browse the manufacturer shops →
           </Link>
         </section>
+        <section className="mt-14">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Same group, next contract</p>
+          <h2 className="mt-2 font-display text-3xl">From the catalogue to the build</h2>
+          <p className="mt-2 max-w-2xl text-sm text-mortar">
+            Affiliated Builders constructs. Finishes Construction finishes. Neither page is a priced tender.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium">
+            <Link to="/divisions/$slug" params={{ slug: "affiliated-builders" }} className="text-clay">
+              Affiliated Builders →
+            </Link>
+            <Link to="/divisions/$slug" params={{ slug: "finishes-construction" }} className="text-clay">
+              Finishes Construction →
+            </Link>
+          </div>
+        </section>
         <section id="refer" className="mt-14 rounded-2xl bg-kiln p-8 text-bisque sm:p-12">
           <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Referral</p>
           <h2 className="mt-2 font-display text-3xl">Refer a buyer. R500 credit when their first load ships.</h2>

@@ -3,19 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import { AD_SLOTS } from "@/data/ads";
 import { AdBanner } from "@/components/ad-banner";
 import { invalidateAdSchedule, type AdOverride } from "@/lib/ad-schedule";
-import { loadAdSchedule, saveAdSlot } from "@/lib/ads";
+import { loadAdSchedule, saveAdSlot, adEventCounts } from "@/lib/ads";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/desk/promotions")({ component: Promotions });
 
 function Promotions() {
   const [schedule, setSchedule] = useState<Record<string, AdOverride>>({});
+  const [counts, setCounts] = useState<Record<string, { clicks: number; impressions: number }>>({});
   const timers = useRef<Record<string, number>>({});
 
   useEffect(() => {
     loadAdSchedule()
       .then(setSchedule)
       .catch(() => setSchedule({}));
+    adEventCounts()
+      .then(setCounts)
+      .catch(() => setCounts({}));
     return () => {
       for (const id of Object.values(timers.current)) window.clearTimeout(id);
     };
@@ -41,7 +45,7 @@ function Promotions() {
     <div>
       <h1 className="font-display text-3xl">Promotions & banners</h1>
       <p className="mt-1 max-w-2xl text-sm text-dim">
-        Eight placement zones. No third-party network — every slot is Bricksplaza creative. A pause or a date window is stored for every visitor, not just this browser. Only the yard desk can save a change.
+        Every placement zone is Bricksplaza creative. A click and an impression are counted per slot, with the page path. A pause or a date window is stored for every visitor. Only the yard desk can save a change.
       </p>
       <div className="mt-8 space-y-8">
         {AD_SLOTS.map((slot) => {
@@ -56,6 +60,8 @@ function Promotions() {
                   <h2 className="font-display text-xl">{slot.name}</h2>
                   <p className="text-xs text-dim">
                     {slot.placement} · {slot.position} · {slot.creativeType}
+                    {" · "}
+                    {counts[slot.id]?.impressions ?? 0} impressions · {counts[slot.id]?.clicks ?? 0} clicks
                   </p>
                 </div>
                 <label className="flex items-center gap-2 text-sm">

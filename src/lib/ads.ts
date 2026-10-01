@@ -69,3 +69,37 @@ export const saveAdSlot = createServerFn({ method: "POST" })
         updated_at = now()`;
     return { ok: true as const };
   });
+
+export const recordAdEvent = createServerFn({ method: "POST" })
+  .validator((d: { slotId?: string; event?: string; path?: string }) => ({
+    slotId: String(d?.slotId ?? "").slice(0, 80),
+    event: String(d?.event ?? ""),
+    path: String(d?.path ?? "").slice(0, 200),
+  }))
+  .handler(async ({ data }) => {
+    if (!SLOT_IDS.has(data.slotId)) return { ok: false as const };
+    if (data.event !== "click" && data.event !== "impression") return { ok: false as const };
+    const path = data.path.startsWith("/") ? data.path : null;
+    const sql = await getSql();
+    await sql`insert into ad_events (slot_id, event, path) values (${data.slotId}, ${data.event}, ${path})`;
+    return { ok: true as const };
+  });
+
+export const adEventCounts = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const { assertYard } = await import("./commerce");
+    await assertYard(context.userId);
+    const sql = await getSql();
+    const rows = await sql<{ slot_id: string; event: string; n: number }>`
+      select slot_id, event, count(*)::int as n from ad_events group by slot_id, event
+    `;
+    const counts: Record<string, { clicks: number; impressions: number }> = {};
+    for (const row of rows) {
+      const slot = counts[row.slot_id] ?? { clicks: 0, impressions: 0 };
+      if (row.event === "click") slot.clicks = Number(row.n);
+      if (row.event === "impression") slot.impressions = Number(row.n);
+      counts[row.slot_id] = slot;
+    }
+    return counts;
+  });
