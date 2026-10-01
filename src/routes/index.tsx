@@ -273,7 +273,7 @@ function Bundles() {
   );
 }
 
-function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string; ranges: number }[] }) {
+function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string; ranges: number; products: number }[] }) {
   if (!shops.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -296,7 +296,9 @@ function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string
             className="rounded-xl border border-line bg-paper p-5 hover:border-clay"
           >
             <p className="font-display text-2xl">{shop.brand}</p>
-            <p className="mt-1 text-sm text-muted">{shop.ranges} quote-only ranges</p>
+            <p className="mt-1 text-sm text-muted">
+              {shop.ranges} ranges · {shop.products} named products
+            </p>
           </Link>
         ))}
       </div>

@@ -9,7 +9,6 @@ export const Route = createFileRoute("/brands/")({
 
 function Brands() {
   const shops = Route.useLoaderData();
-  const total = shops.reduce((n, s) => n + s.ranges, 0);
   return (
     <>
       <PageHeader
@@ -19,7 +18,8 @@ function Brands() {
       />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <p className="text-sm text-mortar">
-          {total} quote-only ranges across {shops.length} manufacturers.
+          {shops.reduce((n, s) => n + s.ranges, 0)} ranges and {shops.reduce((n, s) => n + s.products, 0)} named products.
+          A named product is here only because a brochure or the manufacturer’s own page printed it. Missing figures stay blank.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {shops.map((shop) => (
@@ -29,7 +29,9 @@ function Brands() {
               params={{ slug: shop.brand_slug }}
               className="rounded-xl border border-line bg-paper p-6 shadow-[var(--shadow-card)] hover:border-clay"
             >
-              <p className="text-[11px] uppercase tracking-[0.18em] text-clay">{shop.ranges} ranges</p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-clay">
+                {shop.ranges} ranges · {shop.products} named products
+              </p>
               <h2 className="mt-2 font-display text-3xl">{shop.brand}</h2>
               <p className="mt-2 text-sm text-mortar">{BRAND_COPY[shop.brand_slug]?.line}</p>
               <p className="mt-4 text-sm font-medium text-clay">Open the shop →</p>

@@ -17,12 +17,21 @@ export type BrandSku = {
   publication_status: string;
   source_status: string;
   notes: string;
+  parent_sku: string | null;
+  spec_status: string;
+  mass_kg: number | null;
+  units_per_m2: number | null;
+  units_per_pallet: number | null;
+  factory: string | null;
+  source_url: string | null;
+  manufacturer_code: string | null;
 };
 
 export type BrandShop = {
   brand: string;
   brand_slug: string;
   ranges: number;
+  products: number;
 };
 
 function mapSku(r: Record<string, unknown>): BrandSku {
@@ -44,13 +53,23 @@ function mapSku(r: Record<string, unknown>): BrandSku {
     publication_status: String(r.publication_status),
     source_status: String(r.source_status),
     notes: String(r.notes ?? ""),
+    parent_sku: text("parent_sku"),
+    spec_status: String(r.spec_status ?? "family_only"),
+    mass_kg: r.mass_kg == null ? null : Number(r.mass_kg),
+    units_per_m2: r.units_per_m2 == null ? null : Number(r.units_per_m2),
+    units_per_pallet: r.units_per_pallet == null ? null : Number(r.units_per_pallet),
+    factory: text("factory"),
+    source_url: text("source_url"),
+    manufacturer_code: text("manufacturer_code"),
   };
 }
 
 export async function brandShops(): Promise<BrandShop[]> {
   const sql = await getSql();
-  const rows = await sql<{ brand: string; brand_slug: string; ranges: number }>`
-    select brand, brand_slug, count(*)::int as ranges
+  const rows = await sql<{ brand: string; brand_slug: string; ranges: number; products: number }>`
+    select brand, brand_slug,
+      count(*) filter (where parent_sku is null)::int as ranges,
+      count(*) filter (where parent_sku is not null)::int as products
     from brand_skus
     group by brand, brand_slug
     order by brand
@@ -59,6 +78,7 @@ export async function brandShops(): Promise<BrandShop[]> {
     brand: String(r.brand),
     brand_slug: String(r.brand_slug),
     ranges: Number(r.ranges),
+    products: Number(r.products),
   }));
 }
 
@@ -77,7 +97,8 @@ export async function matchBrandRanges(q: string): Promise<BrandSku[]> {
   const sql = await getSql();
   const rows = await sql<Record<string, unknown>>`
     select * from brand_skus
-    where brand ilike ${like} or family ilike ${like} or name ilike ${like} or sku ilike ${like}
+    where brand ilike ${like} or family ilike ${like} or name ilike ${like}
+       or sku ilike ${like} or manufacturer_code ilike ${like}
     order by brand, sku
     limit 12
   `;
