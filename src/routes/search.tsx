@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/layout";
 import { Listing } from "@/components/listing";
 import { closestCategory } from "@/lib/search";
 import { queryListing } from "@/lib/products";
+import { searchBrandRanges } from "@/lib/brands";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AdBanner } from "@/components/ad-banner";
@@ -17,16 +18,21 @@ export const Route = createFileRoute("/search")({
     category: typeof s.category === "string" ? s.category : undefined,
   }),
   loaderDeps: ({ search }) => search,
-  loader: ({ deps }) =>
-    queryListing({
-      data: { q: deps.q, scopeColour: deps.colour, category: deps.category },
-    }),
+  loader: async ({ deps }) => {
+    const [listing, brands] = await Promise.all([
+      queryListing({
+        data: { q: deps.q, scopeColour: deps.colour, category: deps.category },
+      }),
+      searchBrandRanges({ data: deps.q ?? "" }),
+    ]);
+    return { listing, brands };
+  },
   component: SearchPage,
 });
 
 function SearchPage() {
   const { q = "", colour, category } = Route.useSearch();
-  const initial = Route.useLoaderData();
+  const { listing, brands } = Route.useLoaderData();
   const navigate = useNavigate();
   const fallback = closestCategory(q);
 
@@ -48,7 +54,24 @@ function SearchPage() {
         <div className="mb-8">
           <AdBanner slot={searchBanner(q)} contained />
         </div>
-        {initial.total === 0 ? (
+        {brands.length > 0 && (
+          <div className="mb-8 rounded-xl border border-line bg-paper p-4">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-clay">Manufacturer ranges</p>
+            <ul className="mt-3 divide-y divide-line">
+              {brands.map((range) => (
+                <li key={range.sku} className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
+                  <span>
+                    <span className="font-mono text-xs text-muted">{range.sku}</span> {range.brand} · {range.name}
+                  </span>
+                  <Link to="/brands/$slug" params={{ slug: range.brand_slug }} className="text-clay">
+                    Open shop
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {listing.total === 0 ? (
           <div className="rounded-xl bg-card px-6 py-16 text-center">
             <p className="font-display text-2xl">No exact matches</p>
             <p className="mt-2 text-mortar">
@@ -68,7 +91,7 @@ function SearchPage() {
             </div>
           </div>
         ) : (
-          <Listing scope={{ q, colour, category }} initial={initial} />
+          <Listing scope={{ q, colour, category }} initial={listing} />
         )}
       </div>
     </>

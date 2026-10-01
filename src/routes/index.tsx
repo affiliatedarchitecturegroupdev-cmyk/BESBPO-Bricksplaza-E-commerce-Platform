@@ -9,18 +9,23 @@ import { Button } from "@/components/ui/button";
 import { useViewed } from "@/lib/cart-store";
 import { useProductsBySku } from "@/lib/use-products";
 import { loadHome } from "@/lib/products";
+import { listBrandShops } from "@/lib/brands";
 import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
 import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
-  loader: () => loadHome(),
+  loader: async () => {
+    const [home, brands] = await Promise.all([loadHome(), listBrandShops()]);
+    return { home, brands };
+  },
   component: Home,
 });
 
 function Home() {
   const { trending, arrivals, clearance, best, favs, editorial, value, bulk, restocked, colours } =
-    Route.useLoaderData();
+    Route.useLoaderData().home;
+  const brands = Route.useLoaderData().brands;
 
   return (
     <>
@@ -31,6 +36,7 @@ function Home() {
       <Bundles />
       <Rail title="Clearance" kicker="Overstock & discontinued colourways" href="/search" products={clearance} />
       <ShopByCategory />
+      <SpecifiedBrands shops={brands} />
       <AdBanner slot={adSlot("midpage-banner")} />
       <ShopBySector />
       <ColourCollections colours={colours} />
@@ -262,6 +268,37 @@ function Bundles() {
             </a>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string; ranges: number }[] }) {
+  if (!shops.length) return null;
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Specified by name</p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+        <h2 className="font-display text-3xl">Manufacturer shops</h2>
+        <Link to="/brands" className="text-sm font-medium text-clay">
+          All four shops <ArrowRight className="inline size-4" />
+        </Link>
+      </div>
+      <p className="mt-2 max-w-2xl text-sm text-mortar">
+        When the instruction is “this face brick must be Corobrik”, start in that shop. These ranges sit beside the priced catalogue. They are quoted, not sold off a shelf price.
+      </p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {shops.map((shop) => (
+          <Link
+            key={shop.brand_slug}
+            to="/brands/$slug"
+            params={{ slug: shop.brand_slug }}
+            className="rounded-xl border border-line bg-paper p-5 hover:border-clay"
+          >
+            <p className="font-display text-2xl">{shop.brand}</p>
+            <p className="mt-1 text-sm text-muted">{shop.ranges} quote-only ranges</p>
+          </Link>
+        ))}
       </div>
     </section>
   );

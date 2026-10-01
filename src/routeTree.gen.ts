@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as BrandsRouteImport } from './routes/brands'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CollectionsRouteImport } from './routes/collections'
@@ -34,8 +35,11 @@ import { Route as TrackRouteImport } from './routes/track'
 import { Route as TradeRouteImport } from './routes/trade'
 import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as BrandsIndexRouteImport } from './routes/brands.index'
+import { Route as BrandsSlugRouteImport } from './routes/brands.$slug'
 import { Route as BundlesSlugRouteImport } from './routes/bundles.$slug'
 import { Route as DeskIndexRouteImport } from './routes/desk.index'
+import { Route as DeskBrandsRouteImport } from './routes/desk.brands'
 import { Route as DeskCustomersRouteImport } from './routes/desk.customers'
 import { Route as DeskInboxRouteImport } from './routes/desk.inbox'
 import { Route as DeskInventoryRouteImport } from './routes/desk.inventory'
@@ -74,6 +78,11 @@ const AccountRoute = AccountRouteImport.update({
 const BlogRoute = BlogRouteImport.update({
   id: '/blog',
   path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandsRoute = BrandsRouteImport.update({
+  id: '/brands',
+  path: '/brands',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -181,6 +190,16 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogRoute,
 } as any)
+const BrandsIndexRoute = BrandsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BrandsRoute,
+} as any)
+const BrandsSlugRoute = BrandsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BrandsRoute,
+} as any)
 const BundlesSlugRoute = BundlesSlugRouteImport.update({
   id: '/bundles/$slug',
   path: '/bundles/$slug',
@@ -189,6 +208,11 @@ const BundlesSlugRoute = BundlesSlugRouteImport.update({
 const DeskIndexRoute = DeskIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DeskRoute,
+} as any)
+const DeskBrandsRoute = DeskBrandsRouteImport.update({
+  id: '/brands',
+  path: '/brands',
   getParentRoute: () => DeskRoute,
 } as any)
 const DeskCustomersRoute = DeskCustomersRouteImport.update({
@@ -292,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
   '/blog': typeof BlogRouteWithChildren
+  '/brands': typeof BrandsRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
@@ -313,7 +338,9 @@ export interface FileRoutesByFullPath {
   '/trade': typeof TradeRoute
   '/warranty': typeof WarrantyRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/brands/$slug': typeof BrandsSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
+  '/desk/brands': typeof DeskBrandsRoute
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
@@ -332,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/product/$sku': typeof ProductSkuRoute
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -360,7 +388,9 @@ export interface FileRoutesByTo {
   '/trade': typeof TradeRoute
   '/warranty': typeof WarrantyRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/brands/$slug': typeof BrandsSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
+  '/desk/brands': typeof DeskBrandsRoute
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
@@ -379,6 +409,7 @@ export interface FileRoutesByTo {
   '/product/$sku': typeof ProductSkuRoute
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/brands': typeof BrandsIndexRoute
   '/desk': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -388,6 +419,7 @@ export interface FileRoutesById {
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
   '/blog': typeof BlogRouteWithChildren
+  '/brands': typeof BrandsRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
@@ -409,7 +441,9 @@ export interface FileRoutesById {
   '/trade': typeof TradeRoute
   '/warranty': typeof WarrantyRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/brands/$slug': typeof BrandsSlugRoute
   '/bundles/$slug': typeof BundlesSlugRoute
+  '/desk/brands': typeof DeskBrandsRoute
   '/desk/customers': typeof DeskCustomersRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
@@ -428,6 +462,7 @@ export interface FileRoutesById {
   '/product/$sku': typeof ProductSkuRoute
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
+  '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -438,6 +473,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/account'
     | '/blog'
+    | '/brands'
     | '/cart'
     | '/checkout'
     | '/collections'
@@ -459,7 +495,9 @@ export interface FileRouteTypes {
     | '/trade'
     | '/warranty'
     | '/blog/$slug'
+    | '/brands/$slug'
     | '/bundles/$slug'
+    | '/desk/brands'
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
@@ -478,6 +516,7 @@ export interface FileRouteTypes {
     | '/product/$sku'
     | '/sectors/$slug'
     | '/shop/$slug'
+    | '/brands/'
     | '/desk/'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -506,7 +545,9 @@ export interface FileRouteTypes {
     | '/trade'
     | '/warranty'
     | '/blog/$slug'
+    | '/brands/$slug'
     | '/bundles/$slug'
+    | '/desk/brands'
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
@@ -525,6 +566,7 @@ export interface FileRouteTypes {
     | '/product/$sku'
     | '/sectors/$slug'
     | '/shop/$slug'
+    | '/brands'
     | '/desk'
     | '/api/auth/$'
   id:
@@ -533,6 +575,7 @@ export interface FileRouteTypes {
     | '/accessibility'
     | '/account'
     | '/blog'
+    | '/brands'
     | '/cart'
     | '/checkout'
     | '/collections'
@@ -554,7 +597,9 @@ export interface FileRouteTypes {
     | '/trade'
     | '/warranty'
     | '/blog/$slug'
+    | '/brands/$slug'
     | '/bundles/$slug'
+    | '/desk/brands'
     | '/desk/customers'
     | '/desk/inbox'
     | '/desk/inventory'
@@ -573,6 +618,7 @@ export interface FileRouteTypes {
     | '/product/$sku'
     | '/sectors/$slug'
     | '/shop/$slug'
+    | '/brands/'
     | '/desk/'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -582,6 +628,7 @@ export interface RootRouteChildren {
   AccessibilityRoute: typeof AccessibilityRoute
   AccountRoute: typeof AccountRoute
   BlogRoute: typeof BlogRouteWithChildren
+  BrandsRoute: typeof BrandsRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRoute
@@ -640,6 +687,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brands': {
+      id: '/brands'
+      path: '/brands'
+      fullPath: '/brands'
+      preLoaderRoute: typeof BrandsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -789,6 +843,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/brands/': {
+      id: '/brands/'
+      path: '/'
+      fullPath: '/brands/'
+      preLoaderRoute: typeof BrandsIndexRouteImport
+      parentRoute: typeof BrandsRoute
+    }
+    '/brands/$slug': {
+      id: '/brands/$slug'
+      path: '/$slug'
+      fullPath: '/brands/$slug'
+      preLoaderRoute: typeof BrandsSlugRouteImport
+      parentRoute: typeof BrandsRoute
+    }
     '/bundles/$slug': {
       id: '/bundles/$slug'
       path: '/bundles/$slug'
@@ -801,6 +869,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/desk/'
       preLoaderRoute: typeof DeskIndexRouteImport
+      parentRoute: typeof DeskRoute
+    }
+    '/desk/brands': {
+      id: '/desk/brands'
+      path: '/brands'
+      fullPath: '/desk/brands'
+      preLoaderRoute: typeof DeskBrandsRouteImport
       parentRoute: typeof DeskRoute
     }
     '/desk/customers': {
@@ -949,7 +1024,21 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
+interface BrandsRouteChildren {
+  BrandsSlugRoute: typeof BrandsSlugRoute
+  BrandsIndexRoute: typeof BrandsIndexRoute
+}
+
+const BrandsRouteChildren: BrandsRouteChildren = {
+  BrandsSlugRoute: BrandsSlugRoute,
+  BrandsIndexRoute: BrandsIndexRoute,
+}
+
+const BrandsRouteWithChildren =
+  BrandsRoute._addFileChildren(BrandsRouteChildren)
+
 interface DeskRouteChildren {
+  DeskBrandsRoute: typeof DeskBrandsRoute
   DeskCustomersRoute: typeof DeskCustomersRoute
   DeskInboxRoute: typeof DeskInboxRoute
   DeskInventoryRoute: typeof DeskInventoryRoute
@@ -965,6 +1054,7 @@ interface DeskRouteChildren {
 }
 
 const DeskRouteChildren: DeskRouteChildren = {
+  DeskBrandsRoute: DeskBrandsRoute,
   DeskCustomersRoute: DeskCustomersRoute,
   DeskInboxRoute: DeskInboxRoute,
   DeskInventoryRoute: DeskInventoryRoute,
@@ -996,6 +1086,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccessibilityRoute: AccessibilityRoute,
   AccountRoute: AccountRoute,
   BlogRoute: BlogRouteWithChildren,
+  BrandsRoute: BrandsRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRoute,

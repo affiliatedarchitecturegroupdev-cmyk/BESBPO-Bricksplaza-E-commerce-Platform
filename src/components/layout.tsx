@@ -115,6 +115,9 @@ function Header() {
               </div>
             )}
           </div>
+          <Link to="/brands" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
+            Brands
+          </Link>
           <Link to="/sectors/$slug" params={{ slug: "residential" }} className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Sectors
           </Link>
@@ -288,6 +291,9 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
             ))}
           </div>
         ))}
+        <Link to="/brands" onClick={onClose} className="block py-2 font-medium">
+          Manufacturer shops
+        </Link>
         <Link to="/projects" onClick={onClose} className="block py-2 font-medium">
           Projects
         </Link>
@@ -366,6 +372,11 @@ function Footer() {
             <li>
               <Link to="/rfq" className="text-dim hover:text-bisque">
                 Bulk quote / RFQ
+              </Link>
+            </li>
+            <li>
+              <Link to="/brands" className="text-dim hover:text-bisque">
+                Manufacturer shops
               </Link>
             </li>
             <li>
@@ -532,6 +543,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
     ["/desk/questions", "Questions"],
     ["/desk/inbox", "Inbox"],
     ["/desk/inventory", "Inventory"],
+    ["/desk/brands", "Brands"],
     ["/desk/customers", "Trade & customers"],
     ["/desk/pricing", "Pricing engine"],
     ["/desk/promotions", "Promotions"],

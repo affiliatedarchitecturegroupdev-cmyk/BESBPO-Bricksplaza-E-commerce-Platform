@@ -60,6 +60,16 @@ function Partners() {
             </article>
           ))}
         </div>
+        <section className="mt-14">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Named on the drawing</p>
+          <h2 className="mt-2 font-display text-3xl">Four manufacturer shops</h2>
+          <p className="mt-2 max-w-2xl text-sm text-mortar">
+            Corobrik, Bosun, Technicrete and Infraset each have a quote-only shop. They do not replace the priced catalogue, and a page here is not a claim that Bricksplaza is an authorised stockist.
+          </p>
+          <Link to="/brands" className="mt-4 inline-block text-sm font-medium text-clay">
+            Browse the manufacturer shops →
+          </Link>
+        </section>
         <section id="refer" className="mt-14 rounded-2xl bg-kiln p-8 text-bisque sm:p-12">
           <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Referral</p>
           <h2 className="mt-2 font-display text-3xl">Refer a buyer. R500 credit when their first load ships.</h2>
