@@ -19,6 +19,7 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DeliveryReachRouteImport } from './routes/delivery-reach'
 import { Route as DeskRouteImport } from './routes/desk'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HealthzRouteImport } from './routes/healthz'
@@ -27,6 +28,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as NewRouteImport } from './routes/new'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as ResponsibleSourcingRouteImport } from './routes/responsible-sourcing'
 import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as RfqRouteImport } from './routes/rfq'
 import { Route as SearchRouteImport } from './routes/search'
@@ -36,6 +38,7 @@ import { Route as TrackRouteImport } from './routes/track'
 import { Route as TradeRouteImport } from './routes/trade'
 import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as WaysToPayRouteImport } from './routes/ways-to-pay'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BrandsIndexRouteImport } from './routes/brands.index'
 import { Route as BrandsSlugRouteImport } from './routes/brands.$slug'
@@ -118,6 +121,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeliveryReachRoute = DeliveryReachRouteImport.update({
+  id: '/delivery-reach',
+  path: '/delivery-reach',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeskRoute = DeskRouteImport.update({
   id: '/desk',
   path: '/desk',
@@ -156,6 +164,11 @@ const PartnersRoute = PartnersRouteImport.update({
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsibleSourcingRoute = ResponsibleSourcingRouteImport.update({
+  id: '/responsible-sourcing',
+  path: '/responsible-sourcing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReturnsRoute = ReturnsRouteImport.update({
@@ -202,6 +215,11 @@ const WaysToPayRoute = WaysToPayRouteImport.update({
   id: '/ways-to-pay',
   path: '/ways-to-pay',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
@@ -370,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
+  '/delivery-reach': typeof DeliveryReachRoute
   '/desk': typeof DeskRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/healthz': typeof HealthzRoute
@@ -378,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/new': typeof NewRoute
   '/partners': typeof PartnersRoute
   '/projects': typeof ProjectsRoute
+  '/responsible-sourcing': typeof ResponsibleSourcingRoute
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
@@ -414,6 +434,7 @@ export interface FileRoutesByFullPath {
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/spec/$sku': typeof SpecSkuRoute
+  '/blog/': typeof BlogIndexRoute
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -423,12 +444,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
-  '/blog': typeof BlogRouteWithChildren
   '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
+  '/delivery-reach': typeof DeliveryReachRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
@@ -436,6 +457,7 @@ export interface FileRoutesByTo {
   '/new': typeof NewRoute
   '/partners': typeof PartnersRoute
   '/projects': typeof ProjectsRoute
+  '/responsible-sourcing': typeof ResponsibleSourcingRoute
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
@@ -472,6 +494,7 @@ export interface FileRoutesByTo {
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/spec/$sku': typeof SpecSkuRoute
+  '/blog': typeof BlogIndexRoute
   '/brands': typeof BrandsIndexRoute
   '/desk': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -489,6 +512,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
+  '/delivery-reach': typeof DeliveryReachRoute
   '/desk': typeof DeskRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/healthz': typeof HealthzRoute
@@ -497,6 +521,7 @@ export interface FileRoutesById {
   '/new': typeof NewRoute
   '/partners': typeof PartnersRoute
   '/projects': typeof ProjectsRoute
+  '/responsible-sourcing': typeof ResponsibleSourcingRoute
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
@@ -533,6 +558,7 @@ export interface FileRoutesById {
   '/sectors/$slug': typeof SectorsSlugRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/spec/$sku': typeof SpecSkuRoute
+  '/blog/': typeof BlogIndexRoute
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -551,6 +577,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/contact'
+    | '/delivery-reach'
     | '/desk'
     | '/forgot-password'
     | '/healthz'
@@ -559,6 +586,7 @@ export interface FileRouteTypes {
     | '/new'
     | '/partners'
     | '/projects'
+    | '/responsible-sourcing'
     | '/returns'
     | '/rfq'
     | '/search'
@@ -595,6 +623,7 @@ export interface FileRouteTypes {
     | '/sectors/$slug'
     | '/shop/$slug'
     | '/spec/$sku'
+    | '/blog/'
     | '/brands/'
     | '/desk/'
     | '/api/auth/$'
@@ -604,12 +633,12 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/account'
-    | '/blog'
     | '/careers'
     | '/cart'
     | '/checkout'
     | '/collections'
     | '/contact'
+    | '/delivery-reach'
     | '/forgot-password'
     | '/healthz'
     | '/help'
@@ -617,6 +646,7 @@ export interface FileRouteTypes {
     | '/new'
     | '/partners'
     | '/projects'
+    | '/responsible-sourcing'
     | '/returns'
     | '/rfq'
     | '/search'
@@ -653,6 +683,7 @@ export interface FileRouteTypes {
     | '/sectors/$slug'
     | '/shop/$slug'
     | '/spec/$sku'
+    | '/blog'
     | '/brands'
     | '/desk'
     | '/api/auth/$'
@@ -669,6 +700,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/contact'
+    | '/delivery-reach'
     | '/desk'
     | '/forgot-password'
     | '/healthz'
@@ -677,6 +709,7 @@ export interface FileRouteTypes {
     | '/new'
     | '/partners'
     | '/projects'
+    | '/responsible-sourcing'
     | '/returns'
     | '/rfq'
     | '/search'
@@ -713,6 +746,7 @@ export interface FileRouteTypes {
     | '/sectors/$slug'
     | '/shop/$slug'
     | '/spec/$sku'
+    | '/blog/'
     | '/brands/'
     | '/desk/'
     | '/api/auth/$'
@@ -730,6 +764,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRoute
   ContactRoute: typeof ContactRoute
+  DeliveryReachRoute: typeof DeliveryReachRoute
   DeskRoute: typeof DeskRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HealthzRoute: typeof HealthzRoute
@@ -738,6 +773,7 @@ export interface RootRouteChildren {
   NewRoute: typeof NewRoute
   PartnersRoute: typeof PartnersRoute
   ProjectsRoute: typeof ProjectsRoute
+  ResponsibleSourcingRoute: typeof ResponsibleSourcingRoute
   ReturnsRoute: typeof ReturnsRoute
   RfqRoute: typeof RfqRoute
   SearchRoute: typeof SearchRoute
@@ -832,6 +868,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/delivery-reach': {
+      id: '/delivery-reach'
+      path: '/delivery-reach'
+      fullPath: '/delivery-reach'
+      preLoaderRoute: typeof DeliveryReachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/desk': {
       id: '/desk'
       path: '/desk'
@@ -886,6 +929,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responsible-sourcing': {
+      id: '/responsible-sourcing'
+      path: '/responsible-sourcing'
+      fullPath: '/responsible-sourcing'
+      preLoaderRoute: typeof ResponsibleSourcingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/returns': {
@@ -950,6 +1000,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/ways-to-pay'
       preLoaderRoute: typeof WaysToPayRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -1173,10 +1230,12 @@ declare module '@tanstack/react-router' {
 
 interface BlogRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
@@ -1255,6 +1314,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRoute,
   ContactRoute: ContactRoute,
+  DeliveryReachRoute: DeliveryReachRoute,
   DeskRoute: DeskRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HealthzRoute: HealthzRoute,
@@ -1263,6 +1323,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewRoute: NewRoute,
   PartnersRoute: PartnersRoute,
   ProjectsRoute: ProjectsRoute,
+  ResponsibleSourcingRoute: ResponsibleSourcingRoute,
   ReturnsRoute: ReturnsRoute,
   RfqRoute: RfqRoute,
   SearchRoute: SearchRoute,

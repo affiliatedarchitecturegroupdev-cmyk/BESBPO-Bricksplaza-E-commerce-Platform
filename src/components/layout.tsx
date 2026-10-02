@@ -43,7 +43,15 @@ function TopBar() {
   return (
     <div className="bg-kiln text-bisque">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 text-[11px] uppercase tracking-[0.16em] sm:px-6">
-        <p className="truncate">Gauteng & KZN yards · Nationwide pallet freight</p>
+        <p className="truncate">
+          <Link to="/delivery-reach" className="hover:text-gold">
+            Delivery reach
+          </Link>
+          <span className="mx-2 text-dim">·</span>
+          <Link to="/responsible-sourcing" className="hover:text-gold">
+            Responsible sourcing
+          </Link>
+        </p>
         <div className="hidden items-center gap-4 sm:flex">
           <Link to="/trade" className="hover:text-gold">
             Trade accounts
@@ -126,7 +134,7 @@ function Header() {
             </Link>
           </div>
         </div>
-        <nav ref={navRef} className="mx-auto hidden max-w-7xl items-center gap-1 px-4 pb-2 lg:flex sm:px-6">
+        <nav ref={navRef} className="mx-auto hidden max-w-7xl flex-wrap items-center gap-1 px-4 pb-2 lg:flex sm:px-6">
           <div className="relative">
             <button
               type="button"
@@ -201,6 +209,9 @@ function Header() {
           </Link>
           <Link to="/trade" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Trade
+          </Link>
+          <Link to="/delivery-reach" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
+            Delivery reach
           </Link>
           <Link to="/help" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Help
@@ -301,6 +312,8 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
     ["/blog", "Blog"],
     ["/projects", "Projects"],
     ["/trade", "Trade"],
+    ["/delivery-reach", "Delivery reach"],
+    ["/responsible-sourcing", "Responsible sourcing"],
     ["/partners", "Partners"],
     ["/help", "Help"],
     ["/contact", "Contact"],
@@ -431,6 +444,16 @@ function Footer() {
             <li>
               <Link to="/blog" className="text-dim hover:text-bisque">
                 Blog
+              </Link>
+            </li>
+            <li>
+              <Link to="/responsible-sourcing" className="text-dim hover:text-bisque">
+                Responsible sourcing
+              </Link>
+            </li>
+            <li>
+              <Link to="/delivery-reach" className="text-dim hover:text-bisque">
+                Delivery reach
               </Link>
             </li>
             <li>

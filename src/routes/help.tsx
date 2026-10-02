@@ -18,6 +18,12 @@ function Help() {
           ))}
         </div>
         <div className="mt-8 flex flex-wrap gap-4 text-sm">
+          <Link to="/delivery-reach" className="text-clay">
+            Delivery reach
+          </Link>
+          <Link to="/responsible-sourcing" className="text-clay">
+            Responsible sourcing
+          </Link>
           <Link to="/contact" className="text-clay">
             Contact us
           </Link>

@@ -233,7 +233,10 @@ function ProductPage() {
                 : "Quote will be confirmed within 1 business day (250 km+)."}
               {product.unitsPerPallet > 0
                 ? ` · ${Math.ceil(qty / product.unitsPerPallet)} pallet${Math.ceil(qty / product.unitsPerPallet) === 1 ? "" : "s"} at this quantity. The band fee is a flat rate for a standard load, not a rate per pallet.`
-                : ""}
+                : ""}{" "}
+              <Link to="/delivery-reach" className="text-clay">
+                Where we deliver
+              </Link>
             </p>
           </div>
         </div>

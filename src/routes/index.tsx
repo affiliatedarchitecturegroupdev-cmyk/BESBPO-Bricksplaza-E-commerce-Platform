@@ -13,13 +13,26 @@ import { listBrandShops } from "@/lib/brands";
 import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
 import { listPublishedPosts } from "@/lib/posts";
+import { SourcingCarousel } from "@/components/sourcing-carousel";
 import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
+    const empty = {
+      trending: [] as Product[],
+      arrivals: [] as Product[],
+      clearance: [] as Product[],
+      best: [] as Product[],
+      favs: [] as Product[],
+      editorial: [] as Product[],
+      value: [] as Product[],
+      bulk: [] as Product[],
+      restocked: [] as Product[],
+      colours: [] as { colour: string; face: Product; semi?: Product; paver?: Product }[],
+    };
     const [home, brands, notes] = await Promise.all([
-      loadHome(),
-      listBrandShops(),
+      loadHome().catch(() => empty),
+      listBrandShops().catch(() => []),
       listPublishedPosts().catch(() => []),
     ]);
     return { home, brands, notes };
@@ -62,6 +75,7 @@ function Home() {
       <Gallery />
       <DeliveryMap />
       <TrustStrip />
+      <SourcingCarousel size="strip" />
       <YardNotes notes={notes} />
       <Newsletter />
       <RecentlyViewed />
@@ -605,10 +619,15 @@ function DeliveryMap() {
     <section className="bg-card py-16">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-2">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Seven provinces served, two yards</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Nine provinces, two yards</p>
           <h2 className="mt-1 font-display text-3xl">Delivery coverage</h2>
           <p className="mt-3 text-mortar">
-            Physical yard fulfilment in Gauteng and KwaZulu-Natal. Online-first nationwide with live distance-banded fees at checkout.
+            Yard fulfilment in Gauteng and KwaZulu-Natal. The other seven provinces are quoted long haul. The town list is on the delivery reach page.
+          </p>
+          <p className="mt-4">
+            <Link to="/delivery-reach" className="text-sm font-medium text-clay">
+              Delivery reach — cities and towns
+            </Link>
           </p>
           <ul className="mt-6 space-y-3">
             {PROVINCES.map((p) => (
@@ -671,6 +690,7 @@ function YardNotes({ notes }: { notes: { slug: string; title: string; tag: strin
               <p className="text-[11px] uppercase tracking-[0.16em] text-clay">{note.tag}</p>
               <h3 className="mt-1 font-display text-xl">{note.title}</h3>
               <p className="mt-2 line-clamp-3 text-sm text-mortar">{note.excerpt}</p>
+              <p className="mt-3 text-sm font-medium text-clay">Read the note</p>
             </div>
           </Link>
         ))}

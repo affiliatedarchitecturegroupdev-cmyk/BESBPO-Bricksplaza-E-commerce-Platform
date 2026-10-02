@@ -134,6 +134,13 @@ function Checkout() {
           {step === 1 && (
             <div className="space-y-4">
               <h1 className="font-display text-2xl">Delivery</h1>
+              <p className="text-sm text-mortar">
+                Not sure we reach the town?{" "}
+                <Link to="/delivery-reach" className="text-clay">
+                  Check the delivery list
+                </Link>
+                .
+              </p>
               <div className="flex gap-2">
                 {(["delivery", "collection"] as const).map((m) => (
                   <button

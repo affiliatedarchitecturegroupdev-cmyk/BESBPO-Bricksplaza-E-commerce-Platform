@@ -71,33 +71,70 @@ async function ensureSeeded() {
   }
 }
 
+function staticCards(): PostCard[] {
+  return BLOG.map((post) => ({
+    slug: post.slug,
+    title: post.title,
+    tag: post.tag,
+    excerpt: post.excerpt,
+    date: post.date,
+    image: `/${COVERS[post.slug] ?? "images/hero/yard.jpg"}`,
+  }));
+}
+
+function staticPost(slug: string): PublicPost | null {
+  const post = BLOG.find((item) => item.slug === slug);
+  if (!post) return null;
+  return {
+    slug: post.slug,
+    title: post.title,
+    tag: post.tag,
+    excerpt: post.excerpt,
+    date: post.date,
+    image: `/${COVERS[post.slug] ?? "images/hero/yard.jpg"}`,
+    body: post.body,
+    skus: [],
+    origin: origin(),
+  };
+}
+
 export async function publishedPosts(): Promise<PostCard[]> {
-  await ensureSeeded();
-  if (!(await tableReady())) return [];
-  const sql = await getSql();
-  const rows = await sql<Record<string, unknown>>`
-    select slug, title, tag, excerpt, published_at from posts
-    where status = 'published' order by published_at desc nulls last, id desc
-  `;
-  return rows.map(card);
+  try {
+    await ensureSeeded();
+    if (!(await tableReady())) return staticCards();
+    const sql = await getSql();
+    const rows = await sql<Record<string, unknown>>`
+      select slug, title, tag, excerpt, published_at from posts
+      where status = 'published' order by published_at desc nulls last, id desc
+    `;
+    if (!rows.length) return staticCards();
+    return rows.map(card);
+  } catch {
+    return staticCards();
+  }
 }
 
 export async function publishedPost(slug: string): Promise<PublicPost | null> {
-  await ensureSeeded();
-  if (!(await tableReady())) return null;
-  const sql = await getSql();
-  const rows = await sql<Record<string, unknown>>`
-    select slug, title, tag, excerpt, body, skus, published_at from posts
-    where slug = ${slug} and status = 'published'
-  `;
-  const row = rows[0];
-  if (!row) return null;
-  return {
-    ...card(row),
-    body: String(row.body ?? ""),
-    skus: String(row.skus ?? "").split(",").map((s) => s.trim()).filter(Boolean),
-    origin: origin(),
-  };
+  try {
+    await ensureSeeded();
+    if (!(await tableReady())) return staticPost(slug);
+    const sql = await getSql();
+    const rows = await sql<Record<string, unknown>>`
+      select slug, title, tag, excerpt, body, skus, published_at from posts
+      where slug = ${slug} and status = 'published'
+    `;
+    const row = rows[0];
+    if (!row) return staticPost(slug);
+    const body = String(row.body ?? "").trim();
+    return {
+      ...card(row),
+      body: body || staticPost(slug)?.body || String(row.excerpt ?? ""),
+      skus: String(row.skus ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+      origin: origin(),
+    };
+  } catch {
+    return staticPost(slug);
+  }
 }
 
 export async function postImage(slug: string) {

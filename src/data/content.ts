@@ -341,7 +341,7 @@ Add 5% on a rectangular patio, 8% on herringbone, and more if the drive has a ci
 export const FAQS = [
   {
     q: "Do you deliver outside Gauteng and KwaZulu-Natal?",
-    a: "Yes. GP and KZN have physical yards (Midrand and Cato Ridge). The other seven provinces are online-first: local/regional/extended bands still apply near the yards; 250 km+ is quoted within one business day rather than blocking the order.",
+    a: "Yes. All nine provinces are on the delivery list. Midrand and Cato Ridge fulfil Gauteng and KwaZulu-Natal. The other seven are quoted long haul, not a flat local fee. Search the city or town on the Delivery reach page. A place that is not listed can still be quoted.",
   },
   {
     q: "What is the difference between Retail, Trade and Volume?",

@@ -38,6 +38,8 @@ function HtmlSitemap() {
         </Col>
         <Col title="Help & legal">
           <Link to="/help">Help</Link>
+          <Link to="/delivery-reach">Delivery reach</Link>
+          <Link to="/responsible-sourcing">Responsible sourcing</Link>
           <Link to="/contact">Contact</Link>
           <Link to="/blog">Blog</Link>
           {Object.entries(LEGAL).map(([slug, p]) => (
