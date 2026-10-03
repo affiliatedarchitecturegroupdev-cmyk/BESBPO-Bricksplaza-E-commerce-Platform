@@ -1,18 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { GROK_PROVIDERS, authEnabled, signIn, authClient } from "@/lib/auth/client";
+import { authEnabled, signIn, authClient } from "@/lib/auth/client";
+import { loadSignInChoices } from "@/lib/auth/sign-in-options";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { useState, type FormEvent } from "react";
 
-export const Route = createFileRoute("/login")({ component: Login });
+export const Route = createFileRoute("/login")({
+  loader: () => loadSignInChoices().catch(() => []),
+  component: Login,
+});
 
 function Login() {
+  const choices = Route.useLoaderData();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const usesSharedBroker = choices.some((choice) => choice.available && !choice.branded);
 
   async function onEmail(e: FormEvent) {
     e.preventDefault();
@@ -54,21 +60,42 @@ function Login() {
           </Link>
           <h1 className="font-display text-3xl">{mode === "in" ? "Sign in" : "Create an account"}</h1>
           <p className="mt-2 text-sm text-mortar">
-            Google, X, or email. Email verification is required before the first paid checkout on a new email account.
+            Google, X, Facebook, Instagram, Microsoft, or email. The permission screen names Bricksplaza once that
+            provider’s own app is connected. Instagram is Meta’s professional login — a personal Instagram account
+            cannot be used.
           </p>
           {authEnabled ? (
             <div className="mt-6 space-y-3">
-              {GROK_PROVIDERS.map((p) => (
+              {choices.map((choice) => (
                 <Button
-                  key={p.providerId}
+                  key={choice.id}
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => signIn(p.providerId, { callbackURL: "/account" })}
+                  disabled={!choice.available}
+                  title={
+                    choice.available
+                      ? undefined
+                      : `${choice.label} is waiting for the Bricksplaza app credentials`
+                  }
+                  onClick={() => {
+                    if (!choice.available) return;
+                    setError(null);
+                    void signIn(choice.id, { callbackURL: "/account" }).catch((err: unknown) => {
+                      setError(err instanceof Error ? err.message : "Could not sign in");
+                    });
+                  }}
                 >
-                  Continue with {p.label}
+                  Continue with {choice.label}
+                  {!choice.available ? " — not connected" : ""}
                 </Button>
               ))}
+              {usesSharedBroker && (
+                <p className="text-xs text-mortar">
+                  Google or X still opens through the shared sign-in service, so that permission screen says xAI. It
+                  will say Bricksplaza after the Bricksplaza client id and secret are set for that provider.
+                </p>
+              )}
               <div className="flex items-center gap-3 py-2 text-xs uppercase tracking-[0.16em] text-muted">
                 <span className="h-px flex-1 bg-line" />
                 or email

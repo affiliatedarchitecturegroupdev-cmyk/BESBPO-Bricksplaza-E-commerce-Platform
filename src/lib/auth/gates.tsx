@@ -1,6 +1,8 @@
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Navigate } from "@tanstack/react-router";
-import { GROK_PROVIDERS, authEnabled, signIn, signOut } from "./client";
+import { authEnabled, signIn, signOut } from "./client";
+import type { SignInChoice } from "./house";
+import { loadSignInChoices } from "./sign-in-options";
 import { hasGateSessionMarker } from "./gate-session-marker";
 import { resolveSignInGateState } from "./sign-in-gate";
 import { useCurrentUser, useCurrentUserState } from "./use-current-user";
@@ -64,16 +66,35 @@ export function SignInGate({
 }
 
 export function SignInButtons() {
+  const [choices, setChoices] = useState<SignInChoice[]>([]);
+  useEffect(() => {
+    let live = true;
+    loadSignInChoices()
+      .then((next) => {
+        if (live) setChoices(next);
+      })
+      .catch(() => {
+        if (live) setChoices([]);
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
   return (
     <div className="flex w-full max-w-sm flex-col gap-2">
-      {GROK_PROVIDERS.map((p) => (
+      {choices.map((choice) => (
         <button
-          key={p.providerId}
+          key={choice.id}
           type="button"
-          onClick={() => signIn(p.providerId, { callbackURL: "/" })}
-          className="w-full cursor-pointer rounded-md border border-neutral-300 px-4 py-2 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-900"
+          disabled={!choice.available}
+          onClick={() => {
+            if (!choice.available) return;
+            void signIn(choice.id, { callbackURL: "/" });
+          }}
+          className="w-full cursor-pointer rounded-md border border-neutral-300 px-4 py-2 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
         >
-          Continue with {p.label}
+          Continue with {choice.label}
+          {!choice.available ? " — not connected" : ""}
         </button>
       ))}
     </div>

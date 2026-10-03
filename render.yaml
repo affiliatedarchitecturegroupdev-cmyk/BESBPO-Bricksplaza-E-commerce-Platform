@@ -24,3 +24,34 @@ services:
         sync: false
       - key: BETTER_AUTH_SECRET
         generateValue: true
+      # Public origin used in OAuth callbacks. Set this to the live site
+      # (https://bricksplaza.co.za or the onrender.com host). Leave unset to
+      # use RENDER_EXTERNAL_URL.
+      - key: BETTER_AUTH_URL
+        sync: false
+      # Each app must be named Bricksplaza in that provider's console. The
+      # permission screen uses that registered name — it cannot be overridden
+      # in code. Callbacks are {BETTER_AUTH_URL}/api/auth/callback/<provider>
+      # except Instagram, which is /api/auth/oauth2/callback/instagram.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: TWITTER_CLIENT_ID
+        sync: false
+      - key: TWITTER_CLIENT_SECRET
+        sync: false
+      - key: FACEBOOK_CLIENT_ID
+        sync: false
+      - key: FACEBOOK_CLIENT_SECRET
+        sync: false
+      - key: INSTAGRAM_CLIENT_ID
+        sync: false
+      - key: INSTAGRAM_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_CLIENT_ID
+        sync: false
+      - key: MICROSOFT_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_TENANT_ID
+        sync: false
