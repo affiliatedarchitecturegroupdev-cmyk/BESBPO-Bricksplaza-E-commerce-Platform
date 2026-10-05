@@ -14,6 +14,7 @@ import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
 import { listPublishedPosts } from "@/lib/posts";
 import { SourcingCarousel } from "@/components/sourcing-carousel";
+import { PitchDeck } from "@/components/pitch-deck";
 import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
@@ -52,6 +53,7 @@ function Home() {
     <>
       <Hero />
       <AdBanner slot={adSlot("hero-banner")} />
+      <PitchDeck />
       <Rail title="Trending now" kicker="Order velocity" href="/shop" products={trending} />
       <Rail title="Recent arrivals" kicker="Newest kiln loads" href="/new" products={arrivals} />
       <Bundles />

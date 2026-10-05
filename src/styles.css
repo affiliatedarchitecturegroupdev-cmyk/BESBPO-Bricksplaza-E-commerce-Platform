@@ -93,3 +93,20 @@
     min-height: 9.5rem;
   }
 }
+
+@keyframes pitch-run {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.pitch-run {
+  animation: pitch-run 8.5s linear forwards;
+}
+
+.pitch-run[data-paused="true"] {
+  animation-play-state: paused;
+}
