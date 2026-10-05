@@ -62,6 +62,7 @@ function mapProduct(r: Record<string, unknown>): Product {
     weightKg: num(r.weight_kg),
     unitsPerPallet: num(r.units_per_pallet),
     description: String(r.description ?? ""),
+    listedAt: r.listed_at ? new Date(String(r.listed_at)).toISOString() : undefined,
   };
 }
 
@@ -201,6 +202,27 @@ export async function queryCatalogue(input: CatalogueQuery): Promise<ListingResu
     total: list.length,
     duties,
     page,
+    pages,
+  };
+}
+
+const JOURNAL_SIZE = 12;
+
+/** Newest catalogue entries first. Falls back to SKU order until listed_at exists. */
+export async function catalogueJournal(page: number) {
+  const all = await cachedProducts();
+  const sorted = [...all].sort((a, b) => {
+    const ta = a.listedAt ? Date.parse(a.listedAt) : 0;
+    const tb = b.listedAt ? Date.parse(b.listedAt) : 0;
+    if (ta !== tb) return tb - ta;
+    return b.sku.localeCompare(a.sku);
+  });
+  const pages = Math.max(1, Math.ceil(sorted.length / JOURNAL_SIZE));
+  const current = Math.min(Math.max(1, page || 1), pages);
+  return {
+    items: sorted.slice((current - 1) * JOURNAL_SIZE, current * JOURNAL_SIZE),
+    total: sorted.length,
+    page: current,
     pages,
   };
 }

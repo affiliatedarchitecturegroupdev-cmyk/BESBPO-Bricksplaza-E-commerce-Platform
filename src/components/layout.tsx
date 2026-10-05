@@ -207,6 +207,9 @@ function Header() {
           <Link to="/blog" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Blog
           </Link>
+          <Link to="/catalogue" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
+            Catalogue
+          </Link>
           <Link to="/trade" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
             Trade
           </Link>
@@ -308,6 +311,7 @@ function SearchBox() {
 function MobileMenu({ onClose }: { onClose: () => void }) {
   const links = [
     ["/shop", "Shop"],
+    ["/catalogue", "Master catalogue"],
     ["/brands", "Brands"],
     ["/blog", "Blog"],
     ["/projects", "Projects"],
@@ -381,6 +385,11 @@ function Footer() {
           <p className="mt-4 text-sm text-dim">
             A specialised operating division of Besbpo Group. Clay masonry, hard landscaping and specialist systems for South Africa.
           </p>
+          <p className="mt-3 text-xs text-dim">
+            Besbpo Group (Pty) Ltd T/A Bricksplaza
+            <br />
+            Reg. no. 2026/490480/07
+          </p>
           <p className="mt-4 flex items-center gap-2 text-sm text-dim">
             <MapPin className="size-4" /> Midrand · Cato Ridge
           </p>
@@ -410,6 +419,11 @@ function Footer() {
         <div>
           <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Shop</p>
           <ul className="mt-3 space-y-2 text-sm">
+            <li>
+              <Link to="/catalogue" className="text-dim hover:text-bisque">
+                Master catalogue
+              </Link>
+            </li>
             {CATEGORIES.slice(0, 8).map((c) => (
               <li key={c.slug}>
                 <Link to="/shop/$slug" params={{ slug: c.slug }} className="text-dim hover:text-bisque">
@@ -526,7 +540,7 @@ function Footer() {
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Ways to pay</p>
             <Link to="/ways-to-pay" className="text-xs text-dim hover:text-bisque">
-              All 18 methods
+              All 19 methods
             </Link>
           </div>
           <ul className="mt-3 flex flex-wrap items-center gap-2">
@@ -538,7 +552,7 @@ function Footer() {
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-dim">PayFast, Ozow, Yoco, Happy Pay and the other methods without a mark are on the same page.</p>
+          <p className="mt-2 text-xs text-dim">EFT and trade account have no gateway mark. Every other method uses the supplier’s logo.</p>
         </div>
       </div>
       <div className="border-t border-bisque/10">
@@ -561,7 +575,7 @@ function Footer() {
       <div className="border-t border-bisque/10">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 text-xs text-dim sm:flex-row sm:justify-between sm:px-6">
           <p>SANS · SABS · NRCS · Agrément SA · PCI-DSS via payment partners</p>
-          <p>© {new Date().getFullYear()} Bricksplaza · A division of Besbpo Group</p>
+          <p>© {new Date().getFullYear()} Besbpo Group (Pty) Ltd T/A Bricksplaza · Reg. no. 2026/490480/07</p>
         </div>
       </div>
     </footer>

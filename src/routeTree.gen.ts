@@ -16,6 +16,7 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BrandsRouteImport } from './routes/brands'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as CartRouteImport } from './routes/cart'
+import { Route as CatalogueRouteImport } from './routes/catalogue'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -66,6 +67,7 @@ import { Route as LocationsSlugRouteImport } from './routes/locations.$slug'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as ProductSkuRouteImport } from './routes/product.$sku'
 import { Route as SectorsSlugRouteImport } from './routes/sectors.$slug'
+import { Route as ShopIndexRouteImport } from './routes/shop.index'
 import { Route as ShopSlugRouteImport } from './routes/shop.$slug'
 import { Route as SpecSkuRouteImport } from './routes/spec.$sku'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -104,6 +106,11 @@ const CareersRoute = CareersRouteImport.update({
 const CartRoute = CartRouteImport.update({
   id: '/cart',
   path: '/cart',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogueRoute = CatalogueRouteImport.update({
+  id: '/catalogue',
+  path: '/catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -356,6 +363,11 @@ const SectorsSlugRoute = SectorsSlugRouteImport.update({
   path: '/sectors/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopIndexRoute = ShopIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopRoute,
+} as any)
 const ShopSlugRoute = ShopSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -385,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/brands': typeof BrandsRouteWithChildren
   '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
+  '/catalogue': typeof CatalogueRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
@@ -437,6 +450,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/media/posts/$slug': typeof MediaPostsSlugRoute
 }
@@ -446,6 +460,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
+  '/catalogue': typeof CatalogueRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
@@ -461,7 +476,6 @@ export interface FileRoutesByTo {
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
-  '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
@@ -497,6 +511,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/brands': typeof BrandsIndexRoute
   '/desk': typeof DeskIndexRoute
+  '/shop': typeof ShopIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/media/posts/$slug': typeof MediaPostsSlugRoute
 }
@@ -509,6 +524,7 @@ export interface FileRoutesById {
   '/brands': typeof BrandsRouteWithChildren
   '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
+  '/catalogue': typeof CatalogueRoute
   '/checkout': typeof CheckoutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
@@ -561,6 +577,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/brands/': typeof BrandsIndexRoute
   '/desk/': typeof DeskIndexRoute
+  '/shop/': typeof ShopIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/media/posts/$slug': typeof MediaPostsSlugRoute
 }
@@ -574,6 +591,7 @@ export interface FileRouteTypes {
     | '/brands'
     | '/careers'
     | '/cart'
+    | '/catalogue'
     | '/checkout'
     | '/collections'
     | '/contact'
@@ -626,6 +644,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/brands/'
     | '/desk/'
+    | '/shop/'
     | '/api/auth/$'
     | '/media/posts/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -635,6 +654,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/careers'
     | '/cart'
+    | '/catalogue'
     | '/checkout'
     | '/collections'
     | '/contact'
@@ -650,7 +670,6 @@ export interface FileRouteTypes {
     | '/returns'
     | '/rfq'
     | '/search'
-    | '/shop'
     | '/sitemap'
     | '/track'
     | '/trade'
@@ -686,6 +705,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/brands'
     | '/desk'
+    | '/shop'
     | '/api/auth/$'
     | '/media/posts/$slug'
   id:
@@ -697,6 +717,7 @@ export interface FileRouteTypes {
     | '/brands'
     | '/careers'
     | '/cart'
+    | '/catalogue'
     | '/checkout'
     | '/collections'
     | '/contact'
@@ -749,6 +770,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/brands/'
     | '/desk/'
+    | '/shop/'
     | '/api/auth/$'
     | '/media/posts/$slug'
   fileRoutesById: FileRoutesById
@@ -761,6 +783,7 @@ export interface RootRouteChildren {
   BrandsRoute: typeof BrandsRouteWithChildren
   CareersRoute: typeof CareersRoute
   CartRoute: typeof CartRoute
+  CatalogueRoute: typeof CatalogueRoute
   CheckoutRoute: typeof CheckoutRoute
   CollectionsRoute: typeof CollectionsRoute
   ContactRoute: typeof ContactRoute
@@ -845,6 +868,13 @@ declare module '@tanstack/react-router' {
       path: '/cart'
       fullPath: '/cart'
       preLoaderRoute: typeof CartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalogue': {
+      id: '/catalogue'
+      path: '/catalogue'
+      fullPath: '/catalogue'
+      preLoaderRoute: typeof CatalogueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -1197,6 +1227,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SectorsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/': {
+      id: '/shop/'
+      path: '/'
+      fullPath: '/shop/'
+      preLoaderRoute: typeof ShopIndexRouteImport
+      parentRoute: typeof ShopRoute
+    }
     '/shop/$slug': {
       id: '/shop/$slug'
       path: '/$slug'
@@ -1295,10 +1332,12 @@ const DeskRouteWithChildren = DeskRoute._addFileChildren(DeskRouteChildren)
 
 interface ShopRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
+  ShopIndexRoute: typeof ShopIndexRoute
 }
 
 const ShopRouteChildren: ShopRouteChildren = {
   ShopSlugRoute: ShopSlugRoute,
+  ShopIndexRoute: ShopIndexRoute,
 }
 
 const ShopRouteWithChildren = ShopRoute._addFileChildren(ShopRouteChildren)
@@ -1311,6 +1350,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrandsRoute: BrandsRouteWithChildren,
   CareersRoute: CareersRoute,
   CartRoute: CartRoute,
+  CatalogueRoute: CatalogueRoute,
   CheckoutRoute: CheckoutRoute,
   CollectionsRoute: CollectionsRoute,
   ContactRoute: ContactRoute,

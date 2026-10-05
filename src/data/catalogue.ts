@@ -33,6 +33,8 @@ export type Product = {
   weightKg: number;
   unitsPerPallet: number;
   description: string;
+  /** When the SKU was entered on the master catalogue. Newest first on /catalogue. */
+  listedAt?: string;
 };
 
 const PRODUCT_PHOTOS = import.meta.glob("../../public/images/products/*.{jpg,jpeg,png,webp}", {

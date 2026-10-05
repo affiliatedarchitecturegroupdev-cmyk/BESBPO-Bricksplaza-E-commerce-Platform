@@ -54,6 +54,15 @@ export const queryListing = createServerFn({ method: "POST" })
     return queryCatalogue(data);
   });
 
+export const loadCatalogueJournal = createServerFn({ method: "GET" })
+  .validator((d: { page?: number }) => ({
+    page: Math.max(1, Math.floor(Number(d?.page) || 1)),
+  }))
+  .handler(async ({ data }) => {
+    const { catalogueJournal } = await import("./products.server");
+    return catalogueJournal(data.page);
+  });
+
 export const loadHome = createServerFn({ method: "GET" }).handler(async () => {
   const { homeCatalogue } = await import("./products.server");
   return homeCatalogue();

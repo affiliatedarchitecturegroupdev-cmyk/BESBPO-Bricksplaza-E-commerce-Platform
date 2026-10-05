@@ -203,7 +203,7 @@ function Checkout() {
             <div>
               <h1 className="font-display text-2xl">Payment</h1>
               <p className="mt-1 text-sm text-mortar">
-                EFT saves the order as awaiting a bank reference. Trade and float use a signed-in account. Every other method is recorded as simulated until that merchant account is connected. Nothing is charged.{" "}
+                EFT saves the order as awaiting a bank reference. Trade uses a signed-in approved account. Float and every other method are recorded until that merchant account is connected. Nothing is charged.{" "}
                 <Link to="/ways-to-pay" className="text-clay">
                   Ways to pay
                 </Link>

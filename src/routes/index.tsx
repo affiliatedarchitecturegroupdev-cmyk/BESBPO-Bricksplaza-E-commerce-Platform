@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { useViewed } from "@/lib/cart-store";
 import { useProductsBySku } from "@/lib/use-products";
-import { loadHome } from "@/lib/products";
+import { loadHome, loadCatalogueJournal } from "@/lib/products";
 import { listBrandShops } from "@/lib/brands";
 import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
@@ -30,12 +30,13 @@ export const Route = createFileRoute("/")({
       restocked: [] as Product[],
       colours: [] as { colour: string; face: Product; semi?: Product; paver?: Product }[],
     };
-    const [home, brands, notes] = await Promise.all([
+    const [home, brands, notes, journal] = await Promise.all([
       loadHome().catch(() => empty),
       listBrandShops().catch(() => []),
       listPublishedPosts().catch(() => []),
+      loadCatalogueJournal({ data: { page: 1 } }).catch(() => ({ items: [] as Product[], total: 0, page: 1, pages: 1 })),
     ]);
-    return { home, brands, notes };
+    return { home, brands, notes, journal };
   },
   component: Home,
 });
@@ -45,6 +46,7 @@ function Home() {
     Route.useLoaderData().home;
   const brands = Route.useLoaderData().brands;
   const notes = Route.useLoaderData().notes;
+  const journal = Route.useLoaderData().journal;
 
   return (
     <>
@@ -55,6 +57,7 @@ function Home() {
       <Bundles />
       <Rail title="Clearance" kicker="Overstock & discontinued colourways" href="/search" products={clearance} />
       <ShopByCategory />
+      <MasterCatalogue entries={journal.items.slice(0, 4)} />
       <SpecifiedBrands shops={brands} />
       <AdBanner slot={adSlot("midpage-banner")} />
       <ShopBySector />
@@ -364,6 +367,28 @@ function ShopByCategory() {
               </ul>
             </div>
           </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MasterCatalogue({ entries }: { entries: Product[] }) {
+  if (!entries.length) return null;
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Newest first</p>
+          <h2 className="mt-1 font-display text-3xl">Master catalogue</h2>
+        </div>
+        <Link to="/catalogue" className="text-sm font-medium text-clay">
+          Open the full list <ArrowRight className="inline size-4" />
+        </Link>
+      </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {entries.map((product) => (
+          <ProductCard key={product.sku} product={product} />
         ))}
       </div>
     </section>

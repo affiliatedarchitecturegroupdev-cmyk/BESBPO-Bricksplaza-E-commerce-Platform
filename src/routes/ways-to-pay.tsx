@@ -9,7 +9,7 @@ function WaysToPay() {
     <>
       <PageHeader
         kicker="Ways to pay"
-        title="Eighteen ways. None of the gateways are live yet."
+        title="Nineteen ways. None of the gateways are live yet."
         body="The list is the one Bricksplaza will take. A logo means we have the official mark. No logo means the artwork is still coming. Selecting a method at checkout records the choice. It does not take money, except a trade account drawing on an approved limit, or an EFT you pay yourself."
       />
       <div className="mx-auto grid max-w-7xl gap-4 px-4 py-10 sm:px-6 md:grid-cols-2">

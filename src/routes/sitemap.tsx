@@ -18,6 +18,7 @@ function HtmlSitemap() {
       <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3">
         <Col title="Shop">
           <Link to="/shop">All SKUs</Link>
+          <Link to="/catalogue">Master catalogue</Link>
           {CATEGORIES.map((c) => (
             <Link key={c.slug} to="/shop/$slug" params={{ slug: c.slug }}>
               {c.name}

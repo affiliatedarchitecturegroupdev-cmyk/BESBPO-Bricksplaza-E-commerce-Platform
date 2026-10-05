@@ -5,7 +5,14 @@ import { CATEGORY_BY_SLUG } from "@/data/taxonomy";
 import { queryListing } from "@/lib/products";
 
 export const Route = createFileRoute("/shop/$slug")({
-  loader: ({ params }) => queryListing({ data: { category: params.slug } }),
+  loader: ({ params }) =>
+    queryListing({ data: { category: params.slug } }).catch(() => ({
+      items: [],
+      total: 0,
+      duties: [] as string[],
+      page: 1,
+      pages: 1,
+    })),
   component: CategoryPage,
 });
 
