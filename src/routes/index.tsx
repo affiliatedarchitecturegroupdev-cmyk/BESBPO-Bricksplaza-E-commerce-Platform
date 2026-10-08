@@ -15,6 +15,7 @@ import { adSlot } from "@/data/ads";
 import { listPublishedPosts } from "@/lib/posts";
 import { SourcingCarousel } from "@/components/sourcing-carousel";
 import { PitchDeck } from "@/components/pitch-deck";
+import { BRAND_MEDIA } from "@/data/brand-media";
 import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
@@ -302,7 +303,7 @@ function Bundles() {
 }
 
 function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string; ranges: number; products: number }[] }) {
-  if (!shops.length) return null;
+  const counts = new Map(shops.map((shop) => [shop.brand_slug, shop]));
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Specified by name</p>
@@ -316,19 +317,25 @@ function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string
         When the instruction is “this face brick must be Corobrik”, start in that shop. These ranges sit beside the priced catalogue. They are quoted, not sold off a shelf price.
       </p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {shops.map((shop) => (
-          <Link
-            key={shop.brand_slug}
-            to="/brands/$slug"
-            params={{ slug: shop.brand_slug }}
-            className="rounded-xl border border-line bg-paper p-5 hover:border-clay"
-          >
-            <p className="font-display text-2xl">{shop.brand}</p>
-            <p className="mt-1 text-sm text-muted">
-              {shop.ranges} ranges · {shop.products} named products
-            </p>
-          </Link>
-        ))}
+        {Object.entries(BRAND_MEDIA).map(([slug, media]) => {
+          const shop = counts.get(slug);
+          return (
+            <Link
+              key={slug}
+              to="/brands/$slug"
+              params={{ slug }}
+              className="rounded-xl border border-line bg-paper p-5 hover:border-clay"
+            >
+              <span className="flex h-20 items-center justify-center rounded-lg bg-white px-4">
+                <img src={media.logo} alt={media.logoAlt} className="max-h-16 w-auto max-w-full object-contain" />
+              </span>
+              <p className="mt-4 font-display text-2xl">{media.name}</p>
+              <p className="mt-1 text-sm text-muted">
+                {shop ? `${shop.ranges} ranges · ${shop.products} named products` : "Quote-only shop"}
+              </p>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

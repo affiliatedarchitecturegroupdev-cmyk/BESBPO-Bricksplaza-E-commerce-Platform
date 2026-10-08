@@ -4,6 +4,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCart } from "@/lib/cart-store";
 import { CATEGORIES, FAMILIES, SECTORS } from "@/data/taxonomy";
 import { CONTACTS, GROUP, GROUP_SOCIAL, PAYMENT_METHODS } from "@/data/content";
+import { BRAND_MEDIA } from "@/data/brand-media";
 import type { Product } from "@/data/catalogue";
 import { suggestProducts } from "@/lib/products";
 import { cn } from "@/lib/utils";
@@ -553,6 +554,30 @@ function Footer() {
             ))}
           </ul>
           <p className="mt-2 text-xs text-dim">EFT and trade account have no gateway mark. Every other method uses the supplier’s logo.</p>
+        </div>
+      </div>
+      <div className="border-t border-bisque/10">
+        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Manufacturer shops</p>
+            <Link to="/brands" className="text-xs text-dim hover:text-bisque">
+              All four shops
+            </Link>
+          </div>
+          <ul className="mt-3 flex flex-wrap items-center gap-2">
+            {Object.entries(BRAND_MEDIA).map(([slug, media]) => (
+              <li key={slug}>
+                <Link
+                  to="/brands/$slug"
+                  params={{ slug }}
+                  aria-label={media.name}
+                  className="flex h-14 w-28 items-center justify-center rounded-md bg-bisque px-3"
+                >
+                  <img src={media.logo} alt="" className="max-h-10 w-auto max-w-full object-contain" />
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
       <div className="border-t border-bisque/10">

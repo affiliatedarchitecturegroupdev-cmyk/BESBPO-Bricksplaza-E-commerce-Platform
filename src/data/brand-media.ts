@@ -3,26 +3,30 @@
 
 export type BrandShot = { src: string; alt: string };
 
-export const BRAND_MEDIA: Record<string, { logo: string; logoAlt: string; hero: BrandShot; hero2?: BrandShot }> = {
+export const BRAND_MEDIA: Record<string, { name: string; logo: string; logoAlt: string; hero: BrandShot; hero2?: BrandShot }> = {
   corobrik: {
+    name: "Corobrik",
     logo: "/brand/shops/corobrik/mark.png",
     logoAlt: "Corobrik brick mark",
     hero: { src: "/brand/shops/corobrik/hero.jpg", alt: "Corobrik face brick on a finished wall" },
     hero2: { src: "/brand/shops/corobrik/paving-laid.jpg", alt: "Clay pavers laid in a Corobrik range photograph" },
   },
   bosun: {
+    name: "Bosun",
     logo: "/brand/shops/bosun/logo.jpg",
     logoAlt: "Bosun Brick",
     hero: { src: "/brand/shops/bosun/hero.jpg", alt: "Bosun paving installed at a commercial entrance" },
     hero2: { src: "/brand/shops/bosun/retaining.jpg", alt: "Bosun retaining wall blocks installed" },
   },
   technicrete: {
+    name: "Technicrete",
     logo: "/brand/shops/technicrete/logo.png",
     logoAlt: "Technicrete",
     hero: { src: "/brand/shops/technicrete/hero-road.jpg", alt: "Technicrete kerbs along a highway" },
     hero2: { src: "/brand/shops/technicrete/hero-wall.jpg", alt: "Planted precast retaining wall from the Technicrete site" },
   },
   infraset: {
+    name: "Infraset",
     logo: "/brand/shops/infraset/logo.png",
     logoAlt: "Infraset",
     hero: { src: "/brand/shops/infraset/hero-roof.jpg", alt: "Hip roofs in concrete tile" },

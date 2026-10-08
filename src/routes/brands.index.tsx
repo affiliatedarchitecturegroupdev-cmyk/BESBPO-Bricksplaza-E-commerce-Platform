@@ -35,9 +35,9 @@ function Brands() {
                 {media && (
                   <img src={media.hero.src} alt={media.hero.alt} className="aspect-[16/7] w-full object-cover" />
                 )}
-                <div className="flex items-start gap-4 p-6">
+                <div className="flex items-center gap-4 bg-white px-6 py-5">
                   {media && (
-                    <img src={media.logo} alt={media.logoAlt} className="h-12 w-16 shrink-0 object-contain" />
+                    <img src={media.logo} alt={media.logoAlt} className="h-14 w-24 shrink-0 object-contain" />
                   )}
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.18em] text-clay">
