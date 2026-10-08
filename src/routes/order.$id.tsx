@@ -67,6 +67,21 @@ function OrderPage() {
         {order.payment_reference ? ` Reference ${order.payment_reference}.` : ""}
         {order.delivery_method === "collection" ? ` Collection${slot ? ` · ${slot}` : ""}.` : " Delivery is on the yard’s list."}
       </p>
+      {(order.payment_method === "eft" && (order.payment_status === "awaiting_eft" || order.payment_status === "proof_submitted")) && (
+        <div className="mt-4 rounded-xl bg-card p-4 text-sm">
+          <p className="font-medium">Pay this reference: {order.id}</p>
+          {order.eft.accountNumber ? (
+            <p className="mt-2 text-mortar">
+              {order.eft.accountName}
+              {order.eft.bank ? ` · ${order.eft.bank}` : ""} · {order.eft.accountNumber}
+              {order.eft.branchCode ? ` · branch ${order.eft.branchCode}` : ""}
+            </p>
+          ) : (
+            <p className="mt-2 text-mortar">The yard account number is not published in this environment yet. The reference is still the order number.</p>
+          )}
+          <p className="mt-2 text-mortar">Stock stays reserved. The load does not leave until the yard matches the reference you submit below.</p>
+        </div>
+      )}
       {(order.payment_status === "awaiting_eft" || order.payment_status === "proof_submitted") && (
         <form
           className="mt-4 space-y-2 rounded-xl bg-card p-4"
@@ -118,7 +133,9 @@ function OrderPage() {
       </div>
       <div className="mt-6 flex gap-3">
         <Link to="/invoice/$id" params={{ id: order.id }}>
-          <Button>Tax invoice</Button>
+          <Button>
+            {order.payment_status === "proof_received" || order.payment_status === "on_account" ? "Tax invoice" : "Pro forma"}
+          </Button>
         </Link>
         <Link to="/account">
           <Button variant="outline">Account</Button>

@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { listYardRfqs, setRfqStatus } from "@/lib/commerce";
 import { YardClaim } from "@/components/layout";
-import { Select } from "@/components/ui/input";
+import { Select, Textarea } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -45,6 +46,10 @@ function Quotes() {
                   className="bg-kiln text-bisque"
                   value={rfq.status}
                   onChange={async (e) => {
+                    if (e.target.value === "quoted") {
+                      toast.error("Write the quote in the box, then send it");
+                      return;
+                    }
                     try {
                       await setRfqStatus({ data: { id: rfq.id, status: e.target.value } });
                       toast.success("Quote updated");
@@ -64,6 +69,28 @@ function Quotes() {
             </div>
             {rfq.sku_list && <p className="mt-3 font-mono text-xs text-gold">{rfq.sku_list}</p>}
             <p className="mt-3 whitespace-pre-wrap text-dim">{rfq.message}</p>
+            {rfq.reply && <p className="mt-3 whitespace-pre-wrap text-bisque">{rfq.reply}</p>}
+            {data?.yard && rfq.status === "open" && (
+              <form
+                className="mt-3 space-y-2"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const reply = String(new FormData(e.currentTarget).get("reply") ?? "");
+                  try {
+                    await setRfqStatus({ data: { id: rfq.id, status: "quoted", reply } });
+                    toast.success("Quote sent");
+                    refresh();
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : "Could not send");
+                  }
+                }}
+              >
+                <Textarea name="reply" required placeholder="The price, the lead time, and what is excluded" className="bg-kiln text-bisque" />
+                <Button type="submit" size="sm">
+                  Send quote
+                </Button>
+              </form>
+            )}
           </article>
         ))}
         {data && rows.length === 0 && data.yard && <p className="text-sm text-dim">No quotes yet.</p>}

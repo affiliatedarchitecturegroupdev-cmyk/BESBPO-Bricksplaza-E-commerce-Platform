@@ -11,70 +11,100 @@ export const BANDS: Record<
   collection: { label: "Collection", distance: "Yard", time: "Same day (subject to stock)", fee: 0 },
 };
 
+/** Extra rand per pallet after the first. The band fee covers one pallet. */
+const PALLET_EXTRA: Record<DeliveryBand, number> = {
+  local: 180,
+  regional: 280,
+  extended: 420,
+  long: 0,
+  collection: 0,
+};
+
 export type Quote = {
   band: DeliveryBand;
   fee: number | null;
+  baseFee: number | null;
+  palletFee: number;
   quoted: boolean;
   yard: string;
   province: string;
   time: string;
+  pallets: number;
+  weightKg: number;
 };
 
-function provinceFromPostcode(pc: string): { province: string; yard: string; near: "gp" | "kzn" | "far" } {
+type Near = "gp" | "kzn" | "extended" | "far";
+
+function provinceFromPostcode(pc: string): { province: string; yard: string; near: Near; code: number } {
   const n = parseInt(pc.replace(/\D/g, "").slice(0, 4) || "0", 10);
-  if (n >= 3600 && n <= 4699) return { province: "KwaZulu-Natal", yard: "Cato Ridge Distribution Yard", near: "kzn" };
-  if (n >= 1 && n <= 2899) return { province: "Gauteng", yard: "Midrand Distribution Yard", near: "gp" };
-  if (n >= 2900 && n <= 2899) return { province: "Free State", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 2000 && n <= 2199) return { province: "Gauteng", yard: "Midrand Distribution Yard", near: "gp" };
-  if (n >= 7000 && n <= 8099) return { province: "Western Cape", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 5200 && n <= 6499) return { province: "Eastern Cape", yard: "Cato Ridge Distribution Yard", near: "far" };
-  if (n >= 8300 && n <= 8999) return { province: "Northern Cape", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 2700 && n <= 2899) return { province: "North West", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 690 && n <= 999) return { province: "Limpopo", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 1000 && n <= 1599) return { province: "Mpumalanga", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 9300 && n <= 9999) return { province: "Free State", yard: "Midrand Distribution Yard", near: "far" };
-  if (n >= 1 && n <= 399) return { province: "Limpopo", yard: "Midrand Distribution Yard", near: "far" };
-  return { province: "Gauteng", yard: "Midrand Distribution Yard", near: "gp" };
+  const midrand = "Midrand Distribution Yard";
+  const cato = "Cato Ridge Distribution Yard";
+  if (!n) return { province: "Unknown", yard: midrand, near: "far", code: 0 };
+  if ((n >= 1 && n <= 299) || (n >= 1400 && n <= 2199)) {
+    return { province: "Gauteng", yard: midrand, near: "gp", code: n };
+  }
+  if ((n >= 300 && n <= 499) || (n >= 1000 && n <= 1099) || (n >= 2200 && n <= 2699)) {
+    const province = n >= 2500 ? "North West" : n >= 1000 ? "Mpumalanga" : "North West";
+    return { province, yard: midrand, near: "extended", code: n };
+  }
+  if (n >= 2900 && n <= 4699) return { province: "KwaZulu-Natal", yard: cato, near: "kzn", code: n };
+  if (n >= 4700 && n <= 6499) return { province: "Eastern Cape", yard: cato, near: "far", code: n };
+  if (n >= 6500 && n <= 8299) return { province: "Western Cape", yard: midrand, near: "far", code: n };
+  if (n >= 8300 && n <= 8999) return { province: "Northern Cape", yard: midrand, near: "far", code: n };
+  if (n >= 9000 && n <= 9999) return { province: "Free State", yard: midrand, near: "far", code: n };
+  if (n >= 500 && n <= 999) return { province: "Limpopo", yard: midrand, near: "far", code: n };
+  if (n >= 1100 && n <= 1399) return { province: "Mpumalanga", yard: midrand, near: "far", code: n };
+  if (n >= 2700 && n <= 2899) return { province: "North West", yard: midrand, near: "far", code: n };
+  return { province: "Unknown", yard: midrand, near: "far", code: n };
 }
 
-export function quoteDelivery(postalCode: string, method: "delivery" | "collection"): Quote {
+function bandFor(near: Near, n: number): DeliveryBand {
+  if (near === "far") return "long";
+  if (near === "extended") return "extended";
+  if (near === "gp") return n >= 1600 && n <= 2199 ? "local" : "regional";
+  if (n >= 3600 && n <= 3799) return "local";
+  if ((n >= 3200 && n <= 3599) || (n >= 4000 && n <= 4099)) return "regional";
+  if (n >= 3200 && n <= 4699) return "extended";
+  return "long";
+}
+
+export function quoteDelivery(
+  postalCode: string,
+  method: "delivery" | "collection",
+  load?: { pallets?: number; weightKg?: number },
+): Quote {
+  const pallets = Math.max(0, Math.ceil(Number(load?.pallets) || 0));
+  const weightKg = Math.max(0, Math.round(Number(load?.weightKg) || 0));
   if (method === "collection") {
     const loc = provinceFromPostcode(postalCode || "1685");
     return {
       band: "collection",
       fee: 0,
+      baseFee: 0,
+      palletFee: 0,
       quoted: true,
       yard: loc.yard,
       province: loc.province,
       time: BANDS.collection.time,
+      pallets,
+      weightKg,
     };
   }
   const loc = provinceFromPostcode(postalCode);
-  if (loc.near === "far") {
-    return {
-      band: "long",
-      fee: null,
-      quoted: false,
-      yard: loc.yard,
-      province: loc.province,
-      time: BANDS.long.time,
-    };
-  }
-  const n = parseInt(postalCode.replace(/\D/g, "").slice(0, 4) || "0", 10);
-  const localCodes =
-    loc.near === "kzn"
-      ? n >= 3600 && n <= 4399
-      : (n >= 1600 && n <= 2199) || (n >= 1 && n <= 299);
-  const regional =
-    loc.near === "kzn" ? n >= 3200 && n <= 4699 : n >= 1 && n <= 2899;
-  const band: DeliveryBand = localCodes ? "local" : regional ? "regional" : "extended";
+  const band = bandFor(loc.near, loc.code);
+  const baseFee = BANDS[band].fee;
+  const palletFee = baseFee == null ? 0 : Math.max(0, pallets - 1) * PALLET_EXTRA[band];
   return {
     band,
-    fee: BANDS[band].fee,
-    quoted: true,
+    baseFee,
+    palletFee,
+    fee: baseFee == null ? null : baseFee + palletFee,
+    quoted: baseFee != null,
     yard: loc.yard,
     province: loc.province,
     time: BANDS[band].time,
+    pallets,
+    weightKg,
   };
 }
 

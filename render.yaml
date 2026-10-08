@@ -55,3 +55,15 @@ services:
         sync: false
       - key: MICROSOFT_TENANT_ID
         sync: false
+      # Customer mail. Leave RESEND_API_KEY empty and messages stay queued in outbound_mail.
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      # Printed on the EFT pro forma and the order email. Leave blank until the account exists.
+      - key: EFT_BANK
+        sync: false
+      - key: EFT_ACCOUNT_NUMBER
+        sync: false
+      - key: EFT_BRANCH_CODE
+        sync: false

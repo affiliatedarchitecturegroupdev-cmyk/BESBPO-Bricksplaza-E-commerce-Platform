@@ -5,7 +5,7 @@ import { useProductsBySku } from "@/lib/use-products";
 import { PAYMENT_METHODS } from "@/data/content";
 import { formatZar, vatInclusive, round2 } from "@/lib/format";
 import { priceFor } from "@/lib/pricing";
-import { craneSurcharge, quoteDelivery, palletCount, COLLECTION_SLOTS } from "@/lib/delivery";
+import { craneSurcharge, quoteDelivery, palletCount, COLLECTION_SLOTS, BANDS } from "@/lib/delivery";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { placeGuestOrder, placeOrder } from "@/lib/commerce";
@@ -47,7 +47,8 @@ function Checkout() {
   });
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const pallets = items.reduce((n, i) => n + palletCount(i.qty, i.product.unitsPerPallet), 0);
-  const quote = quoteDelivery(form.postal_code, method);
+  const weightKg = items.reduce((n, i) => n + i.product.weightKg * i.qty, 0);
+  const quote = quoteDelivery(form.postal_code, method, { pallets, weightKg });
   const delivery = (quote.fee ?? 0) + craneSurcharge(hiab);
   const totalEx = round2(subtotal + delivery);
   const total = vatInclusive(totalEx);
@@ -191,9 +192,12 @@ function Checkout() {
                 </div>
               )}
               <p className="text-sm text-mortar">
+                {quote.yard} · {quote.province} · {BANDS[quote.band].label} ({BANDS[quote.band].distance}) · {quote.time}
+                . Load {pallets} pallet{pallets === 1 ? "" : "s"}, {Math.round(weightKg)} kg.
                 {quote.quoted
-                  ? `${quote.yard} · ${quote.time} · ${formatZar(delivery)}`
-                  : "Long-distance: quote confirmed within 1 business day. You can still place the order."}
+                  ? ` ${formatZar(quote.baseFee ?? 0)} for the first pallet${quote.palletFee ? `, plus ${formatZar(quote.palletFee)} for the rest` : ""}.`
+                  : " Past 250 km the fee is quoted within one business day. You can still place the order."}
+                {hiab ? " Crane offload is included." : ""}
               </p>
               <Button onClick={() => setStep(2)}>Continue to payment</Button>
             </div>
@@ -281,6 +285,9 @@ function Checkout() {
           <h2 className="font-display text-lg">Order summary</h2>
           <dl className="mt-3 space-y-1 text-sm">
             <Row k="Subtotal" v={formatZar(subtotal)} />
+            <Row k="Yard" v={quote.yard.replace(" Distribution Yard", "")} />
+            <Row k="Band" v={BANDS[quote.band].label} />
+            <Row k="Weight" v={`${Math.round(weightKg)} kg`} />
             <Row k="Delivery" v={quote.quoted ? formatZar(delivery) : "Quoted"} />
             <Row k="Pallets" v={String(pallets)} />
             <Row k="VAT (15%)" v={formatZar(vat)} />

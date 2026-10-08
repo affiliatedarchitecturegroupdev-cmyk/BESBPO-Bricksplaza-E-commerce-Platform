@@ -30,6 +30,8 @@ function InvoicePage() {
   if (invoice === undefined) return <p className="p-10 text-sm">Loading invoice…</p>;
   if (!invoice) return <p className="p-10">Invoice not found.</p>;
 
+  const issued = invoice.payment_status === "proof_received" || invoice.payment_status === "on_account";
+  const title = issued ? "Tax invoice" : invoice.payment_method === "eft" ? "Pro forma" : "Order acknowledgement";
   const when = new Date(invoice.created_at);
   const dated = Number.isNaN(when.getTime()) ? invoice.created_at : when.toLocaleDateString("en-ZA");
   const slot = collectionSlotLabel(invoice.collection_slot);
@@ -46,7 +48,7 @@ function InvoicePage() {
           </p>
         </div>
         <div className="text-right">
-          <h1 className="font-display text-3xl">Tax invoice</h1>
+          <h1 className="font-display text-3xl">{title}</h1>
           <p className="mt-1 text-sm">{invoice.id}</p>
           <p className="text-sm text-mortar">{dated}</p>
           <p className="text-sm capitalize text-mortar">{invoice.payment_status.replaceAll("_", " ")}</p>
@@ -117,7 +119,10 @@ function InvoicePage() {
 
       <p className="mt-8 text-xs text-mortar">
         Prices are exclusive of VAT at line level. The total includes VAT at 15%. This document is not a card receipt.
-        Payment status “simulated” means no merchant has captured funds.
+        {title === "Pro forma" ? " It becomes a tax invoice when the yard matches the EFT." : ""}
+        {invoice.delivery_method === "delivery" && invoice.delivery_fee === 0
+          ? " Delivery is past 250 km and is still to be quoted."
+          : ""}
       </p>
       <div className="mt-6 flex gap-4 print:hidden">
         <button type="button" className="text-sm font-medium text-clay" onClick={() => window.print()}>

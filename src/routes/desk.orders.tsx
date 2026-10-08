@@ -24,7 +24,7 @@ function DeskOrders() {
     <div>
       <h1 className="font-display text-3xl">Order management</h1>
       <p className="mt-1 max-w-2xl text-sm text-dim">
-        Checkout saves the load here. Payment stays simulated until PayFast is connected. Cancelling a stock line puts the units back on the yard. Quotes live on{" "}
+        An EFT load stays reserved until you mark the submitted reference as proof received. Only that match, or a trade order already on account, can move the load out of processing. Every other payment method is recorded and cannot dispatch. Cancelling a stock line puts the units back. Quotes live on{" "}
         <Link to="/desk/rfqs" className="text-gold hover:underline">
           Quotes
         </Link>{" "}

@@ -229,10 +229,10 @@ function ProductPage() {
             </div>
             <p className="mt-3 text-sm text-mortar">
               {quote.quoted
-                ? `${quote.yard} · ${quote.time} · ${quote.fee === 0 ? "Free" : formatZar(quote.fee ?? 0)}`
-                : "Quote will be confirmed within 1 business day (250 km+)."}
+                ? `${quote.yard} · ${quote.band} · ${quote.time} · from ${formatZar(quote.baseFee ?? 0)} before extra pallets`
+                : `${quote.yard} · past 250 km · quote to follow`}
               {product.unitsPerPallet > 0
-                ? ` · ${Math.ceil(qty / product.unitsPerPallet)} pallet${Math.ceil(qty / product.unitsPerPallet) === 1 ? "" : "s"} at this quantity. The band fee is a flat rate for a standard load, not a rate per pallet.`
+                ? ` · ${Math.ceil(qty / product.unitsPerPallet)} pallet${Math.ceil(qty / product.unitsPerPallet) === 1 ? "" : "s"} at this quantity. Checkout prices the full load: the band covers the first pallet, then a pallet rate.`
                 : ""}{" "}
               <Link to="/delivery-reach" className="text-clay">
                 Where we deliver

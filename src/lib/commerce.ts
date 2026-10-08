@@ -3,6 +3,7 @@ import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { priceFor } from "@/lib/pricing";
 import { quoteDelivery, craneSurcharge, palletCount, CARRIERS } from "@/lib/delivery";
+import { eftDetails, eftInstructions } from "@/lib/eft";
 import { round2, vatInclusive } from "@/lib/format";
 import type { CustomerTier } from "@/data/taxonomy";
 
@@ -227,7 +228,7 @@ async function commitOrder(opts: {
   userId: string | null;
   tier: CustomerTier;
   data: OrderInput;
-  creditLimit?: number | null;
+  customer?: CustomerRow;
   floatBalance?: number | null;
 }) {
   const { userId, tier, data } = opts;
@@ -237,6 +238,7 @@ async function commitOrder(opts: {
   }
   let subtotal = 0;
   let pallets = 0;
+  let weightKg = 0;
   const { fetchProduct } = await import("@/lib/products.server");
   const resolved: ResolvedLine[] = [];
   for (const l of data.lines) {
@@ -247,9 +249,10 @@ async function commitOrder(opts: {
     const unit = priceFor(p, tier);
     subtotal = round2(subtotal + round2(unit * qty));
     pallets += palletCount(qty, p.unitsPerPallet);
+    weightKg += p.weightKg * qty;
     resolved.push({ sku: l.sku, qty, name: p.productName, unit, fulfilment: p.fulfilmentType });
   }
-  const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method);
+  const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method, { pallets, weightKg });
   const delivery = (quote.fee ?? 0) + craneSurcharge(Boolean(data.hiab));
   const totalEx = round2(subtotal + delivery);
   const total = vatInclusive(totalEx);
@@ -260,8 +263,19 @@ async function commitOrder(opts: {
     COLLECTION_SLOT_IDS.includes(data.collection_slot as (typeof COLLECTION_SLOT_IDS)[number])
       ? data.collection_slot
       : null;
-  if (opts.creditLimit != null && opts.creditLimit > 0 && total > opts.creditLimit) {
-    throw new Error("Order exceeds trade credit limit");
+  const sql = await getSql();
+  if (data.payment_method === "trade") {
+    if (!userId || opts.customer?.trade_status !== "approved") {
+      throw new Error("Trade checkout needs an approved account");
+    }
+    if (opts.customer.credit_limit <= 0) throw new Error("This trade account has no credit limit");
+    const open = await sql<{ owing: unknown }>`
+      select coalesce(sum(total), 0) as owing from orders
+      where user_id = ${userId} and payment_method = 'trade' and status <> 'cancelled'
+    `;
+    if (num(open[0]?.owing) + total > opts.customer.credit_limit) {
+      throw new Error("This order would take the account over its credit limit");
+    }
   }
   if (opts.floatBalance != null && total > opts.floatBalance) {
     throw new Error("Insufficient float balance");
@@ -269,9 +283,8 @@ async function commitOrder(opts: {
   await reserveStock(resolved);
   const id = `BP-${Date.now().toString(36).toUpperCase()}`;
   const carrier = data.delivery_method === "collection" ? "Collection" : null;
-  const loadNote = `Load count: ${pallets} pallet${pallets === 1 ? "" : "s"}. The band fee is the published flat rate; it is not a weighed quote.`;
+  const loadNote = `Load: ${pallets} pallet${pallets === 1 ? "" : "s"}, ${Math.round(weightKg)} kg. ${quote.yard}. ${quote.quoted ? `${quote.band} band.` : "Long-distance — delivery fee to follow."}`;
   const notes = [data.notes?.trim(), loadNote].filter(Boolean).join("\n");
-  const sql = await getSql();
   try {
     await sql`insert into orders (
       id, user_id, status, email, phone, delivery_method, address_json, payment_method,
@@ -303,6 +316,27 @@ async function commitOrder(opts: {
     await sql`delete from orders where id = ${id}`;
     throw err;
   }
+  try {
+    const { sendCustomerMail, orderUrl } = await import("@/lib/mail.server");
+    const link = orderUrl(id);
+    if (data.payment_method === "eft") {
+      await sendCustomerMail({
+        kind: "eft_instructions",
+        to: data.email,
+        subject: `EFT instructions for ${id}`,
+        text: `${eftInstructions(id)}\n\n${link}`,
+      });
+    } else {
+      await sendCustomerMail({
+        kind: "order_received",
+        to: data.email,
+        subject: `Order ${id} received`,
+        text: `Order ${id} is saved. Total R ${total.toFixed(2)}. Nothing has been captured by a card gateway.\n\n${link}`,
+      });
+    }
+  } catch {
+    // A missing mail host must not undo a saved order.
+  }
   return { id, total, vat, delivery, subtotal, tier, carrier, payment_status: paymentStatus };
 }
 
@@ -315,7 +349,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       userId: context.userId,
       tier: customer.tier,
       data,
-      creditLimit: data.payment_method === "trade" ? customer.credit_limit : null,
+      customer,
       floatBalance: data.payment_method === "float" ? customer.float_balance : null,
     });
   });
@@ -466,7 +500,7 @@ export const listYardRfqs = createServerFn({ method: "GET" })
     const { sql, yard, unclaimed } = await yardGate(context.userId);
     if (!yard) return { yard, unclaimed, rows: [] as YardRfq[] };
     const rows = await sql<Record<string, unknown>>`
-      select id, name, email, company, phone, province, message, sku_list, status, created_at
+      select id, name, email, company, phone, province, message, sku_list, status, reply, created_at
       from rfqs
       order by case status when 'open' then 0 when 'quoted' then 1 else 2 end, id desc
       limit 80
@@ -484,6 +518,7 @@ export const listYardRfqs = createServerFn({ method: "GET" })
         message: String(r.message ?? ""),
         sku_list: r.sku_list == null ? "" : String(r.sku_list),
         status: String(r.status ?? "open"),
+        reply: r.reply == null ? "" : String(r.reply),
         created_at: String(r.created_at ?? ""),
       })),
     };
@@ -688,6 +723,7 @@ type YardRfq = {
   message: string;
   sku_list: string;
   status: string;
+  reply: string;
   created_at: string;
 };
 
@@ -795,6 +831,7 @@ export const trackOrder = createServerFn({ method: "POST" })
       vat: num(order.vat),
       total: num(order.total),
       lines: lines.map((l) => ({ sku: String(l.sku), name: String(l.name), qty: num(l.qty) })),
+      eft: eftDetails(),
       events: events.map((e) => ({
         status: String(e.status),
         note: e.note == null ? null : String(e.note),
@@ -873,12 +910,29 @@ export const setOrderStatus = createServerFn({ method: "POST" })
     }
     if (!(await isYard(context.userId))) throw new Error("Only the yard desk can move an order");
     const sql = await getSql();
-    const rows = await sql<Record<string, unknown>>`select status, stock_applied from orders where id = ${data.id}`;
+    const rows = await sql<Record<string, unknown>>`
+      select status, stock_applied, payment_method, payment_status from orders where id = ${data.id}
+    `;
     const current = rows[0];
     if (!current) throw new Error("Order not found");
     const previous = String(current.status);
     const applied = Boolean(current.stock_applied);
     if (previous === data.status) return { ok: true as const };
+    const leaving = ["dispatched", "in_transit", "out_for_delivery", "delivered"].includes(data.status);
+    if (leaving) {
+      const method = String(current.payment_method ?? "");
+      const paid = String(current.payment_status ?? "");
+      const released = (method === "eft" && paid === "proof_received") || (method === "trade" && paid === "on_account");
+      if (!released) {
+        throw new Error(
+          method === "eft"
+            ? "Match the EFT reference before the load leaves"
+            : method === "trade"
+              ? "A trade load leaves only while it is on account"
+              : "This payment is recorded only. Take an EFT or an approved trade account before the load leaves",
+        );
+      }
+    }
     if (data.status === "cancelled" && applied) {
       await restoreStock(data.id);
       await sql`update orders set stock_applied = false where id = ${data.id}`;
@@ -946,14 +1000,17 @@ export const recordEftReference = createServerFn({ method: "POST" })
       throw new Error("Enter the bank reference, 4–40 letters or numbers");
     }
     const sql = await getSql();
-    const rows = await sql<{ email: string | null; payment_method: string }>`
-      select email, payment_method from orders where id = ${data.id}
+    const rows = await sql<{ email: string | null; payment_method: string; payment_status: string }>`
+      select email, payment_method, payment_status from orders where id = ${data.id}
     `;
     const order = rows[0];
     if (!order || String(order.email ?? "").toLowerCase() !== data.email) {
       throw new Error("That email does not match this order");
     }
     if (order.payment_method !== "eft") throw new Error("This order is not an EFT transfer");
+    if (!["awaiting_eft", "proof_submitted"].includes(String(order.payment_status))) {
+      throw new Error("The yard has already matched this payment");
+    }
     await sql`update orders set payment_reference = ${data.reference}, payment_status = 'proof_submitted' where id = ${data.id}`;
     await sql`insert into order_events (order_id, status, note) values (${data.id}, ${"proof_submitted"}, ${"Customer submitted an EFT reference. The yard has not confirmed the funds."})`;
     return { ok: true as const };
@@ -968,10 +1025,38 @@ export const setPaymentStatus = createServerFn({ method: "POST" })
     }
     await assertYard(context.userId);
     const sql = await getSql();
-    const rows = await sql`select id from orders where id = ${data.id}`;
-    if (!rows[0]) throw new Error("Order not found");
+    const rows = await sql<{ payment_method: string; payment_status: string; payment_reference: string | null; email: string | null }>`
+      select payment_method, payment_status, payment_reference, email from orders where id = ${data.id}
+    `;
+    const order = rows[0];
+    if (!order) throw new Error("Order not found");
+    if (data.status === "proof_received") {
+      if (String(order.payment_method) !== "eft") throw new Error("Only an EFT can be marked received");
+      if (!order.payment_reference) throw new Error("There is no bank reference to match");
+      if (!["proof_submitted", "proof_received"].includes(String(order.payment_status))) {
+        throw new Error("The customer has not submitted a reference");
+      }
+    }
+    if (String(order.payment_status) === data.status) return { ok: true as const };
     await sql`update orders set payment_status = ${data.status} where id = ${data.id}`;
-    await sql`insert into order_events (order_id, status, note) values (${data.id}, ${data.status}, ${"Payment status updated from the yard desk. This is not a card capture."})`;
+    const note =
+      data.status === "proof_received"
+        ? `Funds matched to reference ${order.payment_reference}. The load may leave.`
+        : "Payment status updated from the yard desk. This is not a card capture.";
+    await sql`insert into order_events (order_id, status, note) values (${data.id}, ${data.status}, ${note})`;
+    if (data.status === "proof_received" && order.email) {
+      try {
+        const { sendCustomerMail, orderUrl } = await import("@/lib/mail.server");
+        await sendCustomerMail({
+          kind: "eft_matched",
+          to: String(order.email),
+          subject: `Payment matched for ${data.id}`,
+          text: `The yard matched the EFT for ${data.id} to reference ${order.payment_reference}. The load can now leave.\n\n${orderUrl(data.id)}`,
+        });
+      } catch {
+        // The status is already saved.
+      }
+    }
     return { ok: true as const };
   });
 
@@ -1064,12 +1149,33 @@ export const decideReturn = createServerFn({ method: "POST" })
 
 export const setRfqStatus = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((d: { id: number; status: string }) => d)
+  .validator((d: { id: number; status: string; reply?: string }) => ({
+    id: Number(d?.id),
+    status: String(d?.status ?? ""),
+    reply: String(d?.reply ?? "").trim().slice(0, 2000),
+  }))
   .handler(async ({ context, data }) => {
     if (!["open", "quoted", "closed"].includes(data.status)) throw new Error("Unknown status");
+    if (data.status === "quoted" && data.reply.length < 8) throw new Error("Write the quote before you mark it sent");
     await assertYard(context.userId);
     const sql = await getSql();
-    await sql`update rfqs set status = ${data.status} where id = ${data.id}`;
+    const rows = await sql<{ email: string; name: string }>`select email, name from rfqs where id = ${data.id}`;
+    const rfq = rows[0];
+    if (!rfq) throw new Error("Quote not found");
+    await sql`update rfqs set status = ${data.status}, reply = case when ${data.reply} = '' then reply else ${data.reply} end where id = ${data.id}`;
+    if (data.status === "quoted") {
+      try {
+        const { sendCustomerMail } = await import("@/lib/mail.server");
+        await sendCustomerMail({
+          kind: "rfq_replied",
+          to: String(rfq.email),
+          subject: "Your Bricksplaza quote",
+          text: `${rfq.name ? `${rfq.name},\n\n` : ""}${data.reply}\n\nThis is a yard quote, not a checkout total.`,
+        });
+      } catch {
+        // The reply is already saved.
+      }
+    }
     return { ok: true as const };
   });
 
@@ -1136,5 +1242,23 @@ export const decideTrade = createServerFn({ method: "POST" })
     const existing = await sql`select user_id from customers where user_id = ${data.userId}`;
     if (!existing[0]) throw new Error("Application not found");
     await sql`update customers set trade_status = ${data.status}, tier = ${tier}, credit_limit = ${limit}, trade_terms = ${terms} where user_id = ${data.userId}`;
+    try {
+      const users = await sql<{ email: string }>`select email from "user" where id = ${data.userId}`;
+      const email = users[0]?.email;
+      if (email) {
+        const { sendCustomerMail } = await import("@/lib/mail.server");
+        const approved = data.status === "approved";
+        await sendCustomerMail({
+          kind: approved ? "trade_approved" : "trade_declined",
+          to: email,
+          subject: approved ? "Trade account approved" : "Trade account not approved",
+          text: approved
+            ? `Your Bricksplaza trade account is approved. Terms ${terms}. Credit limit R ${limit.toFixed(0)}. You can check out on account up to that limit.`
+            : "Your Bricksplaza trade application was not approved. You can still buy at retail or pay by EFT.",
+        });
+      }
+    } catch {
+      // The decision is already saved.
+    }
     return { ok: true as const };
   });
