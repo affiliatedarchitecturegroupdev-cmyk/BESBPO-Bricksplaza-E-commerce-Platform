@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
+import { CorobrikWall } from "@/components/corobrik-wall";
 import { BRAND_COPY, loadBrandShop, type BrandSku } from "@/lib/brands";
 import { BRAND_FAMILY_IMAGE, BRAND_MEDIA, BRAND_SKU_IMAGE } from "@/data/brand-media";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/brands/$slug")({
   loader: async ({ params }) => {
@@ -27,6 +30,8 @@ function BrandShopPage() {
   const parents = rows.filter((row) => !row.parent_sku);
   const children = rows.filter((row) => row.parent_sku);
   const sourced = children.filter((row) => row.dimensions).length;
+  const isCorobrik = brand.brand_slug === "corobrik";
+  const [tab, setTab] = useState<"ranges" | "wall">("wall");
   return (
     <>
       <PageHeader
@@ -48,34 +53,64 @@ function BrandShopPage() {
         </div>
       )}
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <p className="max-w-3xl text-sm text-mortar">
-          {parents.length} ranges, {children.length} named products, {sourced} of them with a size taken from the source.
-          Still no selling price and no stock figure. A photograph is the manufacturer’s, and a bad brochure reading was dropped rather than shown as a specification.
-        </p>
-        <div className="mt-8 space-y-10">
-          {parents.map((parent) => {
-            const items = children.filter((row) => row.parent_sku === parent.sku);
-            const family = BRAND_FAMILY_IMAGE[parent.sku];
-            return (
-              <section key={parent.sku}>
-                <h2 className="font-display text-2xl">{parent.name}</h2>
-                <p className="text-sm text-muted">{parent.family}</p>
-                {family && (
-                  <img src={family.src} alt={family.alt} className="mt-3 aspect-[16/6] w-full rounded-xl object-cover" />
-                )}
-                {items.length === 0 ? (
-                  <p className="mt-3 text-sm text-mortar">No individual product has been sourced under this range yet.</p>
-                ) : (
-                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                    {items.map((item) => (
-                      <ProductCard key={item.sku} item={item} />
-                    ))}
-                  </div>
-                )}
-              </section>
-            );
-          })}
-        </div>
+        {isCorobrik && (
+          <div className="mb-6 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setTab("wall")}
+              className={cn(
+                "rounded-full border px-4 py-2 text-sm",
+                tab === "wall" ? "border-clay bg-clay text-white" : "border-line bg-paper",
+              )}
+            >
+              Colour wall
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("ranges")}
+              className={cn(
+                "rounded-full border px-4 py-2 text-sm",
+                tab === "ranges" ? "border-clay bg-clay text-white" : "border-line bg-paper",
+              )}
+            >
+              Brochure ranges
+            </button>
+          </div>
+        )}
+        {isCorobrik && tab === "wall" ? (
+          <CorobrikWall />
+        ) : (
+          <>
+            <p className="max-w-3xl text-sm text-mortar">
+              {parents.length} ranges, {children.length} named products, {sourced} of them with a size taken from the source.
+              Still no selling price and no stock figure. A photograph is the manufacturer’s, and a bad brochure reading was dropped rather than shown as a specification.
+            </p>
+            <div className="mt-8 space-y-10">
+              {parents.map((parent) => {
+                const items = children.filter((row) => row.parent_sku === parent.sku);
+                const family = BRAND_FAMILY_IMAGE[parent.sku];
+                return (
+                  <section key={parent.sku}>
+                    <h2 className="font-display text-2xl">{parent.name}</h2>
+                    <p className="text-sm text-muted">{parent.family}</p>
+                    {family && (
+                      <img src={family.src} alt={family.alt} className="mt-3 aspect-[16/6] w-full rounded-xl object-cover" />
+                    )}
+                    {items.length === 0 ? (
+                      <p className="mt-3 text-sm text-mortar">No individual product has been sourced under this range yet.</p>
+                    ) : (
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        {items.map((item) => (
+                          <ProductCard key={item.sku} item={item} />
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
+            </div>
+          </>
+        )}
         <Link to="/brands" className="mt-8 inline-block text-sm font-medium text-clay">
           ← All manufacturer shops
         </Link>

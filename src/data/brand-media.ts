@@ -48,6 +48,11 @@ export const BRAND_FAMILY_IMAGE: Record<string, BrandShot> = {
 };
 
 export const BRAND_SKU_IMAGE: Record<string, BrandShot> = {
+  "BP-CB-1001": { src: "/brand/shops/corobrik/wall/081.jpg", alt: "Titanium Satin face brick" },
+  "BP-CB-1005": { src: "/brand/shops/corobrik/wall/075.jpg", alt: "Silvergrey Travertine face brick" },
+  "BP-CB-1006": { src: "/brand/shops/corobrik/wall/001.jpg", alt: "Agate Satin face brick" },
+  "BP-CB-1009": { src: "/brand/shops/corobrik/wall/082.jpg", alt: "Titanium Travertine face brick" },
+  "BP-CB-1016": { src: "/brand/shops/corobrik/wall/078.jpg", alt: "Terracotta Satin face brick" },
   "BP-CB-1019": { src: "/brand/shops/corobrik/autumn-wheat.jpg", alt: "Autumn Wheat Travertine face brick" },
   "BP-BS-1003": { src: "/brand/shops/bosun/smooth-ethnic.jpg", alt: "Smooth Ethnic pavers on a driveway" },
   "BP-BS-1011": { src: "/brand/shops/bosun/interlock-80.jpg", alt: "80 mm interlocking pavers outside a warehouse" },

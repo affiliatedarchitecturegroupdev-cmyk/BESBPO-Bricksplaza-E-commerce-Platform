@@ -45,6 +45,9 @@ function Brands() {
                     </p>
                     <h2 className="mt-1 font-display text-3xl">{shop.brand}</h2>
                     <p className="mt-2 text-sm text-mortar">{BRAND_COPY[shop.brand_slug]?.line}</p>
+                    {shop.brand_slug === "corobrik" && (
+                      <p className="mt-2 text-sm text-mortar">A separate colour wall holds 88 face-brick and paver photographs.</p>
+                    )}
                     <p className="mt-4 text-sm font-medium text-clay">Open the shop →</p>
                   </div>
                 </div>
@@ -53,7 +56,7 @@ function Brands() {
           })}
         </div>
         <p className="mt-8 max-w-3xl text-xs text-muted">
-          Photographs and marks are the manufacturers’. Bricksplaza is not these manufacturers and does not claim to be an authorised stockist. A picture does not confirm size, colour, stock or price.
+          Photographs and marks on the brochure ranges are the manufacturers’. The Corobrik colour wall uses the Brick Tile Shop board. Bricksplaza is not these manufacturers and does not claim to be an authorised stockist. A picture does not confirm size, colour, stock or price.
         </p>
       </div>
     </>
