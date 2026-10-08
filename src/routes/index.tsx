@@ -622,11 +622,11 @@ function Gallery() {
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Finished work</p>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Reference photos</p>
           <h2 className="mt-1 font-display text-3xl">Project inspiration</h2>
         </div>
         <Link to="/projects" className="text-sm font-medium text-clay hover:underline">
-          All case studies
+          All reference photos
         </Link>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
