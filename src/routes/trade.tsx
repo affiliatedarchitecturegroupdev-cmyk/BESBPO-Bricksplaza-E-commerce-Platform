@@ -7,7 +7,7 @@ function Trade() {
   return (
     <div>
       <section className="relative overflow-hidden bg-kiln text-bisque">
-        <img src="/images/hero/yard.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
+        <div className="pointer-events-none absolute -left-16 top-0 size-72 rounded-full bg-clay/40 blur-3xl" />
         <div className="relative mx-auto max-w-4xl px-4 py-24 sm:px-6">
           <p className="text-[11px] uppercase tracking-[0.2em] text-gold">Contractors · QSs · merchants</p>
           <h1 className="mt-3 font-display text-5xl">Trade accounts. 12% off list. Net 7 / 14 / 30.</h1>

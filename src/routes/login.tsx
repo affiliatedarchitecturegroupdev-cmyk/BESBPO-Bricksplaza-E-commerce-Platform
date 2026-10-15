@@ -43,8 +43,8 @@ function Login() {
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden overflow-hidden bg-kiln lg:block">
-        <img src="/images/hero/yard.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-kiln via-kiln/40 to-kiln/20" />
+        <div className="pointer-events-none absolute -left-20 bottom-0 size-80 rounded-full bg-clay/50 blur-3xl" />
+        <div className="pointer-events-none absolute -right-10 top-0 size-64 rounded-full bg-gold/25 blur-3xl" />
         <div className="relative flex h-full flex-col justify-between p-10 text-bisque">
           <img src="/brand/lockup_reversed.svg" alt="Bricksplaza" className="h-10 w-auto" />
           <div>

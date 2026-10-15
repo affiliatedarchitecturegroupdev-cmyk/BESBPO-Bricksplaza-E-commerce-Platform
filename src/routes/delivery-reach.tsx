@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/layout";
-import { BANDS } from "@/lib/delivery";
+import { BANDS, quoteDelivery } from "@/lib/delivery";
 import { REACH, REACH_TOWN_COUNT, placeHaystack, placeLabel, type ReachPlace } from "@/data/reach";
+import { LocationPicker } from "@/components/location-picker";
+import { listExpressSuppliers } from "@/lib/express.api";
+import type { Pin, SupplierPin } from "@/lib/express";
+import { formatZar } from "@/lib/format";
 
 export const Route = createFileRoute("/delivery-reach")({
   head: () => ({
@@ -65,7 +69,7 @@ function DeliveryReach() {
       <PageHeader
         kicker="Delivery reach"
         title="All nine provinces. The town list is the delivery list."
-        body="Buying online does not mean the brick has to come from somewhere you cannot name. Search the city or town. If it is here, we will take the load. Gauteng and KwaZulu-Natal leave from the yards. Everywhere else is a quoted long haul."
+        body="Buying online does not mean the brick has to come from somewhere you cannot name. Search the city or town. Set a pin and the fee follows the nearer of Midrand and Cato Ridge. Gauteng and KwaZulu-Natal leave from those yards. Past 250 km the fee is quoted."
       />
 
       <section className="border-b border-line bg-paper">
@@ -90,6 +94,7 @@ function DeliveryReach() {
           See the express service
         </Link>
       </p>
+      <SitePin />
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
@@ -207,8 +212,8 @@ function DeliveryReach() {
                             </p>
                             <p className="mt-1 text-mortar">
                               {province.mode === "yard"
-                                ? `On the yard run from ${province.yard}. The fee is worked out from the delivery postcode at checkout: local, regional or extended.`
-                                : "On the national list. The fee is not guessed at checkout — a load past 250 km is quoted within one business day."}{" "}
+                                ? `On the yard run from ${province.yard}. A pin at checkout prices the nearer yard. Without a pin, the postcode still sets local, regional or extended.`
+                                : "On the national list. A pin past 250 km from both yards is not given a flat fee — the load is quoted within one business day."}{" "}
                               Collection is only from Midrand or Cato Ridge, not from the town itself.
                             </p>
                             <p className="mt-3">
@@ -235,7 +240,7 @@ function DeliveryReach() {
           <div>
             <h2 className="font-display text-3xl">How the fee is worked out</h2>
             <p className="mt-3 text-sm text-mortar">
-              The same bands as checkout. A town on this page does not change the band. The postcode does. Crane offload is extra. The brand can still be specified — Corobrik, Bosun, Technicrete, Infraset, or another make from the manufacturers we buy from.
+              A pin uses the straight-line distance to the nearer of Midrand and Cato Ridge: local, regional, extended, or quoted past 250 km. Without a pin, the postcode sets the band. Crane offload is extra. The brand can still be specified — Corobrik, Bosun, Technicrete, Infraset, or another make from the manufacturers we buy from.
             </p>
             <ul className="mt-5 space-y-2 text-sm">
               {Object.values(BANDS)
@@ -269,5 +274,74 @@ function DeliveryReach() {
         </section>
       </div>
     </>
+  );
+}
+
+function SitePin() {
+  const [suppliers, setSuppliers] = useState<SupplierPin[]>([]);
+  const [pin, setPin] = useState<(Pin & { label: string }) | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    let live = true;
+    listExpressSuppliers()
+      .then((rows) => {
+        if (!live) return;
+        setSuppliers(rows);
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (live) setStatus("error");
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const quote = pin ? quoteDelivery("", "delivery", { lat: pin.lat, lng: pin.lng }) : null;
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+      <div className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
+        <p className="text-[11px] uppercase tracking-[0.16em] text-clay">Site pin</p>
+        <h2 className="mt-1 font-display text-3xl">The nearer yard, from where the truck has to stop.</h2>
+        <p className="mt-2 max-w-2xl text-sm text-mortar">
+          Search a town, use this device’s location, or drop a pin on the map. The ordinary fee follows the straight-line distance to the nearer of Midrand and Cato Ridge. Those coordinates are town centres, not a surveyed street address. A partner is not pinned until the desk can name one that prepares a load in 20 minutes.
+        </p>
+        <div className="mt-4">
+          <LocationPicker pin={pin} suppliers={suppliers} onChange={setPin} />
+        </div>
+        {status === "error" && (
+          <p className="mt-3 text-sm text-mortar">Supplier pins did not load. The two yards still price the delivery from the pin you set.</p>
+        )}
+        {status === "ready" && suppliers.length === 0 && (
+          <p className="mt-3 text-sm text-mortar">No extra supplier pins are active. Midrand and Cato Ridge are the fulfilment points.</p>
+        )}
+        {quote && pin && (
+          <div className="mt-4 rounded-xl bg-card p-4 text-sm">
+            <p className="font-medium">
+              {quote.yard}
+              <span className="font-normal text-muted"> · {quote.province}</span>
+            </p>
+            <p className="mt-1 text-mortar">
+              {pin.label} · {quote.distanceKm} km · {BANDS[quote.band].label} ({BANDS[quote.band].distance})
+              {quote.quoted ? ` · ${formatZar(quote.baseFee ?? 0)} for the first pallet` : " · quote to follow"}
+            </p>
+            <p className="mt-2 text-mortar">
+              AA 60/120 is separate. It needs this pin inside 30 km of a supplier, stocked lines, and a quoted ordinary fee. Set the pin again at checkout — this page does not carry it across.
+            </p>
+            <p className="mt-3">
+              <Link to="/checkout" className="text-clay">
+                Check out
+              </Link>
+              <span className="text-muted"> · </span>
+              <Link to="/express" className="text-clay">
+                AA 60/120
+              </Link>
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

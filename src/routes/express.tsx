@@ -81,7 +81,7 @@ function ExpressPage() {
         <div>
           <h2 className="font-display text-2xl">Set a pin</h2>
           <p className="mt-2 max-w-xl text-sm text-mortar">
-            Search a town, use your location, or click the map. The ring is 30 km. Black dots are supplier pins. This page only checks range and hours. The fee is added at checkout, on top of the ordinary quote.
+            Search a town, use your location, or click the map. The ring is 30 km. Black dots are supplier pins. The same pin prices the ordinary delivery from the nearer yard. This page only checks the express range and the hours. The fee is added at checkout, on top of that quote.
           </p>
           <div className="mt-5">
             <LocationPicker pin={pin} suppliers={suppliers} onChange={setPin} />

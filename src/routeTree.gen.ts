@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as BaeRouteImport } from './routes/bae'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BrandsRouteImport } from './routes/brands'
 import { Route as CareersRouteImport } from './routes/careers'
@@ -38,6 +39,7 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as TradeRouteImport } from './routes/trade'
+import { Route as VisualiseRouteImport } from './routes/visualise'
 import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as WaysToPayRouteImport } from './routes/ways-to-pay'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
@@ -88,6 +90,11 @@ const AccessibilityRoute = AccessibilityRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BaeRoute = BaeRouteImport.update({
+  id: '/bae',
+  path: '/bae',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogRoute = BlogRouteImport.update({
@@ -218,6 +225,11 @@ const TrackRoute = TrackRouteImport.update({
 const TradeRoute = TradeRouteImport.update({
   id: '/trade',
   path: '/trade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisualiseRoute = VisualiseRouteImport.update({
+  id: '/visualise',
+  path: '/visualise',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WarrantyRoute = WarrantyRouteImport.update({
@@ -405,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
+  '/bae': typeof BaeRoute
   '/blog': typeof BlogRouteWithChildren
   '/brands': typeof BrandsRouteWithChildren
   '/careers': typeof CareersRoute
@@ -431,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
+  '/visualise': typeof VisualiseRoute
   '/warranty': typeof WarrantyRoute
   '/ways-to-pay': typeof WaysToPayRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -472,6 +486,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
+  '/bae': typeof BaeRoute
   '/careers': typeof CareersRoute
   '/cart': typeof CartRoute
   '/catalogue': typeof CatalogueRoute
@@ -494,6 +509,7 @@ export interface FileRoutesByTo {
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
+  '/visualise': typeof VisualiseRoute
   '/warranty': typeof WarrantyRoute
   '/ways-to-pay': typeof WaysToPayRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -536,6 +552,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/account': typeof AccountRoute
+  '/bae': typeof BaeRoute
   '/blog': typeof BlogRouteWithChildren
   '/brands': typeof BrandsRouteWithChildren
   '/careers': typeof CareersRoute
@@ -562,6 +579,7 @@ export interface FileRoutesById {
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
+  '/visualise': typeof VisualiseRoute
   '/warranty': typeof WarrantyRoute
   '/ways-to-pay': typeof WaysToPayRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -605,6 +623,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/account'
+    | '/bae'
     | '/blog'
     | '/brands'
     | '/careers'
@@ -631,6 +650,7 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/track'
     | '/trade'
+    | '/visualise'
     | '/warranty'
     | '/ways-to-pay'
     | '/blog/$slug'
@@ -672,6 +692,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/account'
+    | '/bae'
     | '/careers'
     | '/cart'
     | '/catalogue'
@@ -694,6 +715,7 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/track'
     | '/trade'
+    | '/visualise'
     | '/warranty'
     | '/ways-to-pay'
     | '/blog/$slug'
@@ -735,6 +757,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/account'
+    | '/bae'
     | '/blog'
     | '/brands'
     | '/careers'
@@ -761,6 +784,7 @@ export interface FileRouteTypes {
     | '/sitemap'
     | '/track'
     | '/trade'
+    | '/visualise'
     | '/warranty'
     | '/ways-to-pay'
     | '/blog/$slug'
@@ -803,6 +827,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccessibilityRoute: typeof AccessibilityRoute
   AccountRoute: typeof AccountRoute
+  BaeRoute: typeof BaeRoute
   BlogRoute: typeof BlogRouteWithChildren
   BrandsRoute: typeof BrandsRouteWithChildren
   CareersRoute: typeof CareersRoute
@@ -829,6 +854,7 @@ export interface RootRouteChildren {
   SitemapRoute: typeof SitemapRoute
   TrackRoute: typeof TrackRoute
   TradeRoute: typeof TradeRoute
+  VisualiseRoute: typeof VisualiseRoute
   WarrantyRoute: typeof WarrantyRoute
   WaysToPayRoute: typeof WaysToPayRoute
   BundlesSlugRoute: typeof BundlesSlugRoute
@@ -865,6 +891,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bae': {
+      id: '/bae'
+      path: '/bae'
+      fullPath: '/bae'
+      preLoaderRoute: typeof BaeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog': {
@@ -1047,6 +1080,13 @@ declare module '@tanstack/react-router' {
       path: '/trade'
       fullPath: '/trade'
       preLoaderRoute: typeof TradeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/visualise': {
+      id: '/visualise'
+      path: '/visualise'
+      fullPath: '/visualise'
+      preLoaderRoute: typeof VisualiseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/warranty': {
@@ -1387,6 +1427,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccessibilityRoute: AccessibilityRoute,
   AccountRoute: AccountRoute,
+  BaeRoute: BaeRoute,
   BlogRoute: BlogRouteWithChildren,
   BrandsRoute: BrandsRouteWithChildren,
   CareersRoute: CareersRoute,
@@ -1413,6 +1454,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapRoute: SitemapRoute,
   TrackRoute: TrackRoute,
   TradeRoute: TradeRoute,
+  VisualiseRoute: VisualiseRoute,
   WarrantyRoute: WarrantyRoute,
   WaysToPayRoute: WaysToPayRoute,
   BundlesSlugRoute: BundlesSlugRoute,

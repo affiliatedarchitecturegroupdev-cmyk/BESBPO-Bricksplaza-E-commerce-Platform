@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 148" role="img" aria-label="SANAS nameplate. Not the accreditation symbol.">
+  <rect width="320" height="148" fill="#fffbf6"/>
+  <rect x="8" y="8" width="304" height="132" fill="none" stroke="#26211e" stroke-width="1.5"/>
+  <text x="160" y="68" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="34" fill="#26211e" letter-spacing="3">SANAS</text>
+  <text x="160" y="92" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#5b5651">South African National Accreditation System</text>
+  <text x="160" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" fill="#a8412e">Name only. Not the reserved accreditation symbol.</text>
+</svg>

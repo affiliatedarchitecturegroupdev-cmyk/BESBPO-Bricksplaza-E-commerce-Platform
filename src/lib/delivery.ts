@@ -1,3 +1,5 @@
+import { haversineKm } from "./express.ts";
+
 export type DeliveryBand = "local" | "regional" | "extended" | "long" | "collection";
 
 export const BANDS: Record<
@@ -31,6 +33,9 @@ export type Quote = {
   time: string;
   pallets: number;
   weightKg: number;
+  /** Set when the buyer pin, not the postcode, chose the yard and the band. */
+  distanceKm: number | null;
+  pinned: boolean;
 };
 
 type Near = "gp" | "kzn" | "extended" | "far";
@@ -68,15 +73,48 @@ function bandFor(near: Near, n: number): DeliveryBand {
   return "long";
 }
 
+function bandForKm(km: number): DeliveryBand {
+  if (km <= 30) return "local";
+  if (km <= 100) return "regional";
+  if (km <= 250) return "extended";
+  return "long";
+}
+
+/** Town-centre pins for the two fulfilment yards. Not surveyed street addresses. */
+export const YARDS = [
+  { name: "Midrand Distribution Yard", province: "Gauteng", lat: -25.989, lng: 28.127 },
+  { name: "Cato Ridge Distribution Yard", province: "KwaZulu-Natal", lat: -29.742, lng: 30.601 },
+] as const;
+
+export function nearestYard(lat: number, lng: number) {
+  let best: (typeof YARDS)[number] = YARDS[0];
+  let km = haversineKm({ lat, lng }, best);
+  for (const yard of YARDS) {
+    const distance = haversineKm({ lat, lng }, yard);
+    if (distance < km) {
+      best = yard;
+      km = distance;
+    }
+  }
+  return { yard: best, km };
+}
+
 export function quoteDelivery(
   postalCode: string,
   method: "delivery" | "collection",
-  load?: { pallets?: number; weightKg?: number },
+  load?: { pallets?: number; weightKg?: number; lat?: number; lng?: number },
 ): Quote {
   const pallets = Math.max(0, Math.ceil(Number(load?.pallets) || 0));
   const weightKg = Math.max(0, Math.round(Number(load?.weightKg) || 0));
+  const lat = Number(load?.lat);
+  const lng = Number(load?.lng);
+  const pinned = Number.isFinite(lat) && Number.isFinite(lng);
+  const nearest = pinned ? nearestYard(lat, lng) : null;
+
   if (method === "collection") {
-    const loc = provinceFromPostcode(postalCode || "1685");
+    const loc = nearest
+      ? { province: nearest.yard.province, yard: nearest.yard.name }
+      : provinceFromPostcode(postalCode || "1685");
     return {
       band: "collection",
       fee: 0,
@@ -88,8 +126,31 @@ export function quoteDelivery(
       time: BANDS.collection.time,
       pallets,
       weightKg,
+      distanceKm: nearest ? Math.round(nearest.km * 10) / 10 : null,
+      pinned,
     };
   }
+
+  if (nearest) {
+    const band = bandForKm(nearest.km);
+    const baseFee = BANDS[band].fee;
+    const palletFee = baseFee == null ? 0 : Math.max(0, pallets - 1) * PALLET_EXTRA[band];
+    return {
+      band,
+      baseFee,
+      palletFee,
+      fee: baseFee == null ? null : baseFee + palletFee,
+      quoted: baseFee != null,
+      yard: nearest.yard.name,
+      province: nearest.yard.province,
+      time: BANDS[band].time,
+      pallets,
+      weightKg,
+      distanceKm: Math.round(nearest.km * 10) / 10,
+      pinned: true,
+    };
+  }
+
   const loc = provinceFromPostcode(postalCode);
   const band = bandFor(loc.near, loc.code);
   const baseFee = BANDS[band].fee;
@@ -105,6 +166,8 @@ export function quoteDelivery(
     time: BANDS[band].time,
     pallets,
     weightKg,
+    distanceKm: null,
+    pinned: false,
   };
 }
 

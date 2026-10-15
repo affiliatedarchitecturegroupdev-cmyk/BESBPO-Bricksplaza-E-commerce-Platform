@@ -11,7 +11,7 @@ const PROGRAMMES = [
     href: "/sectors/commercial" as const,
     slug: "commercial",
     kind: "sector" as const,
-    image: "/images/projects/commercial.jpg",
+    image: "/images/hero/slides/facade-cobbles.jpg",
   },
   {
     title: "Property developers",
@@ -19,7 +19,7 @@ const PROGRAMMES = [
     href: "/sectors/residential" as const,
     slug: "residential",
     kind: "sector" as const,
-    image: "/images/projects/estate.jpg",
+    image: "",
   },
   {
     title: "Hardware stores",
@@ -27,7 +27,7 @@ const PROGRAMMES = [
     href: "/trade" as const,
     slug: "",
     kind: "trade" as const,
-    image: "/images/hero/yard.jpg",
+    image: "/images/hero/aac.jpg",
   },
 ];
 
@@ -43,7 +43,13 @@ function Partners() {
         <div className="grid gap-6 md:grid-cols-3">
           {PROGRAMMES.map((p) => (
             <article key={p.title} className="overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]">
-              <img src={p.image} alt="" className="aspect-[16/10] w-full object-cover" />
+              {p.image ? (
+                <img src={p.image} alt="" className="aspect-[16/10] w-full object-cover" />
+              ) : (
+                <div className="flex aspect-[16/10] items-end bg-kiln p-4 text-bisque">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Colour-matched across the stand</p>
+                </div>
+              )}
               <div className="p-5">
                 <h2 className="font-display text-2xl">{p.title}</h2>
                 <p className="mt-2 text-sm text-mortar">{p.body}</p>
@@ -74,7 +80,7 @@ function Partners() {
           <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Same group, next contract</p>
           <h2 className="mt-2 font-display text-3xl">From the catalogue to the build</h2>
           <p className="mt-2 max-w-2xl text-sm text-mortar">
-            Affiliated Builders constructs. Finishes Construction finishes. Neither page is a priced tender.
+            Affiliated Builders constructs. Finishes Construction finishes. Bellwether Architecture & Engineering takes the design enquiry. None of these pages is a priced tender, and none publishes a registration number.
           </p>
           <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium">
             <Link to="/divisions/$slug" params={{ slug: "affiliated-builders" }} className="text-clay">
@@ -82,6 +88,9 @@ function Partners() {
             </Link>
             <Link to="/divisions/$slug" params={{ slug: "finishes-construction" }} className="text-clay">
               Finishes Construction →
+            </Link>
+            <Link to="/bae" className="text-clay">
+              BAE →
             </Link>
           </div>
         </section>

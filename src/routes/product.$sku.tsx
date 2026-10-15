@@ -291,6 +291,7 @@ function ProductPage() {
               <Link to="/delivery-reach" className="text-clay">
                 Where we deliver
               </Link>
+              {". This estimate uses the postcode only. A pin at checkout can move the band to the nearer yard."}
             </p>
           </div>
         </div>

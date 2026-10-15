@@ -21,6 +21,18 @@ function Help() {
           <Link to="/delivery-reach" className="text-clay">
             Delivery reach
           </Link>
+          <Link to="/express" className="text-clay">
+            AA 60/120
+          </Link>
+          <Link to="/visualise" className="text-clay">
+            Colour study
+          </Link>
+          <Link to="/bae" className="text-clay">
+            BAE design
+          </Link>
+          <Link to="/legal/$slug" params={{ slug: "delivery-handling-fee" }} className="text-clay">
+            Handling fee
+          </Link>
           <Link to="/responsible-sourcing" className="text-clay">
             Responsible sourcing
           </Link>

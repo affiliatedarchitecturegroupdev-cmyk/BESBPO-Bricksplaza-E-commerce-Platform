@@ -16,26 +16,26 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     key: "face-house",
     kicker: "Residential face brick",
-    title: "A house that is the brick, not a coat of paint.",
-    body: "Satin, rustic, wirecut and sandstock face bricks in 14 colourways — Autumn Red through White — for freestanding homes and estates.",
+    title: "Face brick on the wall, clay pavers on the drive.",
+    body: "A freestanding house in Pretoria. Face brick for the elevation, clay pavers for the approach, in the same colour family. The photograph is a reference, not a Bricksplaza job.",
     cta: "Shop face bricks",
     href: "/shop/clay-face-bricks",
-    image: "/images/hero/slides/face-house.jpg",
-    alt: "Two-storey red face-brick house with arched windows under a clear sky",
+    image: "/images/hero/slides/pretoria-face.jpg",
+    alt: "Face-brick house in Pretoria with a clay paver driveway and a red garage door",
     focus: "center",
-    credit: "DavidM4008, Wikimedia Commons, CC BY-SA 4.0",
+    credit: "Alexander F Ungerer, Pexels. Pretoria.",
   },
   {
     key: "facade-cobbles",
     kicker: "Face brick and cobbles",
-    title: "Clay on the wall. Cobbles at the door.",
-    body: "Specify the elevation and the approach together. Face brick for the wall, cobbles for the forecourt, ordered from one catalogue.",
+    title: "Clay on the wall. Cobbles underfoot.",
+    body: "The elevation and the court are one specification. Face brick up the building, cobbles on the ground, ordered from one catalogue.",
     cta: "Shop cobbles",
     href: "/shop/cobbles",
-    image: "/images/hero/slides/facade-cobbles.jpg",
-    alt: "Red brick facade with an arched doorway and a cobbled forecourt",
+    image: "/images/hero/slides/pretoria-cobbles.jpg",
+    alt: "Brick apartment blocks facing a cobbled court under a blue sky",
     focus: "center",
-    credit: "Wikimedia Commons",
+    credit: "Pexels",
   },
   {
     key: "commercial",
@@ -52,26 +52,26 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     key: "specials",
     kicker: "Clay specials",
-    title: "Quoins, string courses, chimneys and sills.",
-    body: "The brick that draws the lines. Specials for the parts a standard stretcher cannot do, matched to the facing colourway.",
+    title: "The courses are what the eye follows.",
+    body: "Quoins, string courses, sills and chimneys are the specials a standard stretcher cannot draw. Match them to the facing colourway. The photograph is a reference, not a Bricksplaza job.",
     cta: "Shop clay specials",
     href: "/shop/clay-specials",
-    image: "/images/hero/slides/brick-courses.jpg",
-    alt: "House with brick quoins, horizontal brick courses and a brick chimney",
+    image: "/images/hero/slides/johannesburg-facade.jpg",
+    alt: "Historic red-brick facade with stone courses and a verandah",
     focus: "center",
-    credit: "Unsplash",
+    credit: "Pexels",
   },
   {
     key: "volume",
     kicker: "Trade and volume",
-    title: "The same brick, on every floor.",
-    body: "A multi-storey elevation is a volume order, not a sample. Trade is 12% off retail. Volume is 20%. Net-30 for approved accounts.",
+    title: "The same brick, on the house and the boundary.",
+    body: "A cluster is a volume order, not a sample. Trade is 12% off retail. Volume is 20%. Net terms are for approved accounts only.",
     cta: "See trade pricing",
     href: "/trade",
-    image: "/images/hero/slides/apartment-grid.jpg",
-    alt: "Brown brick apartment facade with a regular grid of windows",
+    image: "/images/hero/slides/pretoria-cluster.jpg",
+    alt: "Face-brick houses in Pretoria with a brick planter and clay pavers",
     focus: "center",
-    credit: "Wilfredor, Wikimedia Commons, CC BY-SA 4.0",
+    credit: "Alexander F Ungerer, Pexels. Pretoria.",
   },
   {
     key: "pavers",
@@ -88,14 +88,14 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     key: "garden",
     kicker: "Garden walls",
-    title: "A boundary wall, and a coping that sheds the rain.",
-    body: "Stock or face brick for the wall. Once-weathered coping in the same colourway, so the top course is not an afterthought.",
+    title: "A brick boundary, a paved yard, and a lapa.",
+    body: "Face brick for the wall and the outdoor room. Pavers for the yard between them. Coping closes the top course so the rain does not sit on the wall.",
     cta: "Shop coping",
     href: "/shop/coping",
-    image: "/images/hero/slides/garden-wall.jpg",
-    alt: "Weathered brick garden wall with a coping course and flowering plants",
-    focus: "center 42%",
-    credit: "Acabashi, Wikimedia Commons, CC BY-SA 4.0",
+    image: "/images/hero/slides/pretoria-lapa.jpg",
+    alt: "South African garden with a brick lapa, clay pavers and a boundary wall",
+    focus: "center 40%",
+    credit: "Pexels",
   },
   {
     key: "braai",
@@ -112,14 +112,14 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     key: "delivery",
     kicker: "Yards and freight",
-    title: "Off the truck and onto the stand.",
-    body: "Same-day collection at the Midrand and Cato Ridge yards. Palletised freight for the other seven provinces.",
-    cta: "Gauteng yard",
-    href: "/locations/gauteng",
-    image: "/images/hero/slides/delivery.jpg",
-    alt: "Bricks being unloaded from a truck onto a building site",
+    title: "The stand the truck has to reach.",
+    body: "Midrand and Cato Ridge deliver to stands like this one. Set a pin and the fee follows the nearest yard. The other seven provinces stay a quoted long haul.",
+    cta: "Check a pin",
+    href: "/delivery-reach",
+    image: "/images/hero/slides/gauteng-stand.jpg",
+    alt: "Face-brick house with a brick boundary wall, a water tank and a paved yard",
     focus: "center",
-    credit: "VilhoRoyal995, Wikimedia Commons, CC BY-SA 4.0",
+    credit: "Pexels",
   },
   {
     key: "mortar",
@@ -363,11 +363,27 @@ export const FAQS = [
   },
   {
     q: "Can I collect from the yard?",
-    a: "Yes — collection is free, same day subject to stock, from the nearest qualifying yard. Crane/Hiab offload is a surcharge on delivery only.",
+    a: "Yes — collection is free, same day subject to stock, from the nearest yard. If you set a site pin, collection is offered at the nearer of Midrand and Cato Ridge. Crane/Hiab offload is a surcharge on delivery only.",
   },
   {
     q: "How do I open a trade account?",
     a: "Sign in, open Account → Trade, and submit company / VAT / typical monthly demand. The Business Desk credit-vets and assigns a limit and net 7/14/30 terms.",
+  },
+  {
+    q: "How does a site pin change the delivery fee?",
+    a: "Search a town, use your location, or drop a pin. The fee then follows the nearer of the Midrand and Cato Ridge yards: local to 30 km, regional to 100 km, extended to 250 km, and a quote after that. Those two pins are town centres, not surveyed street addresses. No other supplier is on the map until the desk adds one. Without a pin, checkout still uses the postcode band.",
+  },
+  {
+    q: "What is the delivery handling fee?",
+    a: "18% of the paid order when you change or return materials for a reason that is not our fault and not the supplier’s. 15% is the usual handling charge. The extra 3% is administration and coordination. Damage, a shortage, or a supplier fault is not charged. The amount is recorded on the return. Cards are not charged.",
+  },
+  {
+    q: "Can I see a colour on a house before I order?",
+    a: "The product-to-site page is a colour study. Pick one of the 14 colourways and see it on an elevation, a driveway and a boundary. It is not a photograph of that SKU on a site.",
+  },
+  {
+    q: "Who does the architectural and engineering work?",
+    a: "Bellwether Architecture & Engineering (BAE), a Besbpo Group company, takes design and engineering enquiries. Bricksplaza does not price that work, and this store does not publish a professional registration number for BAE.",
   },
 ];
 
@@ -486,6 +502,7 @@ export const GROUP = [
   { name: "Aggregated Aggregates", role: "Sub-base & aggregates" },
   { name: "Precast Direct", role: "Ready-mix & precast" },
   { name: "Bellwether SWE Plumbers", role: "Plumbing" },
+  { name: "Bellwether Architecture & Engineering", role: "Design and engineering" },
   { name: "SolarBell", role: "Solar / renewable" },
   { name: "Besfleet", role: "Group logistics" },
 ];
@@ -532,7 +549,7 @@ export const LEGAL: Record<
       },
       {
         heading: "4. Delivery and collection",
-        body: "Delivery fees are calculated on distance band from the nearest qualifying yard plus cart weight/pallet count. Long-distance (250 km+) orders are accepted with a quote to follow within one business day. Risk passes on collection or on signed delivery.",
+        body: "Delivery fees follow the nearest yard pin when a site pin is set: local to 30 km, regional to 100 km, extended to 250 km, and a quote after that. Without a pin, the postcode band is used. Long-distance orders are accepted with a fee to follow. Risk passes on collection or on signed delivery. A customer change or return that is not our fault, and not the supplier’s, is charged under the Delivery Handling Fee policy.",
       },
       {
         heading: "5. Contact",
@@ -582,7 +599,7 @@ export const LEGAL: Record<
     sections: [
       {
         heading: "1. Stock items",
-        body: "Unopened, unused pallets of stock items may be returned within 10 business days of delivery, subject to a handling fee and transport. Clay that has been laid, cut or soiled is not returnable.",
+        body: "Unopened, unused pallets of stock items may be returned within 10 business days of delivery. If the change or return is not Bricksplaza’s fault and not the supplier’s fault, a delivery handling fee of 18% of the paid order applies. Damage, shortage, or a supplier fault is not charged that fee. Clay that has been laid, cut or soiled is not returnable. See the Delivery Handling Fee policy.",
       },
       {
         heading: "2. Made-to-order",
@@ -628,7 +645,7 @@ export const LEGAL: Record<
     sections: [
       {
         heading: "1. The storefront",
-        body: "Do not scrape the catalogue for resale, probe payment endpoints, or submit abusive content in reviews or Q&A. Reviews are moderated in the Business Desk.",
+        body: "Do not scrape the catalogue for resale, probe payment endpoints, or submit abusive content in reviews or questions. A star rating publishes immediately. A written review publishes immediately after a purchase of that SKU. The yard can hide the written text. The stars stay.",
       },
     ],
   },
@@ -657,6 +674,28 @@ export const LEGAL: Record<
       {
         heading: "2. Risk",
         body: "Risk passes on collection or on signed delivery, including crane/Hiab offload where that surcharge was accepted at checkout.",
+      },
+    ],
+  },
+  "delivery-handling-fee": {
+    title: "Delivery Handling Fee",
+    updated: "2026-10-15",
+    sections: [
+      {
+        heading: "1. When the fee applies",
+        body: "If you ask to change or return materials, and the reason is not Bricksplaza’s fault and not the supplier’s fault, a handling fee of 18% of the paid order is recorded. The industry charge for handling materials is usually 15%. The extra 3% is for administration and for coordinating the change.",
+      },
+      {
+        heading: "2. When it does not",
+        body: "Damage or a shortage noted on arrival, a yard error, and a supplier fault do not take this fee. Made-to-order goods that have started production are still not returnable, except where the Consumer Protection Act requires otherwise. Laid, cut or soiled clay is not returnable.",
+      },
+      {
+        heading: "3. How it is worked out",
+        body: "The fee is 18% of the paid order total, including VAT as charged on that order. It is calculated on the server from the order, not typed in by the customer. Payment on the store is still simulated, so the fee is recorded on the return. It is not taken from a card.",
+      },
+      {
+        heading: "4. How to ask",
+        body: "Sign in and open Returns. Choose whose fault it is, name the order and the SKU, and the fee is shown before you submit. Queries: supply@bricksplaza.co.za.",
       },
     ],
   },

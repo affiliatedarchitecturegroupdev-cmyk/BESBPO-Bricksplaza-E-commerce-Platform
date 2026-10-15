@@ -41,4 +41,31 @@ test("Cato Ridge is the KwaZulu-Natal yard", () => {
 test("an empty postcode is not priced as local", () => {
   const quote = quoteDelivery("", "delivery");
   assert.equal(quote.quoted, false);
+  assert.equal(quote.pinned, false);
+});
+
+test("a Midrand pin is local without a postcode", () => {
+  const quote = quoteDelivery("", "delivery", { lat: -25.989, lng: 28.127 });
+  assert.equal(quote.pinned, true);
+  assert.equal(quote.band, "local");
+  assert.equal(quote.yard, "Midrand Distribution Yard");
+  assert.equal(quote.fee, 950);
+  assert.ok((quote.distanceKm ?? 99) < 1);
+});
+
+test("a Cape Town pin stays unquoted even if the postcode looks local", () => {
+  const quote = quoteDelivery("1685", "delivery", { lat: -33.9249, lng: 18.4241, pallets: 2 });
+  assert.equal(quote.band, "long");
+  assert.equal(quote.quoted, false);
+  assert.equal(quote.fee, null);
+  assert.equal(quote.pinned, true);
+});
+
+test("about 55 km north of Midrand is the regional band", () => {
+  const quote = quoteDelivery("0002", "delivery", { lat: -25.489, lng: 28.127, pallets: 2 });
+  assert.equal(quote.yard, "Midrand Distribution Yard");
+  assert.equal(quote.band, "regional");
+  assert.equal(quote.baseFee, 1850);
+  assert.equal(quote.palletFee, 280);
+  assert.ok((quote.distanceKm ?? 0) > 30 && (quote.distanceKm ?? 0) <= 100);
 });

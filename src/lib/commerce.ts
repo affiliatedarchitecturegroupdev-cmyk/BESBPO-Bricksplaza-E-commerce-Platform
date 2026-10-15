@@ -256,7 +256,12 @@ async function commitOrder(opts: {
     weightKg += p.weightKg * qty;
     resolved.push({ sku: l.sku, qty, name: p.productName, unit, fulfilment: p.fulfilmentType });
   }
-  const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method, { pallets, weightKg });
+  const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method, {
+    pallets,
+    weightKg,
+    lat: Number(data.lat),
+    lng: Number(data.lng),
+  });
   let expressFee = 0;
   let expressSupplier: { id: number; name: string; km: number } | null = null;
   if (data.express) {
@@ -818,26 +823,46 @@ export const submitRfq = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+export const previewReturn = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: { order_id: string; fault?: string }) => d)
+  .handler(async ({ context, data }) => {
+    const orderId = String(data.order_id ?? "").trim().slice(0, 40);
+    const fault = data.fault === "yard" || data.fault === "supplier" ? data.fault : "customer";
+    const sql = await getSql();
+    const rows = await sql<{ total: unknown }>`select total from orders where id = ${orderId} and user_id = ${context.userId}`;
+    if (!rows[0]) return null;
+    const { handlingFee, HANDLING_RATE } = await import("@/lib/handling");
+    const paid = num(rows[0].total);
+    return { paid, fault, rate: fault === "customer" ? HANDLING_RATE : 0, fee: handlingFee(paid, fault) };
+  });
+
 export const submitReturn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((d: { order_id: string; sku?: string; reason: string; qty?: number }) => d)
+  .validator((d: { order_id: string; sku?: string; reason: string; qty?: number; fault?: string }) => d)
   .handler(async ({ context, data }) => {
     const orderId = String(data.order_id ?? "").trim().slice(0, 40);
     const sku = String(data.sku ?? "").trim().slice(0, 40);
     const reason = String(data.reason ?? "").trim().slice(0, 500);
     const qty = Math.floor(Number(data.qty ?? 1));
+    const fault = data.fault === "yard" || data.fault === "supplier" ? data.fault : "customer";
     if (!reason) throw new Error("Say why you are returning it");
     if (!Number.isFinite(qty) || qty < 1 || qty > 100000) throw new Error("Invalid quantity");
     const sql = await getSql();
-    const own = await sql`select id from orders where id = ${orderId} and user_id = ${context.userId}`;
+    const own = await sql<{ total: unknown }>`select total from orders where id = ${orderId} and user_id = ${context.userId}`;
     if (!own[0]) throw new Error("Order not found");
     if (sku) {
       const line = await sql<{ qty: number }>`select qty from order_lines where order_id = ${orderId} and sku = ${sku}`;
       if (!line[0]) throw new Error("That SKU is not on this order");
       if (qty > num(line[0].qty)) throw new Error("Return quantity is higher than the order");
     }
-    await sql`insert into returns (user_id, order_id, sku, qty, reason) values (${context.userId}, ${orderId}, ${sku}, ${qty}, ${reason})`;
-    return { ok: true as const };
+    const { handlingFee, HANDLING_RATE } = await import("@/lib/handling");
+    const paid = num(own[0].total);
+    const fee = handlingFee(paid, fault);
+    const rate = fault === "customer" ? HANDLING_RATE : 0;
+    await sql`insert into returns (user_id, order_id, sku, qty, reason, fault, handling_rate, handling_fee, paid_total)
+      values (${context.userId}, ${orderId}, ${sku}, ${qty}, ${reason}, ${fault}, ${rate}, ${fee}, ${paid})`;
+    return { ok: true as const, fee, paid, rate, fault };
   });
 
 export const trackOrder = createServerFn({ method: "POST" })

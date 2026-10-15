@@ -57,6 +57,9 @@ function Home() {
       <Hero />
       <ExpressBand />
       <ExpressCheckout />
+      <PricePath sample={trending[0] ?? bulk[0]} />
+      <ColourMatchPath colours={colours} />
+      <SiteStudy />
       <AdBanner slot={adSlot("hero-banner")} />
       <PitchDeck />
       <Rail title="Trending now" kicker="Order velocity" href="/shop" products={trending} />
@@ -101,24 +104,26 @@ function CompanyMast() {
     { slug: "brick-slips", title: "Specialist systems", body: "Brick slips, braai kits and the newest lines." },
   ] as const;
   const services = [
-    { to: "/shop" as const, title: "Priced catalogue", body: "Stock and made-to-order, with trade and volume prices at checkout." },
-    { to: "/brands" as const, title: "Manufacturer shops", body: "Corobrik, Bosun, Technicrete and Infraset. Quoted, not added to the cart." },
-    { to: "/delivery-reach" as const, title: "Yard delivery", body: "Midrand and Cato Ridge. The other seven provinces are quoted long haul." },
-    { to: "/trade" as const, title: "Trade accounts", body: "12% trade, 20% volume, on approved terms." },
+    { to: "/shop" as const, title: "Priced catalogue", body: "Retail, 12% trade and 20% volume. The discount is checked again at checkout." },
+    { to: "/brands" as const, title: "Manufacturer shops", body: "Corobrik, Bosun, Technicrete and Infraset. Quoted. Not added to the cart." },
+    { to: "/delivery-reach" as const, title: "Pin the site", body: "Midrand and Cato Ridge. The fee follows the nearer yard once a pin is set." },
+    { to: "/bae" as const, title: "Design and engineering", body: "BAE, Bellwether Architecture & Engineering. An enquiry, not a priced appointment." },
   ];
   return (
-    <section className="border-b border-line bg-paper">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Bricksplaza · Besbpo Group</p>
-        <h1 className="mt-2 max-w-3xl font-display text-3xl leading-[1.08] sm:text-5xl">
+    <section className="relative overflow-hidden border-b border-black/20 bg-kiln text-bisque">
+      <div className="pointer-events-none absolute -left-24 -top-24 size-80 rounded-full bg-clay/40 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 right-0 size-96 rounded-full bg-gold/20 blur-3xl" />
+      <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Bricksplaza · Besbpo Group</p>
+        <h1 className="mt-2 max-w-3xl font-display text-3xl leading-[1.05] text-bisque sm:text-5xl">
           Clay masonry, hard landscaping and specialist systems.
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mortar sm:text-base">
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-dim sm:text-base">
           A South African masonry store. Priced lines leave the Midrand and Cato Ridge yards. Manufacturer colourways stay on quotation. The slides below are product references, not a list of our own jobs.
         </p>
         <Link
           to="/express"
-          className="mt-6 grid gap-3 rounded-2xl bg-kiln p-5 text-bisque sm:grid-cols-[auto_1fr_auto] sm:items-center"
+          className="mt-6 grid gap-3 rounded-2xl border border-gold/30 bg-kiln-2 p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center"
         >
           <p className="font-display text-2xl text-gold">AA 60/120</p>
           <p className="text-sm text-dim">
@@ -127,44 +132,173 @@ function CompanyMast() {
           <span className="text-sm font-medium text-gold">See the service</span>
         </Link>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border border-line bg-cream p-5">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Products</p>
-            <ul className="mt-3 divide-y divide-line">
+          <div className="rounded-2xl border border-bisque/10 bg-kiln-2/80 p-5">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Products</p>
+            <ul className="mt-3 divide-y divide-bisque/10">
               {products.map((item) => (
                 <li key={item.slug}>
                   <Link
                     to="/shop/$slug"
                     params={{ slug: item.slug }}
-                    className="flex items-baseline justify-between gap-4 py-3 hover:text-clay"
+                    className="flex items-baseline justify-between gap-4 py-3 hover:text-gold"
                   >
                     <span>
                       <span className="font-medium">{item.title}</span>
-                      <span className="mt-0.5 block text-sm text-mortar">{item.body}</span>
+                      <span className="mt-0.5 block text-sm text-dim">{item.body}</span>
                     </span>
-                    <ArrowRight className="size-4 shrink-0 text-clay" />
+                    <ArrowRight className="size-4 shrink-0 text-gold" />
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="flex flex-col gap-4">
-            <div className="rounded-2xl border border-line bg-cream p-5">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Services</p>
-              <ul className="mt-3 divide-y divide-line">
-                {services.map((item) => (
-                  <li key={item.title}>
-                    <Link to={item.to} className="flex items-baseline justify-between gap-4 py-3 hover:text-clay">
-                      <span>
-                        <span className="font-medium">{item.title}</span>
-                        <span className="mt-0.5 block text-sm text-mortar">{item.body}</span>
-                      </span>
-                      <ArrowRight className="size-4 shrink-0 text-clay" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="rounded-2xl border border-bisque/10 bg-kiln-2/80 p-5">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Services</p>
+            <ul className="mt-3 divide-y divide-bisque/10">
+              {services.map((item) => (
+                <li key={item.title}>
+                  <Link to={item.to} className="flex items-baseline justify-between gap-4 py-3 hover:text-gold">
+                    <span>
+                      <span className="font-medium">{item.title}</span>
+                      <span className="mt-0.5 block text-sm text-dim">{item.body}</span>
+                    </span>
+                    <ArrowRight className="size-4 shrink-0 text-gold" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PricePath({ sample }: { sample?: Product }) {
+  const rows = [
+    { name: "Retail", rate: "List price", price: sample?.retailPrice, note: "What the product page shows before an account discount." },
+    { name: "Trade", rate: "12% off", price: sample?.tradePrice, note: "Approved trade accounts. Checked again on the server at checkout." },
+    { name: "Volume", rate: "20% off", price: sample?.volumePrice, note: "Approved volume accounts. Not a code you type in." },
+    { name: "Quote only", rate: "No cart price", price: null as number | null, note: "Corobrik, Bosun, Technicrete and Infraset stay on quotation." },
+  ];
+  return (
+    <section className="border-b border-line bg-paper">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Four ways a price is made</p>
+        <h2 className="mt-1 font-display text-3xl">The price path</h2>
+        <p className="mt-2 max-w-2xl text-sm text-mortar">
+          {sample
+            ? `Shown on a live line: ${sample.productType}, ${sample.colourFinish}. Manufacturer shops are not in this comparison.`
+            : "Retail, trade and volume are the priced catalogue. Manufacturer shops are not given a cart price."}
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {rows.map((row) => (
+            <article key={row.name} className="rounded-2xl bg-cream p-5 shadow-[var(--shadow-card)]">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-clay">{row.rate}</p>
+              <h3 className="mt-2 font-display text-2xl">{row.name}</h3>
+              <p className="mt-3 font-display text-3xl tabular-nums">
+                {row.name === "Quote only" ? "RFQ" : row.price == null ? "—" : formatZar(row.price, true)}
+              </p>
+              <p className="mt-2 text-sm text-mortar">{row.note}</p>
+            </article>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-wrap gap-4 text-sm">
+          <Link to="/trade" className="font-medium text-clay">
+            Trade accounts
+          </Link>
+          <Link to="/brands" className="font-medium text-clay">
+            Manufacturer shops
+          </Link>
+          <Link to="/rfq" className="font-medium text-clay">
+            Bulk quote
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ColourMatchPath({
+  colours,
+}: {
+  colours: { colour: string; face: Product; semi?: Product; paver?: Product }[];
+}) {
+  const row = colours.find((item) => item.face && item.paver) ?? colours[0];
+  const steps = row
+    ? [
+        row.face ? { label: "Face brick", sku: row.face.sku, hex: row.face.colourHex } : null,
+        row.semi ? { label: "Semi-face", sku: row.semi.sku, hex: row.semi.colourHex } : null,
+        row.paver ? { label: "Paver", sku: row.paver.sku, hex: row.paver.colourHex } : null,
+      ].filter((step): step is { label: string; sku: string; hex: string } => Boolean(step))
+    : [];
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-clay">One colourway, three surfaces</p>
+      <h2 className="mt-1 font-display text-3xl">From face brick to paver</h2>
+      <p className="mt-2 max-w-2xl text-sm text-mortar">
+        {row
+          ? `${row.colour} is paired from the catalogue: the face, and the paver in that colourway where the kiln fires one. It is not a match invented across manufacturers.`
+          : "The live pairs load with the catalogue. Until then, start from a colourway and the colour study."}
+      </p>
+      {steps.length > 0 ? (
+        <ol className="mt-6 grid gap-3 md:grid-cols-3">
+          {steps.map((step, index) => (
+            <li key={step.sku}>
+              <Link to="/product/$sku" params={{ sku: step.sku }} className="block overflow-hidden rounded-2xl bg-paper shadow-[var(--shadow-card)]">
+                <span className="block h-24" style={{ background: step.hex }} />
+                <span className="block p-4">
+                  <span className="text-[11px] uppercase tracking-[0.16em] text-muted">0{index + 1}</span>
+                  <span className="mt-1 block font-display text-2xl">{step.label}</span>
+                  <span className="mt-1 block text-sm text-mortar">{row?.colour}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div className="mt-6 flex gap-2 overflow-x-auto">
+          {COLOURS.slice(0, 8).map((colour) => (
+            <Link key={colour.slug} to="/search" search={{ colour: colour.name }} className="w-28 shrink-0">
+              <span className="block h-16 rounded-md" style={{ background: colour.hex }} />
+              <span className="mt-1 block text-sm">{colour.name}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+      <div className="mt-5 flex flex-wrap gap-4 text-sm">
+        <Link to="/visualise" className="font-medium text-clay">
+          Open the colour study
+        </Link>
+        <Link to="/collections" className="font-medium text-clay">
+          All 14 colourways
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function SiteStudy() {
+  return (
+    <section className="bg-card">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Product to site</p>
+          <h2 className="mt-1 font-display text-3xl">How a colour sits on the stand</h2>
+          <p className="mt-3 max-w-xl text-sm text-mortar">
+            Elevation, driveway, boundary. The drawing uses a catalogue colourway. It is not a photograph of that SKU, and it is not a picture of your house.
+          </p>
+          <Link to="/visualise" className="mt-5 inline-flex h-11 items-center rounded-md bg-clay px-4 text-sm font-medium text-paper">
+            Try a colourway
+          </Link>
+        </div>
+        <div className="grid grid-cols-3 gap-2" aria-hidden>
+          {["#A8412E", "#C4A05A", "#4A4E52"].map((hex) => (
+            <div key={hex} className="overflow-hidden rounded-xl bg-kiln">
+              <div className="h-28" style={{ background: hex }} />
+              <div className="h-8 bg-kiln-2" />
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -500,11 +634,11 @@ function MasterCatalogue({ entries }: { entries: Product[] }) {
 
 function ShopBySector() {
   const img: Record<string, string> = {
-    Residential: "/images/projects/house.jpg",
-    Commercial: "/images/projects/commercial.jpg",
-    Industrial: "/images/hero/yard.jpg",
-    Institutional: "/images/projects/school.jpg",
-    Civil: "/images/hero/driveway.jpg",
+    Residential: "/images/hero/slides/delivery.jpg",
+    Commercial: "/images/hero/commercial.jpg",
+    Industrial: "/images/hero/slides/garden-wall.jpg",
+    Institutional: "/images/bricks/burgundy.jpg",
+    Civil: "/images/hero/slides/face-house.jpg",
   };
   return (
     <section className="bg-card py-16">
@@ -670,7 +804,7 @@ function ShopByProject() {
       blurb: "Retaining, coping and the colour that meets the planting.",
       href: "/shop/retaining-blocks" as const,
       slug: "retaining-blocks",
-      img: "/images/projects/estate.jpg",
+      img: "/images/bricks/sandstone.jpg",
     },
     {
       title: "New build structural",
@@ -946,7 +1080,7 @@ function Newsletter() {
   const [done, setDone] = useState(false);
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="grid overflow-hidden rounded-2xl bg-kiln text-bisque md:grid-cols-2">
+      <div className="overflow-hidden rounded-2xl bg-kiln text-bisque">
         <div className="p-8 sm:p-12">
           <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Yard notes</p>
           <h2 className="mt-2 font-display text-3xl">New colourways, lead times, trade openings.</h2>
@@ -977,7 +1111,6 @@ function Newsletter() {
             Apply for a trade account →
           </Link>
         </div>
-        <img src="/images/hero/facade.jpg" alt="" className="hidden h-full object-cover md:block" />
       </div>
       <p className="mt-6 text-center text-xs text-muted">
         Group ecosystem: {GROUP.map((g) => g.name).join(" · ")}

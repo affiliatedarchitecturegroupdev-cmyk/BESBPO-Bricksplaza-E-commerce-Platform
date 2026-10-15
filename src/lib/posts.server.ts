@@ -7,8 +7,8 @@ import { assertYard } from "@/lib/commerce";
 const COVERS: Record<string, string> = {
   "colour-matching-elevations": "images/hero/colour-match.jpg",
   "sans-227-on-site": "images/hero/slides/brick-courses.jpg",
-  "trade-account-guide": "images/hero/yard.jpg",
-  "paver-coverage": "images/hero/slides/paver-herringbone.jpg",
+  "trade-account-guide": "images/hero/slides/apartment-grid.jpg",
+  "paver-coverage": "images/types/cobbles.jpg",
 };
 
 export type PostCard = {
@@ -78,7 +78,7 @@ function staticCards(): PostCard[] {
     tag: post.tag,
     excerpt: post.excerpt,
     date: post.date,
-    image: `/${COVERS[post.slug] ?? "images/hero/yard.jpg"}`,
+    image: `/${COVERS[post.slug] ?? "images/hero/slides/apartment-grid.jpg"}`,
   }));
 }
 
@@ -91,7 +91,7 @@ function staticPost(slug: string): PublicPost | null {
     tag: post.tag,
     excerpt: post.excerpt,
     date: post.date,
-    image: `/${COVERS[post.slug] ?? "images/hero/yard.jpg"}`,
+    image: `/${COVERS[post.slug] ?? "images/hero/slides/apartment-grid.jpg"}`,
     body: post.body,
     skus: [],
     origin: origin(),

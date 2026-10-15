@@ -55,7 +55,12 @@ function Checkout() {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const pallets = items.reduce((n, i) => n + palletCount(i.qty, i.product.unitsPerPallet), 0);
   const weightKg = items.reduce((n, i) => n + i.product.weightKg * i.qty, 0);
-  const quote = quoteDelivery(form.postal_code, method, { pallets, weightKg });
+  const quote = quoteDelivery(form.postal_code, method, {
+    pallets,
+    weightKg,
+    lat: pin?.lat,
+    lng: pin?.lng,
+  });
   const crane = craneSurcharge(hiab);
   const decision = useMemo(
     () =>
@@ -245,14 +250,22 @@ function Checkout() {
                 Crane / Hiab offload (+ R850)
               </label>
               {method === "delivery" && (
+                <div>
+                  <p className="text-sm font-medium">Site pin</p>
+                  <p className="mt-1 text-sm text-mortar">
+                    The pin picks the nearer of Midrand and Cato Ridge and sets the band: 30 km local, 100 km regional, 250 km extended, then a quote. Town centres, not surveyed street addresses. Without a pin, the postcode band is used.
+                  </p>
+                  <div className="mt-3">
+                    <LocationPicker compact pin={pin} suppliers={suppliers} onChange={setPin} />
+                  </div>
+                </div>
+              )}
+              {method === "delivery" && (
                 <div className="rounded-xl border border-line p-4">
                   <p className="font-medium">AA 60/120 Express · R1 000</p>
                   <p className="mt-1 text-sm text-mortar">
-                    Added on top of a quoted delivery. Stock lines only, Monday to Saturday 07:00–15:30, from a supplier pin within 30 km. Twenty minutes to prepare, planned inside 2 hours. The fee is kept only if the load arrives before 3 hours. At 3 hours it is refunded. The ordinary delivery fee stays.
+                    Added on top of a quoted delivery. Stock lines only, Monday to Saturday 07:00–15:30, from a supplier pin within 30 km. Twenty minutes to prepare, planned inside 2 hours. The fee is kept only if the load arrives before 3 hours. At 3 hours it is refunded. The ordinary delivery fee stays. The pin above is the one this check uses.
                   </p>
-                  <div className="mt-4">
-                    <LocationPicker compact pin={pin} suppliers={suppliers} onChange={setPin} />
-                  </div>
                   <p className={cn("mt-3 text-sm", decision.ok && pins === "ready" ? "text-ok" : "text-mortar")}>
                     {pins === "loading"
                       ? "Loading supplier pins…"
@@ -293,11 +306,13 @@ function Checkout() {
                 </div>
               )}
               <p className="text-sm text-mortar">
-                {quote.yard} · {quote.province} · {BANDS[quote.band].label} ({BANDS[quote.band].distance}) · {quote.time}
+                {quote.yard} · {quote.province}
+                {quote.pinned && quote.distanceKm != null ? ` · ${quote.distanceKm} km from the pin` : ""} · {BANDS[quote.band].label} ({BANDS[quote.band].distance}) · {quote.time}
                 . Load {pallets} pallet{pallets === 1 ? "" : "s"}, {Math.round(weightKg)} kg.
                 {quote.quoted
                   ? ` ${formatZar(quote.baseFee ?? 0)} for the first pallet${quote.palletFee ? `, plus ${formatZar(quote.palletFee)} for the rest` : ""}.`
-                  : " Past 250 km the fee is quoted within one business day. You can still place the order."}
+                  : " Delivery fee to follow."}{" "}
+                {quote.pinned ? "The pin overrides the postcode band." : "Set a pin to price from the nearer yard."}
                 {hiab ? " Crane offload is included." : ""}
               </p>
               <Button onClick={() => setStep(2)}>Continue to payment</Button>

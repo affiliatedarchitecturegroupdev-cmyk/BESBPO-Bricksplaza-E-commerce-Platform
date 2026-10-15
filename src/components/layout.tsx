@@ -322,6 +322,8 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
     ["/trade", "Trade"],
     ["/delivery-reach", "Delivery reach"],
     ["/express", "AA 60/120"],
+    ["/visualise", "Colour study"],
+    ["/bae", "BAE design"],
     ["/responsible-sourcing", "Responsible sourcing"],
     ["/partners", "Partners"],
     ["/help", "Help"],
@@ -481,6 +483,16 @@ function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/visualise" className="text-dim hover:text-bisque">
+                Colour study
+              </Link>
+            </li>
+            <li>
+              <Link to="/bae" className="text-dim hover:text-bisque">
+                BAE design
+              </Link>
+            </li>
+            <li>
               <Link to="/ways-to-pay" className="text-dim hover:text-bisque">
                 Ways to pay
               </Link>
@@ -525,6 +537,7 @@ function Footer() {
               ["privacy-policy", "Privacy"],
               ["cookie-policy", "Cookies"],
               ["returns-and-refunds", "Returns"],
+              ["delivery-handling-fee", "Handling fee"],
               ["warranty-policy", "Warranty"],
               ["popia-data-subject-rights", "POPIA rights"],
               ["trade-account-terms", "Trade terms"],
@@ -598,6 +611,10 @@ function Footer() {
               </Link>
             ) : g.name === "Finishes Construction" ? (
               <Link key={g.name} to="/divisions/$slug" params={{ slug: "finishes-construction" }} className="hover:text-bisque">
+                {g.name}
+              </Link>
+            ) : g.name === "Bellwether Architecture & Engineering" ? (
+              <Link key={g.name} to="/bae" className="hover:text-bisque">
                 {g.name}
               </Link>
             ) : (
