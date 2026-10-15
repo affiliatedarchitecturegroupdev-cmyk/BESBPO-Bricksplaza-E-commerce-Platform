@@ -267,7 +267,7 @@ function ProductPage() {
             >
               {product.fulfilmentType === "Stock Item"
                 ? `In stock · ${formatNumber(product.stock)} units`
-                : "Made-to-Order · 15% surcharge in price"}
+                : "Made-to-order"}
             </span>
             <Link to="/spec/$sku" params={{ sku: product.sku }} className="inline-flex items-center gap-1 text-clay">
               <FileDown className="size-4" /> Spec sheet

@@ -172,7 +172,7 @@ export function quoteDelivery(
 }
 
 export function craneSurcharge(hasHiab: boolean) {
-  return hasHiab ? 850 : 0;
+  return hasHiab ? 650 : 0;
 }
 
 export const COLLECTION_SLOTS = [

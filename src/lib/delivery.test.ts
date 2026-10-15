@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { quoteDelivery } from "./delivery.ts";
+import { quoteDelivery, craneSurcharge } from "./delivery.ts";
+
+test("crane offload is the official R650", () => {
+  assert.equal(craneSurcharge(true), 650);
+  assert.equal(craneSurcharge(false), 0);
+});
 
 test("Midrand is a local collection yard", () => {
   const quote = quoteDelivery("1685", "delivery", { pallets: 1, weightKg: 800 });

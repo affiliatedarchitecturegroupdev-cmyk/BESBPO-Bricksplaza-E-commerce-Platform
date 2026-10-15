@@ -63,7 +63,7 @@ const STORE: Offer[] = [
   },
   {
     title: "Crane / Hiab offload",
-    who: "Checkout · R850",
+    who: "Checkout · R650",
     body: "A standard crane offload is a surcharge on delivery, not on collection. A tight stand, a staged drop, or a crane bigger than that is still a quote.",
   },
   {

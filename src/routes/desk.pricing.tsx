@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { TIER_DISCOUNT } from "@/data/taxonomy";
 import { loadDeskSummary } from "@/lib/products";
 import { formatZar } from "@/lib/format";
 
@@ -14,7 +13,7 @@ function Pricing() {
     <div>
       <h1 className="font-display text-3xl">Pricing engine</h1>
       <p className="mt-1 text-sm text-dim">
-        Retail 0% · Trade {TIER_DISCOUNT.trade * 100}% · Volume {TIER_DISCOUNT.volume * 100}% · MTO +15%. Server-authoritative at checkout.
+        Retail, trade and volume are the stored official prices, excluding VAT. Checkout does not add a further percentage.
       </p>
       <div className="mt-6 overflow-x-auto rounded-xl bg-kiln-2">
         <table className="w-full text-sm">

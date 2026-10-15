@@ -130,7 +130,7 @@ export const CATEGORIES: CategoryDef[] = [
     prefix: "FRB",
     blurb: "Refractory clay firebricks for braais, pizza ovens, kilns and industrial hearths.",
     standard: "SANS 941",
-    unit: "Per 1,000 units",
+    unit: "Each",
   },
   {
     slug: "clay-specials",
@@ -139,7 +139,7 @@ export const CATEGORIES: CategoryDef[] = [
     prefix: "CSP",
     blurb: "Cants, bulls, plinths, squints and made-to-order architectural specials.",
     standard: "SANS 227",
-    unit: "Per 1,000 units",
+    unit: "Each",
   },
   {
     slug: "concrete-blocks",
@@ -177,7 +177,7 @@ export const CATEGORIES: CategoryDef[] = [
     prefix: "CSB",
     blurb: "Compressed stabilised earth blocks for low-carbon walls. Agrément-certified. New to the range.",
     standard: "Agrément SA",
-    unit: "Per unit",
+    unit: "Per 1,000 units",
     agreement: true,
     newRange: true,
   },
@@ -233,7 +233,7 @@ export const CATEGORIES: CategoryDef[] = [
     prefix: "SLB",
     blurb: "Pressed slabs and flagstones for patios, walkways and podium decks.",
     standard: "SANS 1058",
-    unit: "Per m²",
+    unit: "Each",
   },
   {
     slug: "retaining-blocks",

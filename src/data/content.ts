@@ -355,7 +355,7 @@ export const FAQS = [
   },
   {
     q: "What does Made-to-Order mean on a PDP?",
-    a: "The SKU is not sitting on a pallet in the yard. A 15% surcharge is already in the displayed price, and lead time is shown before add-to-cart. Specials (cants, bulls, plinths) are typically MTO.",
+    a: "The SKU is not sitting on a pallet in the yard. Where the official list has a separate made-to-order price, that 15% is already in the figure. Where the list has one price, that is the figure.",
   },
   {
     q: "Which payment methods do you take?",
@@ -550,7 +550,7 @@ export const LEGAL: Record<
       },
       {
         heading: "3. Orders, price and VAT",
-        body: "Prices are in South African Rand and displayed inclusive or exclusive of VAT as indicated at checkout. Trade and volume discounts apply only to approved accounts and are re-validated server-side at checkout. Made-to-order SKUs include a 15% surcharge in the displayed price.",
+        body: "Prices are in South African Rand and exclude VAT. Trade is 12% off and volume is 20% off, for approved accounts only, and both are re-validated at checkout. Where the official list has a separate made-to-order price, that 15% is already in the figure. Where the list has one price, that is the figure. Delivery is extra.",
       },
       {
         heading: "4. Delivery and collection",
