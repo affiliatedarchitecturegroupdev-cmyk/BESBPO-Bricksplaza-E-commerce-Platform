@@ -27,6 +27,9 @@ function Help() {
           <Link to="/visualise" className="text-clay">
             Colour study
           </Link>
+          <Link to="/services" className="text-clay">
+            Services
+          </Link>
           <Link to="/bae" className="text-clay">
             BAE design
           </Link>

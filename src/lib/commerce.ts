@@ -689,7 +689,7 @@ export const listContacts = createServerFn({ method: "GET" })
     };
   });
 
-const ENQUIRY_KINDS = ["career", "affiliated-builders", "finishes-construction"] as const;
+const ENQUIRY_KINDS = ["career", "affiliated-builders", "finishes-construction", "service"] as const;
 
 export const submitEnquiry = createServerFn({ method: "POST" })
   .validator((d: { kind?: string; role?: string; name?: string; email?: string; phone?: string; message?: string }) => ({

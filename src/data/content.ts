@@ -385,6 +385,10 @@ export const FAQS = [
     q: "Who does the architectural and engineering work?",
     a: "Bellwether Architecture & Engineering (BAE), a Besbpo Group company, takes design and engineering enquiries. Bricksplaza does not price that work, and this store does not publish a professional registration number for BAE.",
   },
+  {
+    q: "Can the store build or finish the job?",
+    a: "The service portfolio splits the contracts. Bricksplaza prices the material, the pin, crane offload and a coverage schedule. Affiliated Builders builds. Finishes Construction finishes. BAE takes a design or engineering question. There is no installer directory, no plan-reading bill of quantities, and no carbon certificate.",
+  },
 ];
 
 export const PAYMENT_METHODS = [

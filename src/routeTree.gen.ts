@@ -35,6 +35,7 @@ import { Route as ResponsibleSourcingRouteImport } from './routes/responsible-so
 import { Route as ReturnsRouteImport } from './routes/returns'
 import { Route as RfqRouteImport } from './routes/rfq'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SitemapRouteImport } from './routes/sitemap'
 import { Route as TrackRouteImport } from './routes/track'
@@ -205,6 +206,11 @@ const RfqRoute = RfqRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopRoute = ShopRouteImport.update({
@@ -440,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
+  '/services': typeof ServicesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
@@ -506,6 +513,7 @@ export interface FileRoutesByTo {
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
+  '/services': typeof ServicesRoute
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
   '/trade': typeof TradeRoute
@@ -575,6 +583,7 @@ export interface FileRoutesById {
   '/returns': typeof ReturnsRoute
   '/rfq': typeof RfqRoute
   '/search': typeof SearchRoute
+  '/services': typeof ServicesRoute
   '/shop': typeof ShopRouteWithChildren
   '/sitemap': typeof SitemapRoute
   '/track': typeof TrackRoute
@@ -646,6 +655,7 @@ export interface FileRouteTypes {
     | '/returns'
     | '/rfq'
     | '/search'
+    | '/services'
     | '/shop'
     | '/sitemap'
     | '/track'
@@ -712,6 +722,7 @@ export interface FileRouteTypes {
     | '/returns'
     | '/rfq'
     | '/search'
+    | '/services'
     | '/sitemap'
     | '/track'
     | '/trade'
@@ -780,6 +791,7 @@ export interface FileRouteTypes {
     | '/returns'
     | '/rfq'
     | '/search'
+    | '/services'
     | '/shop'
     | '/sitemap'
     | '/track'
@@ -850,6 +862,7 @@ export interface RootRouteChildren {
   ReturnsRoute: typeof ReturnsRoute
   RfqRoute: typeof RfqRoute
   SearchRoute: typeof SearchRoute
+  ServicesRoute: typeof ServicesRoute
   ShopRoute: typeof ShopRouteWithChildren
   SitemapRoute: typeof SitemapRoute
   TrackRoute: typeof TrackRoute
@@ -1052,6 +1065,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop': {
@@ -1450,6 +1470,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReturnsRoute: ReturnsRoute,
   RfqRoute: RfqRoute,
   SearchRoute: SearchRoute,
+  ServicesRoute: ServicesRoute,
   ShopRoute: ShopRouteWithChildren,
   SitemapRoute: SitemapRoute,
   TrackRoute: TrackRoute,

@@ -60,6 +60,7 @@ function Home() {
       <PricePath sample={trending[0] ?? bulk[0]} />
       <ColourMatchPath colours={colours} />
       <SiteStudy />
+      <GroupServices />
       <AdBanner slot={adSlot("hero-banner")} />
       <PitchDeck />
       <Rail title="Trending now" kicker="Order velocity" href="/shop" products={trending} />
@@ -105,6 +106,7 @@ function CompanyMast() {
   ] as const;
   const services = [
     { to: "/shop" as const, title: "Priced catalogue", body: "Retail, 12% trade and 20% volume. The discount is checked again at checkout." },
+    { to: "/services" as const, title: "Service portfolio", body: "Material here. Affiliated Builders builds. Finishes Construction finishes. None of that is one checkout." },
     { to: "/brands" as const, title: "Manufacturer shops", body: "Corobrik, Bosun, Technicrete and Infraset. Quoted. Not added to the cart." },
     { to: "/delivery-reach" as const, title: "Pin the site", body: "Midrand and Cato Ridge. The fee follows the nearer yard once a pin is set." },
     { to: "/bae" as const, title: "Design and engineering", body: "BAE, Bellwether Architecture & Engineering. An enquiry, not a priced appointment." },
@@ -299,6 +301,37 @@ function SiteStudy() {
               <div className="h-8 bg-kiln-2" />
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function GroupServices() {
+  return (
+    <section className="border-b border-line bg-paper">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Three contracts</p>
+        <h2 className="mt-1 font-display text-3xl">Order it. Build it. Finish it.</h2>
+        <p className="mt-2 max-w-2xl text-sm text-mortar">
+          The catalogue is Bricksplaza. The wall is Affiliated Builders. The surfaces are Finishes Construction. A design question goes to BAE. They are not one price.
+        </p>
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <Link to="/services" className="rounded-2xl bg-kiln p-5 text-bisque">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Bricksplaza</p>
+            <h3 className="mt-2 font-display text-2xl">Order the material</h3>
+            <p className="mt-2 text-sm text-dim">Pin, crane offload, trade terms, and a coverage schedule from the product page.</p>
+          </Link>
+          <Link to="/divisions/$slug" params={{ slug: "affiliated-builders" }} className="rounded-2xl bg-cream p-5 shadow-[var(--shadow-card)]">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-clay">Affiliated Builders</p>
+            <h3 className="mt-2 font-display text-2xl">Build the wall</h3>
+            <p className="mt-2 text-sm text-mortar">A contractor’s brief. Not a tender, and not an engineer’s sign-off on the checkout.</p>
+          </Link>
+          <Link to="/divisions/$slug" params={{ slug: "finishes-construction" }} className="rounded-2xl bg-cream p-5 shadow-[var(--shadow-card)]">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-clay">Finishes Construction</p>
+            <h3 className="mt-2 font-display text-2xl">Finish the surfaces</h3>
+            <p className="mt-2 text-sm text-mortar">Plaster, floors, ceilings and waterproofing, priced by them after the brick.</p>
+          </Link>
         </div>
       </div>
     </section>

@@ -42,6 +42,7 @@ function HtmlSitemap() {
           <Link to="/delivery-reach">Delivery reach</Link>
           <Link to="/express">AA 60/120</Link>
           <Link to="/visualise">Colour study</Link>
+          <Link to="/services">Services</Link>
           <Link to="/bae">BAE design</Link>
           <Link to="/responsible-sourcing">Responsible sourcing</Link>
           <Link to="/contact">Contact</Link>

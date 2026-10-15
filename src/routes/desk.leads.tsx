@@ -19,7 +19,7 @@ function Leads() {
     <div>
       <h1 className="font-display text-3xl">Leads and applications</h1>
       <p className="mt-1 max-w-2xl text-sm text-dim">
-        Contract briefs for Affiliated Builders and Finishes Construction, and careers applications. Reply from the division mailbox, then close the note.
+        Contract briefs for Affiliated Builders, Finishes Construction and the service portfolio, plus careers applications. Reply from the division mailbox, then close the note.
       </p>
       {data && <YardClaim unclaimed={data.unclaimed} onClaimed={refresh} />}
       <div className="mt-6 space-y-3">

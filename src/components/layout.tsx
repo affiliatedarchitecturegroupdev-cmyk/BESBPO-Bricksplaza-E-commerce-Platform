@@ -323,6 +323,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
     ["/delivery-reach", "Delivery reach"],
     ["/express", "AA 60/120"],
     ["/visualise", "Colour study"],
+    ["/services", "Services"],
     ["/bae", "BAE design"],
     ["/responsible-sourcing", "Responsible sourcing"],
     ["/partners", "Partners"],
@@ -475,6 +476,11 @@ function Footer() {
             <li>
               <Link to="/delivery-reach" className="text-dim hover:text-bisque">
                 Delivery reach
+              </Link>
+            </li>
+            <li>
+              <Link to="/services" className="text-dim hover:text-bisque">
+                Services
               </Link>
             </li>
             <li>

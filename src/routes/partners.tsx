@@ -80,7 +80,7 @@ function Partners() {
           <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Same group, next contract</p>
           <h2 className="mt-2 font-display text-3xl">From the catalogue to the build</h2>
           <p className="mt-2 max-w-2xl text-sm text-mortar">
-            Affiliated Builders constructs. Finishes Construction finishes. Bellwether Architecture & Engineering takes the design enquiry. None of these pages is a priced tender, and none publishes a registration number.
+            Affiliated Builders constructs. Finishes Construction finishes. Bellwether Architecture & Engineering takes the design enquiry. The service portfolio keeps those contracts off the brick checkout. None of them is a priced tender, and none publishes a registration number.
           </p>
           <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium">
             <Link to="/divisions/$slug" params={{ slug: "affiliated-builders" }} className="text-clay">
@@ -91,6 +91,9 @@ function Partners() {
             </Link>
             <Link to="/bae" className="text-clay">
               BAE →
+            </Link>
+            <Link to="/services" className="text-clay">
+              Service portfolio →
             </Link>
           </div>
         </section>
