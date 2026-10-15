@@ -53,7 +53,10 @@ function Home() {
 
   return (
     <>
+      <CompanyMast />
       <Hero />
+      <ExpressBand />
+      <ExpressCheckout />
       <AdBanner slot={adSlot("hero-banner")} />
       <PitchDeck />
       <Rail title="Trending now" kicker="Order velocity" href="/shop" products={trending} />
@@ -80,7 +83,6 @@ function Home() {
       <TradeBulk products={bulk} />
       <Rail title="Recently restocked" kicker="Back on the yard floor" href="/shop" products={restocked} />
       <Gallery />
-      <ExpressBand />
       <DeliveryMap />
       <TrustStrip />
       <SourcingCarousel size="strip" />
@@ -88,6 +90,84 @@ function Home() {
       <Newsletter />
       <RecentlyViewed />
     </>
+  );
+}
+
+function CompanyMast() {
+  const products = [
+    { slug: "clay-face-bricks", title: "Clay masonry", body: "Face, semi-face, maxi, stock, engineering and specials." },
+    { slug: "concrete-blocks", title: "Concrete", body: "Blocks, maxi, AAC, CSEB, lintels and mortar." },
+    { slug: "clay-pavers", title: "Hard landscaping", body: "Pavers, cobbles, slabs, retaining and coping." },
+    { slug: "brick-slips", title: "Specialist systems", body: "Brick slips, braai kits and the newest lines." },
+  ] as const;
+  const services = [
+    { to: "/shop" as const, title: "Priced catalogue", body: "Stock and made-to-order, with trade and volume prices at checkout." },
+    { to: "/brands" as const, title: "Manufacturer shops", body: "Corobrik, Bosun, Technicrete and Infraset. Quoted, not added to the cart." },
+    { to: "/delivery-reach" as const, title: "Yard delivery", body: "Midrand and Cato Ridge. The other seven provinces are quoted long haul." },
+    { to: "/trade" as const, title: "Trade accounts", body: "12% trade, 20% volume, on approved terms." },
+  ];
+  return (
+    <section className="border-b border-line bg-paper">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Bricksplaza · Besbpo Group</p>
+        <h1 className="mt-2 max-w-3xl font-display text-3xl leading-[1.08] sm:text-5xl">
+          Clay masonry, hard landscaping and specialist systems.
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-mortar sm:text-base">
+          A South African masonry store. Priced lines leave the Midrand and Cato Ridge yards. Manufacturer colourways stay on quotation. The slides below are product references, not a list of our own jobs.
+        </p>
+        <Link
+          to="/express"
+          className="mt-6 grid gap-3 rounded-2xl bg-kiln p-5 text-bisque sm:grid-cols-[auto_1fr_auto] sm:items-center"
+        >
+          <p className="font-display text-2xl text-gold">AA 60/120</p>
+          <p className="text-sm text-dim">
+            R1 000 on top of a quoted delivery. Stock lines only, within 30 km of a supplier pin, Monday to Saturday 07:00–15:30. The fee is refunded if the load is marked after 3 hours.
+          </p>
+          <span className="text-sm font-medium text-gold">See the service</span>
+        </Link>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-line bg-cream p-5">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Products</p>
+            <ul className="mt-3 divide-y divide-line">
+              {products.map((item) => (
+                <li key={item.slug}>
+                  <Link
+                    to="/shop/$slug"
+                    params={{ slug: item.slug }}
+                    className="flex items-baseline justify-between gap-4 py-3 hover:text-clay"
+                  >
+                    <span>
+                      <span className="font-medium">{item.title}</span>
+                      <span className="mt-0.5 block text-sm text-mortar">{item.body}</span>
+                    </span>
+                    <ArrowRight className="size-4 shrink-0 text-clay" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="rounded-2xl border border-line bg-cream p-5">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-muted">Services</p>
+              <ul className="mt-3 divide-y divide-line">
+                {services.map((item) => (
+                  <li key={item.title}>
+                    <Link to={item.to} className="flex items-baseline justify-between gap-4 py-3 hover:text-clay">
+                      <span>
+                        <span className="font-medium">{item.title}</span>
+                        <span className="mt-0.5 block text-sm text-mortar">{item.body}</span>
+                      </span>
+                      <ArrowRight className="size-4 shrink-0 text-clay" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -181,9 +261,9 @@ function Hero() {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-kiln via-kiln/80 to-kiln/10" />
         <div className="relative flex min-h-[28rem] flex-col justify-end px-4 pb-4 sm:h-full sm:min-h-0 sm:px-8 sm:pb-7">
           <p className="text-[11px] uppercase tracking-[0.18em] text-gold sm:tracking-[0.22em]">{slide.kicker}</p>
-          <h1 className="mt-2 max-w-xl font-display text-[clamp(1.65rem,4.2vw,3.35rem)] leading-[1.08] sm:max-w-3xl">
+          <h2 className="mt-2 max-w-xl font-display text-[clamp(1.65rem,4.2vw,3.35rem)] leading-[1.08] sm:max-w-3xl">
             {slide.title}
-          </h1>
+          </h2>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-bisque/90 sm:text-base">{slide.body}</p>
           <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
             <a href={slide.href}>
@@ -741,6 +821,38 @@ function DeliveryMap() {
         <div className="overflow-hidden rounded-xl">
           <img src="/images/hero/yard.jpg" alt="Bricksplaza distribution yard" className="h-full w-full object-cover" />
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ExpressCheckout() {
+  const steps = [
+    ["1", "Stock the cart", "Made-to-order lines stay on the ordinary lead time. AA 60/120 will not take them."],
+    ["2", "Set the pin", "Town search, your location, or a click on the map. The 30 km check uses that point."],
+    ["3", "Tick the fee", "R1 000 is added on top of the quoted delivery. Collection does not qualify."],
+  ];
+  return (
+    <section className="border-b border-line bg-cream">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-clay">At checkout</p>
+            <h2 className="mt-1 font-display text-3xl">How AA 60/120 is added</h2>
+          </div>
+          <Link to="/checkout" className="text-sm font-medium text-clay">
+            Go to checkout
+          </Link>
+        </div>
+        <ol className="mt-6 grid gap-3 md:grid-cols-3">
+          {steps.map(([n, title, body]) => (
+            <li key={n} className="rounded-xl bg-paper p-5 shadow-[var(--shadow-card)]">
+              <p className="font-display text-2xl text-clay">{n}</p>
+              <h3 className="mt-2 font-display text-xl">{title}</h3>
+              <p className="mt-2 text-sm text-mortar">{body}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
