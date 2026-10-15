@@ -45,9 +45,15 @@ export function ProductCard({
             <p className="font-display text-lg tabular-nums text-kiln">{formatZar(price, price >= 1000)}</p>
             <p className="text-[11px] text-muted">{product.unitOfSale}</p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-muted">
-            <Stars value={product.rating} />
-            <span className="tabular-nums">({product.reviewCount})</span>
+          <div className="text-right text-xs text-muted">
+            {product.reviewCount > 0 ? (
+              <span className="inline-flex items-center gap-1">
+                <Stars value={product.rating} />
+                <span className="tabular-nums">({product.reviewCount})</span>
+              </span>
+            ) : (
+              <span>No ratings yet</span>
+            )}
           </div>
         </div>
       </div>

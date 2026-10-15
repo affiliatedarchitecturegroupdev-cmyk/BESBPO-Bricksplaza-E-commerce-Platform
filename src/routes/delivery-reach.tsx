@@ -84,6 +84,13 @@ function DeliveryReach() {
         </dl>
       </section>
 
+      <p className="mx-auto max-w-7xl px-4 pt-6 text-sm text-mortar sm:px-6">
+        AA 60/120 is a separate clock. A town on this list is not enough — the pin has to sit within 30 km of a supplier.{" "}
+        <Link to="/express" className="text-clay">
+          See the express service
+        </Link>
+      </p>
+
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
           <aside className="lg:sticky lg:top-28 lg:self-start">

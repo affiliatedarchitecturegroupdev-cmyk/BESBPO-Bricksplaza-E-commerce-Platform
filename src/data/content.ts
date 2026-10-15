@@ -662,33 +662,3 @@ export const LEGAL: Record<
   },
 };
 
-export const SAMPLE_REVIEWS = [
-  {
-    name: "Thabo M.",
-    city: "Sandton",
-    rating: 5,
-    title: "Colour held across the wall and the drive",
-    body: "We specified Autumn Red face + matching paver. The elevation reads as one job, which is the whole point.",
-  },
-  {
-    name: "Naledi K.",
-    city: "Durban North",
-    rating: 5,
-    title: "Yard collection was actually same day",
-    body: "Cato Ridge had the maxi on the floor. Paperwork took ten minutes. Trade price showed correctly once we were logged in.",
-  },
-  {
-    name: "Johan V.",
-    city: "Centurion",
-    rating: 4,
-    title: "MTO specials took a bit longer",
-    body: "Bullnoses added a week, which the PDP had already warned us about. Quality was on spec.",
-  },
-  {
-    name: "Priya S.",
-    city: "Umhlanga",
-    rating: 5,
-    title: "Coverage calculator was honest",
-    body: "Entered 84 m², ordered with 8% extra for herringbone, finished with half a pallet left. Perfect.",
-  },
-];

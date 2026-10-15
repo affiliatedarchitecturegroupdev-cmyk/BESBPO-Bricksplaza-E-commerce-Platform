@@ -22,6 +22,7 @@ import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DeliveryReachRouteImport } from './routes/delivery-reach'
 import { Route as DeskRouteImport } from './routes/desk'
+import { Route as ExpressRouteImport } from './routes/express'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HealthzRouteImport } from './routes/healthz'
 import { Route as HelpRouteImport } from './routes/help'
@@ -47,6 +48,7 @@ import { Route as BundlesSlugRouteImport } from './routes/bundles.$slug'
 import { Route as DeskIndexRouteImport } from './routes/desk.index'
 import { Route as DeskBrandsRouteImport } from './routes/desk.brands'
 import { Route as DeskCustomersRouteImport } from './routes/desk.customers'
+import { Route as DeskExpressRouteImport } from './routes/desk.express'
 import { Route as DeskInboxRouteImport } from './routes/desk.inbox'
 import { Route as DeskInventoryRouteImport } from './routes/desk.inventory'
 import { Route as DeskJournalRouteImport } from './routes/desk.journal'
@@ -136,6 +138,11 @@ const DeliveryReachRoute = DeliveryReachRouteImport.update({
 const DeskRoute = DeskRouteImport.update({
   id: '/desk',
   path: '/desk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExpressRoute = ExpressRouteImport.update({
+  id: '/express',
+  path: '/express',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -261,6 +268,11 @@ const DeskBrandsRoute = DeskBrandsRouteImport.update({
 const DeskCustomersRoute = DeskCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => DeskRoute,
+} as any)
+const DeskExpressRoute = DeskExpressRouteImport.update({
+  id: '/express',
+  path: '/express',
   getParentRoute: () => DeskRoute,
 } as any)
 const DeskInboxRoute = DeskInboxRouteImport.update({
@@ -403,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/delivery-reach': typeof DeliveryReachRoute
   '/desk': typeof DeskRouteWithChildren
+  '/express': typeof ExpressRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
@@ -425,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/bundles/$slug': typeof BundlesSlugRoute
   '/desk/brands': typeof DeskBrandsRoute
   '/desk/customers': typeof DeskCustomersRoute
+  '/desk/express': typeof DeskExpressRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
   '/desk/journal': typeof DeskJournalRoute
@@ -465,6 +479,7 @@ export interface FileRoutesByTo {
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
   '/delivery-reach': typeof DeliveryReachRoute
+  '/express': typeof ExpressRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
@@ -486,6 +501,7 @@ export interface FileRoutesByTo {
   '/bundles/$slug': typeof BundlesSlugRoute
   '/desk/brands': typeof DeskBrandsRoute
   '/desk/customers': typeof DeskCustomersRoute
+  '/desk/express': typeof DeskExpressRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
   '/desk/journal': typeof DeskJournalRoute
@@ -530,6 +546,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/delivery-reach': typeof DeliveryReachRoute
   '/desk': typeof DeskRouteWithChildren
+  '/express': typeof ExpressRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/healthz': typeof HealthzRoute
   '/help': typeof HelpRoute
@@ -552,6 +569,7 @@ export interface FileRoutesById {
   '/bundles/$slug': typeof BundlesSlugRoute
   '/desk/brands': typeof DeskBrandsRoute
   '/desk/customers': typeof DeskCustomersRoute
+  '/desk/express': typeof DeskExpressRoute
   '/desk/inbox': typeof DeskInboxRoute
   '/desk/inventory': typeof DeskInventoryRoute
   '/desk/journal': typeof DeskJournalRoute
@@ -597,6 +615,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/delivery-reach'
     | '/desk'
+    | '/express'
     | '/forgot-password'
     | '/healthz'
     | '/help'
@@ -619,6 +638,7 @@ export interface FileRouteTypes {
     | '/bundles/$slug'
     | '/desk/brands'
     | '/desk/customers'
+    | '/desk/express'
     | '/desk/inbox'
     | '/desk/inventory'
     | '/desk/journal'
@@ -659,6 +679,7 @@ export interface FileRouteTypes {
     | '/collections'
     | '/contact'
     | '/delivery-reach'
+    | '/express'
     | '/forgot-password'
     | '/healthz'
     | '/help'
@@ -680,6 +701,7 @@ export interface FileRouteTypes {
     | '/bundles/$slug'
     | '/desk/brands'
     | '/desk/customers'
+    | '/desk/express'
     | '/desk/inbox'
     | '/desk/inventory'
     | '/desk/journal'
@@ -723,6 +745,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/delivery-reach'
     | '/desk'
+    | '/express'
     | '/forgot-password'
     | '/healthz'
     | '/help'
@@ -745,6 +768,7 @@ export interface FileRouteTypes {
     | '/bundles/$slug'
     | '/desk/brands'
     | '/desk/customers'
+    | '/desk/express'
     | '/desk/inbox'
     | '/desk/inventory'
     | '/desk/journal'
@@ -789,6 +813,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   DeliveryReachRoute: typeof DeliveryReachRoute
   DeskRoute: typeof DeskRouteWithChildren
+  ExpressRoute: typeof ExpressRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HealthzRoute: typeof HealthzRoute
   HelpRoute: typeof HelpRoute
@@ -910,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/desk'
       fullPath: '/desk'
       preLoaderRoute: typeof DeskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/express': {
+      id: '/express'
+      path: '/express'
+      fullPath: '/express'
+      preLoaderRoute: typeof ExpressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -1085,6 +1117,13 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/desk/customers'
       preLoaderRoute: typeof DeskCustomersRouteImport
+      parentRoute: typeof DeskRoute
+    }
+    '/desk/express': {
+      id: '/desk/express'
+      path: '/express'
+      fullPath: '/desk/express'
+      preLoaderRoute: typeof DeskExpressRouteImport
       parentRoute: typeof DeskRoute
     }
     '/desk/inbox': {
@@ -1293,6 +1332,7 @@ const BrandsRouteWithChildren =
 interface DeskRouteChildren {
   DeskBrandsRoute: typeof DeskBrandsRoute
   DeskCustomersRoute: typeof DeskCustomersRoute
+  DeskExpressRoute: typeof DeskExpressRoute
   DeskInboxRoute: typeof DeskInboxRoute
   DeskInventoryRoute: typeof DeskInventoryRoute
   DeskJournalRoute: typeof DeskJournalRoute
@@ -1312,6 +1352,7 @@ interface DeskRouteChildren {
 const DeskRouteChildren: DeskRouteChildren = {
   DeskBrandsRoute: DeskBrandsRoute,
   DeskCustomersRoute: DeskCustomersRoute,
+  DeskExpressRoute: DeskExpressRoute,
   DeskInboxRoute: DeskInboxRoute,
   DeskInventoryRoute: DeskInventoryRoute,
   DeskJournalRoute: DeskJournalRoute,
@@ -1356,6 +1397,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   DeliveryReachRoute: DeliveryReachRoute,
   DeskRoute: DeskRouteWithChildren,
+  ExpressRoute: ExpressRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HealthzRoute: HealthzRoute,
   HelpRoute: HelpRoute,

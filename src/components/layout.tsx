@@ -60,6 +60,9 @@ function TopBar() {
           <Link to="/track" className="hover:text-gold">
             Track an order
           </Link>
+          <Link to="/express" className="hover:text-gold">
+            AA 60/120
+          </Link>
           <Link to="/desk" className="hover:text-gold">
             Business Desk
           </Link>
@@ -318,6 +321,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
     ["/projects", "Projects"],
     ["/trade", "Trade"],
     ["/delivery-reach", "Delivery reach"],
+    ["/express", "AA 60/120"],
     ["/responsible-sourcing", "Responsible sourcing"],
     ["/partners", "Partners"],
     ["/help", "Help"],
@@ -469,6 +473,11 @@ function Footer() {
             <li>
               <Link to="/delivery-reach" className="text-dim hover:text-bisque">
                 Delivery reach
+              </Link>
+            </li>
+            <li>
+              <Link to="/express" className="text-dim hover:text-bisque">
+                AA 60/120
               </Link>
             </li>
             <li>
@@ -710,6 +719,7 @@ export function DeskShell({ children }: { children: ReactNode }) {
     ["/desk", "Dashboard"],
     ["/desk/orders", "Orders"],
     ["/desk/logistics", "Logistics"],
+    ["/desk/express", "AA 60/120"],
     ["/desk/rfqs", "Quotes"],
     ["/desk/returns", "Returns"],
     ["/desk/questions", "Questions"],

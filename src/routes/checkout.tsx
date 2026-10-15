@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart } from "@/lib/cart-store";
 import { useProductsBySku } from "@/lib/use-products";
 import { PAYMENT_METHODS } from "@/data/content";
@@ -13,6 +13,9 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { PROVINCES } from "@/data/taxonomy";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { LocationPicker } from "@/components/location-picker";
+import { EXPRESS_FEE, expressDecision, type Pin, type SupplierPin } from "@/lib/express";
+import { listExpressSuppliers } from "@/lib/express.api";
 
 export const Route = createFileRoute("/checkout")({ component: Checkout });
 
@@ -29,6 +32,10 @@ function Checkout() {
   const [pay, setPay] = useState("payfast");
   const [busy, setBusy] = useState(false);
   const [placed, setPlaced] = useState(false);
+  const [suppliers, setSuppliers] = useState<SupplierPin[]>([]);
+  const [pins, setPins] = useState<"loading" | "ready" | "error">("loading");
+  const [pin, setPin] = useState<(Pin & { label: string }) | null>(null);
+  const [expressOn, setExpressOn] = useState(false);
   const [form, setForm] = useState({
     recipient: "",
     email: "",
@@ -49,10 +56,38 @@ function Checkout() {
   const pallets = items.reduce((n, i) => n + palletCount(i.qty, i.product.unitsPerPallet), 0);
   const weightKg = items.reduce((n, i) => n + i.product.weightKg * i.qty, 0);
   const quote = quoteDelivery(form.postal_code, method, { pallets, weightKg });
-  const delivery = (quote.fee ?? 0) + craneSurcharge(hiab);
+  const crane = craneSurcharge(hiab);
+  const decision = useMemo(
+    () =>
+      expressDecision({
+        now: new Date(),
+        method,
+        quoted: quote.fee != null,
+        lines: items.map((item) => ({ fulfilment: item.product.fulfilmentType })),
+        pin,
+        suppliers,
+      }),
+    [method, quote.fee, items, pin, suppliers],
+  );
+  const expressWanted = method === "delivery" && expressOn;
+  const expressChosen = expressWanted && decision.ok;
+  const expressFee = expressChosen ? EXPRESS_FEE : 0;
+  const delivery = (quote.fee ?? 0) + crane + expressFee;
   const totalEx = round2(subtotal + delivery);
   const total = vatInclusive(totalEx);
   const vat = round2(total - totalEx);
+
+  useEffect(() => {
+    listExpressSuppliers()
+      .then((rows) => {
+        setSuppliers(rows);
+        setPins("ready");
+      })
+      .catch(() => {
+        setSuppliers([]);
+        setPins("error");
+      });
+  }, []);
 
   async function place() {
     setBusy(true);
@@ -80,8 +115,39 @@ function Checkout() {
         setStep(1);
         return;
       }
+      const live = expressDecision({
+        now: new Date(),
+        method,
+        quoted: quote.fee != null,
+        lines: items.map((item) => ({ fulfilment: item.product.fulfilmentType })),
+        pin,
+        suppliers,
+      });
+      if (expressWanted && !live.ok) {
+        toast.error(live.reason);
+        setStep(1);
+        return;
+      }
       setPlaced(true);
-      const res = user ? await placeOrder({ data: payload }) : await placeGuestOrder({ data: payload });
+      const res = user
+        ? await placeOrder({
+            data: {
+              ...payload,
+              express: expressWanted && live.ok,
+              lat: pin?.lat,
+              lng: pin?.lng,
+              place: pin?.label,
+            },
+          })
+        : await placeGuestOrder({
+            data: {
+              ...payload,
+              express: expressWanted && live.ok,
+              lat: pin?.lat,
+              lng: pin?.lng,
+              place: pin?.label,
+            },
+          });
       clear();
       navigate({ to: "/order/$id", params: { id: res.id } });
     } catch (err) {
@@ -178,6 +244,41 @@ function Checkout() {
                 <input type="checkbox" checked={hiab} onChange={(e) => setHiab(e.target.checked)} />
                 Crane / Hiab offload (+ R850)
               </label>
+              {method === "delivery" && (
+                <div className="rounded-xl border border-line p-4">
+                  <p className="font-medium">AA 60/120 Express · R1 000</p>
+                  <p className="mt-1 text-sm text-mortar">
+                    Added on top of a quoted delivery. Stock lines only, Monday to Saturday 07:00–15:30, from a supplier pin within 30 km. Twenty minutes to prepare, planned inside 2 hours. The fee is kept only if the load arrives before 3 hours. At 3 hours it is refunded. The ordinary delivery fee stays.
+                  </p>
+                  <div className="mt-4">
+                    <LocationPicker compact pin={pin} suppliers={suppliers} onChange={setPin} />
+                  </div>
+                  <p className={cn("mt-3 text-sm", decision.ok && pins === "ready" ? "text-ok" : "text-mortar")}>
+                    {pins === "loading"
+                      ? "Loading supplier pins…"
+                      : pins === "error"
+                        ? "Supplier pins could not be loaded. The 30 km check needs them."
+                        : decision.ok
+                          ? `In range of ${decision.supplier.name} · ${decision.supplier.km.toFixed(1)} km.`
+                          : decision.reason}
+                  </p>
+                  <label className="mt-3 flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={expressChosen}
+                      disabled={pins !== "ready" || !decision.ok}
+                      onChange={(e) => setExpressOn(e.target.checked)}
+                    />
+                    Add AA 60/120 (+ R1 000)
+                  </label>
+                  <p className="mt-2 text-xs text-muted">
+                    Only the Midrand and Cato Ridge yards are pinned until the desk adds a partner who can prepare a load in 20 minutes.{" "}
+                    <Link to="/express" className="text-clay">
+                      How the clock works
+                    </Link>
+                  </p>
+                </div>
+              )}
               {method === "collection" && (
                 <div>
                   <Label>Collection window</Label>
@@ -256,6 +357,9 @@ function Checkout() {
               </ul>
               <p className="mt-4 text-sm text-mortar">
                 {method === "collection" ? "Collect" : "Deliver"} · {form.city || form.province} · {PAYMENT_METHODS.find((p) => p.id === pay)?.name}
+                {expressChosen && decision.ok
+                  ? ` · AA 60/120 from ${decision.supplier.name} (${decision.supplier.km.toFixed(1)} km).`
+                  : ""}
               </p>
               <Label className="mt-4">Notes for the yard</Label>
               <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
@@ -288,7 +392,8 @@ function Checkout() {
             <Row k="Yard" v={quote.yard.replace(" Distribution Yard", "")} />
             <Row k="Band" v={BANDS[quote.band].label} />
             <Row k="Weight" v={`${Math.round(weightKg)} kg`} />
-            <Row k="Delivery" v={quote.quoted ? formatZar(delivery) : "Quoted"} />
+            <Row k="Delivery" v={quote.quoted ? formatZar((quote.fee ?? 0) + crane) : "Quoted"} />
+            {expressFee > 0 && <Row k="AA 60/120" v={formatZar(expressFee)} />}
             <Row k="Pallets" v={String(pallets)} />
             <Row k="VAT (15%)" v={formatZar(vat)} />
             <Row k="Total" v={formatZar(total)} big />

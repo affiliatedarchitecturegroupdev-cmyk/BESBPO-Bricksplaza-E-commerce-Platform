@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { SAMPLE_REVIEWS } from "@/data/content";
 import { formatNumber, formatZar } from "@/lib/format";
 import { quoteDelivery } from "@/lib/delivery";
 import { useCart, useViewed, useWishlistLocal } from "@/lib/cart-store";
@@ -10,7 +9,9 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { ProductCard } from "@/components/product-card";
 import { RAIL_CARD, ScrollRail } from "@/components/scroll-rail";
 import { ProductMedia } from "@/components/product-media";
-import { addQuestion, addReview, listQuestions, listReviews } from "@/lib/commerce";
+import { addQuestion, listQuestions, listReviews } from "@/lib/commerce";
+import { myProductStanding, ratingSummary, setProductStars, writeProductReview } from "@/lib/ratings";
+import { StarPicker } from "@/components/star-picker";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { Heart, FileDown, Truck, Calculator } from "lucide-react";
 import { toast } from "sonner";
@@ -30,16 +31,52 @@ function ProductPage() {
   const add = useCart((s) => s.add);
   const viewed = useViewed((s) => s.push);
   const wish = useWishlistLocal();
-  const { user } = useCurrentUserState();
+  const { user, isPending } = useCurrentUserState();
 
   const [qty, setQty] = useState(1);
   const [m2, setM2] = useState("");
   const [postcode, setPostcode] = useState("1685");
   const [tab, setTab] = useState("specs");
+  const [summary, setSummary] = useState({ average: 0, stars: 0, reviews: 0 });
+  const [standing, setStanding] = useState<{ stars: number | null; purchased: boolean; reviewed: boolean } | null>(null);
+  const [reviewTick, setReviewTick] = useState(0);
 
   useEffect(() => {
     if (product) viewed(product.sku);
   }, [product, viewed]);
+
+  useEffect(() => {
+    if (!product) return;
+    let cancel = false;
+    ratingSummary({ data: product.sku })
+      .then((row) => {
+        if (!cancel) setSummary(row);
+      })
+      .catch(() => {
+        if (!cancel) setSummary({ average: 0, stars: 0, reviews: 0 });
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [product]);
+
+  useEffect(() => {
+    if (!product || !user) {
+      setStanding(null);
+      return;
+    }
+    let cancel = false;
+    myProductStanding({ data: product.sku })
+      .then((row) => {
+        if (!cancel) setStanding(row);
+      })
+      .catch(() => {
+        if (!cancel) setStanding(null);
+      });
+    return () => {
+      cancel = true;
+    };
+  }, [product, user, reviewTick]);
 
   if (!product) {
     return (
@@ -100,11 +137,27 @@ function ProductPage() {
             {product.colourFinish}
             {product.sizeMm !== "—" ? ` · ${product.sizeMm} mm` : ""}
           </p>
-          <div className="mt-3 flex items-center gap-2 text-sm">
-            <Stars value={product.rating} />
-            <span className="tabular-nums text-muted">
-              {product.rating.toFixed(1)} · {product.reviewCount} reviews
-            </span>
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            {summary.stars === 0 ? (
+              <span className="text-muted">No ratings yet</span>
+            ) : (
+              <>
+                <Stars value={summary.average} />
+                <span className="tabular-nums text-muted">
+                  {summary.average.toFixed(1)} · {summary.stars} {summary.stars === 1 ? "rating" : "ratings"}
+                </span>
+              </>
+            )}
+            <button
+              type="button"
+              className="text-clay"
+              onClick={() => {
+                setTab("reviews");
+                document.getElementById("product-reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              {user ? "Rate this product" : "Sign in to rate"}
+            </button>
           </div>
 
           <div className="mt-6 rounded-xl bg-card p-4">
@@ -265,7 +318,7 @@ function ProductPage() {
             </button>
           ))}
         </div>
-        <div className="py-6">
+        <div className="py-6" id="product-reviews">
           {tab === "specs" && (
             <table className="w-full max-w-2xl text-sm">
               <tbody>
@@ -297,12 +350,29 @@ function ProductPage() {
                 : ""}
             </p>
           )}
-          {tab === "reviews" && <Reviews sku={product.sku} rating={product.rating} count={product.reviewCount} />}
+          {tab === "reviews" && (
+            <Reviews
+              sku={product.sku}
+              summary={summary}
+              standing={standing}
+              signedIn={Boolean(user)}
+              authPending={isPending}
+              tick={reviewTick}
+              onSaved={(next) => {
+                setSummary((current) => ({ ...current, average: next.average, stars: next.count }));
+                setReviewTick((n) => n + 1);
+              }}
+            />
+          )}
           {tab === "qa" && <Questions sku={product.sku} />}
           {tab === "delivery" && (
             <p className="max-w-2xl text-mortar">
               Local 0–30 km R950 · Regional 30–100 km R1,850 · Extended 100–250 km R3,200 · Long-distance quoted live.
-              Collection from {quote.yard} is free. Crane/Hiab offload is added at checkout when the cart needs it.
+              Collection from {quote.yard} is free. Crane/Hiab offload is added at checkout when the cart needs it.{" "}
+              <Link to="/express" className="text-clay">
+                AA 60/120
+              </Link>{" "}
+              can sit on a quoted delivery when the pin is within 30 km of a supplier.
             </p>
           )}
         </div>
@@ -355,71 +425,185 @@ function ProductPage() {
   );
 }
 
-function Reviews({ sku, rating, count }: { sku: string; rating: number; count: number }) {
-  const { user, isPending } = useCurrentUserState();
-  const [rows, setRows] = useState<{ title: string | null; body: string; rating: number; verified: boolean }[]>([]);
+function Reviews({
+  sku,
+  summary,
+  standing,
+  signedIn,
+  authPending,
+  tick,
+  onSaved,
+}: {
+  sku: string;
+  summary: { average: number; stars: number; reviews: number };
+  standing: { stars: number | null; purchased: boolean; reviewed: boolean } | null;
+  signedIn: boolean;
+  authPending: boolean;
+  tick: number;
+  onSaved: (next: { average: number; count: number }) => void;
+}) {
+  const [rows, setRows] = useState<
+    { id: number; title: string | null; body: string; rating: number; verified: boolean; created_at: string }[]
+  >([]);
+  const [saving, setSaving] = useState(false);
+
   useEffect(() => {
-    listReviews({ data: sku }).then(setRows).catch(() => setRows([]));
-  }, [sku]);
+    listReviews({ data: sku })
+      .then((list) =>
+        setRows(
+          list.map((row) => ({
+            id: Number(row.id),
+            title: row.title,
+            body: row.body,
+            rating: Number(row.rating),
+            verified: Boolean(row.verified),
+            created_at: String(row.created_at ?? ""),
+          })),
+        ),
+      )
+      .catch(() => setRows([]));
+  }, [sku, tick]);
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6 flex items-center gap-3">
-        <span className="font-display text-4xl tabular-nums">{rating.toFixed(1)}</span>
-        <div>
-          <Stars value={rating} />
-          <p className="text-sm text-muted">{count} catalogue ratings</p>
-        </div>
-      </div>
-      <div className="space-y-4">
-        {SAMPLE_REVIEWS.map((r) => (
-          <article key={r.name} className="rounded-xl border border-line p-4">
-            <div className="flex items-center justify-between">
-              <p className="font-medium">{r.name}</p>
-              <Stars value={r.rating} />
-            </div>
-            <p className="text-xs text-muted">
-              {r.city} · Verified purchase
+      {summary.stars === 0 ? (
+        <p className="font-display text-2xl">No ratings yet</p>
+      ) : (
+        <div className="flex items-center gap-3">
+          <span className="font-display text-4xl tabular-nums">{summary.average.toFixed(1)}</span>
+          <div>
+            <Stars value={summary.average} />
+            <p className="text-sm text-muted">
+              {summary.stars} {summary.stars === 1 ? "star rating" : "star ratings"}
+              {summary.reviews > 0 ? ` · ${summary.reviews} written ${summary.reviews === 1 ? "review" : "reviews"}` : ""}
             </p>
-            <p className="mt-2 font-medium">{r.title}</p>
+          </div>
+        </div>
+      )}
+      <p className="mt-2 text-sm text-mortar">
+        Stars and written reviews start at zero. A signed-in account can star a product straight away. A written review
+        opens only after that same account has purchased the SKU, and it publishes immediately. The yard can hide the
+        text. The stars stay.
+      </p>
+      <div className="mt-6 space-y-4">
+        {rows.length === 0 && <p className="text-sm text-mortar">No written reviews yet.</p>}
+        {rows.map((r) => (
+          <article key={r.id} className="rounded-xl border border-line p-4">
+            <div className="flex items-center justify-between gap-3">
+              <Stars value={r.rating} />
+              <span className="text-xs text-muted">{reviewDate(r.created_at)}</span>
+            </div>
+            {r.verified && <p className="mt-1 text-xs text-ok">Verified purchase</p>}
+            {r.title && <p className="mt-2 font-medium">{r.title}</p>}
             <p className="mt-1 text-sm text-mortar">{r.body}</p>
           </article>
         ))}
-        {rows.map((r, i) => (
-          <article key={i} className="rounded-xl border border-line p-4">
-            <Stars value={r.rating} />
-            <p className="mt-1 font-medium">{r.title}</p>
-            <p className="text-sm text-mortar">{r.body}</p>
-          </article>
-        ))}
       </div>
-      {!isPending && user && (
-        <form
-          className="mt-6 space-y-2"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.currentTarget);
-            await addReview({
-              data: {
-                sku,
-                rating: Number(fd.get("rating")),
-                title: String(fd.get("title")),
-                body: String(fd.get("body")),
-              },
-            });
-            toast.success("Review sent to the yard. It appears once they publish it.");
-            e.currentTarget.reset();
-          }}
-        >
-          <p className="font-medium">Write a review</p>
-          <Input name="title" placeholder="Title" required />
-          <Input name="rating" type="number" min={1} max={5} defaultValue={5} />
-          <Textarea name="body" required placeholder="How did it lay? Colour match? Yard experience?" />
-          <Button type="submit">Submit for review</Button>
-        </form>
+      {!authPending && !signedIn && (
+        <p className="mt-6 text-sm text-mortar">
+          <Link to="/login" className="text-clay">
+            Sign in
+          </Link>{" "}
+          to star this product. A written review needs a purchase on the same account.
+        </p>
+      )}
+      {signedIn && !standing && <p className="mt-6 text-sm text-muted">Checking your account…</p>}
+      {signedIn && standing && (
+        <ReviewComposer sku={sku} standing={standing} saving={saving} setSaving={setSaving} onSaved={onSaved} />
       )}
     </div>
   );
+}
+
+function ReviewComposer({
+  sku,
+  standing,
+  saving,
+  setSaving,
+  onSaved,
+}: {
+  sku: string;
+  standing: { stars: number | null; purchased: boolean; reviewed: boolean };
+  saving: boolean;
+  setSaving: (value: boolean) => void;
+  onSaved: (next: { average: number; count: number }) => void;
+}) {
+  const [mine, setMine] = useState(standing.stars ?? 0);
+  useEffect(() => {
+    setMine(standing.stars ?? 0);
+  }, [standing.stars]);
+
+  return (
+    <div className="mt-6 space-y-3">
+      <p className="font-medium">Your stars</p>
+      <StarPicker
+        value={mine}
+        disabled={saving}
+        onChange={async (stars) => {
+          setMine(stars);
+          setSaving(true);
+          try {
+            const next = await setProductStars({ data: { sku, stars } });
+            onSaved(next);
+            toast.success("Stars saved");
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Could not save stars");
+          } finally {
+            setSaving(false);
+          }
+        }}
+      />
+      {standing.purchased ? (
+        <form
+          className="space-y-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!mine) {
+              toast.error("Star the product before you write the review");
+              return;
+            }
+            const form = e.currentTarget;
+            const fd = new FormData(form);
+            setSaving(true);
+            try {
+              const next = await writeProductReview({
+                data: {
+                  sku,
+                  stars: mine,
+                  title: String(fd.get("title") ?? ""),
+                  body: String(fd.get("body") ?? ""),
+                },
+              });
+              onSaved(next);
+              form.reset();
+              toast.success("Review published. The yard can still hide the text. Your stars stay.");
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Could not publish the review");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <p className="font-medium">{standing.reviewed ? "Update your review" : "Write a review"}</p>
+          <Input name="title" placeholder="Title (optional)" maxLength={80} />
+          <Textarea name="body" required minLength={12} placeholder="How did it lay? Colour match? Yard experience?" />
+          <Button type="submit" disabled={saving}>
+            {standing.reviewed ? "Update review" : "Publish review"}
+          </Button>
+        </form>
+      ) : (
+        <p className="text-sm text-mortar">
+          A written review opens after this account has a non-cancelled order for this SKU. Stars are already open.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function reviewDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-ZA", { dateStyle: "medium", timeZone: "Africa/Johannesburg" }).format(date);
 }
 
 function Questions({ sku }: { sku: string }) {

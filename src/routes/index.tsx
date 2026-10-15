@@ -66,10 +66,10 @@ function Home() {
       <AdBanner slot={adSlot("midpage-banner")} />
       <ShopBySector />
       <ColourCollections colours={colours} />
-      <Rail title="Best sellers" kicker="Rating + volume" href="/shop" products={best} />
+      <Rail title="Best sellers" kicker="Marked by the merchandising desk" href="/shop" products={best} />
       <NewToRange />
       <AdBanner slot={adSlot("inrail-banner-1")} />
-      <Rail title="Customer favourites" kicker="4.5★ and above" href="/shop" products={favs} />
+      <Rail title="Customer favourites" kicker="Real stars · 4.5 and above" href="/shop" products={favs} />
       <BrowseByColour />
       <ShopByProject />
       <AdBanner slot={adSlot("division-affiliated")} />
@@ -80,6 +80,7 @@ function Home() {
       <TradeBulk products={bulk} />
       <Rail title="Recently restocked" kicker="Back on the yard floor" href="/shop" products={restocked} />
       <Gallery />
+      <ExpressBand />
       <DeliveryMap />
       <TrustStrip />
       <SourcingCarousel size="strip" />
@@ -740,6 +741,45 @@ function DeliveryMap() {
         <div className="overflow-hidden rounded-xl">
           <img src="/images/hero/yard.jpg" alt="Bricksplaza distribution yard" className="h-full w-full object-cover" />
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ExpressBand() {
+  const steps = [
+    ["20 min", "Prepare the load. The clock is already running."],
+    ["2 hours", "The planned delivery span."],
+    ["2 h 59", "Last minute the R1 000 is kept."],
+    ["3 hours", "The fee is refunded. Ordinary delivery stays."],
+  ];
+  return (
+    <section className="bg-kiln text-bisque">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.18em] text-gold">AA 60/120</p>
+          <h2 className="mt-2 font-display text-4xl">Express, from a pin — not a postcode</h2>
+          <p className="mt-4 max-w-xl text-dim">
+            R1 000 on top of a quoted delivery, for stocked lines only. A supplier pin has to sit within 30 km. Monday to Saturday, 07:00 to 15:30. Sunday is closed.
+          </p>
+          <p className="mt-3 max-w-xl text-sm text-dim">
+            Only the Midrand and Cato Ridge yards are on the map until the desk adds a partner who can prepare a load in 20 minutes.
+          </p>
+          <Link
+            to="/express"
+            className="mt-6 inline-flex h-11 items-center rounded-md bg-clay px-4 text-sm font-medium text-paper"
+          >
+            See the service
+          </Link>
+        </div>
+        <ol className="grid gap-3 sm:grid-cols-2">
+          {steps.map(([time, body]) => (
+            <li key={time} className="rounded-xl bg-bisque/5 p-4">
+              <p className="font-display text-2xl text-gold">{time}</p>
+              <p className="mt-1 text-sm text-dim">{body}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

@@ -141,6 +141,10 @@ export type OrderInput = {
   hiab?: boolean;
   notes?: string;
   collection_slot?: string;
+  express?: boolean;
+  lat?: number;
+  lng?: number;
+  place?: string;
 };
 
 const ORDER_STATUSES = [
@@ -253,7 +257,26 @@ async function commitOrder(opts: {
     resolved.push({ sku: l.sku, qty, name: p.productName, unit, fulfilment: p.fulfilmentType });
   }
   const quote = quoteDelivery(data.postal_code || data.address.postal_code, data.delivery_method, { pallets, weightKg });
-  const delivery = (quote.fee ?? 0) + craneSurcharge(Boolean(data.hiab));
+  let expressFee = 0;
+  let expressSupplier: { id: number; name: string; km: number } | null = null;
+  if (data.express) {
+    const { resolveExpress, EXPRESS_FEE } = await import("@/lib/express.server");
+    const pin =
+      Number.isFinite(Number(data.lat)) && Number.isFinite(Number(data.lng))
+        ? { lat: Number(data.lat), lng: Number(data.lng) }
+        : null;
+    const decision = await resolveExpress({
+      now: new Date(),
+      method: data.delivery_method,
+      quoted: quote.fee != null,
+      lines: resolved,
+      pin,
+    });
+    if (!decision.ok) throw new Error(decision.reason);
+    expressFee = EXPRESS_FEE;
+    expressSupplier = decision.supplier;
+  }
+  const delivery = (quote.fee ?? 0) + craneSurcharge(Boolean(data.hiab)) + expressFee;
   const totalEx = round2(subtotal + delivery);
   const total = vatInclusive(totalEx);
   const vat = round2(total - totalEx);
@@ -284,16 +307,23 @@ async function commitOrder(opts: {
   const id = `BP-${Date.now().toString(36).toUpperCase()}`;
   const carrier = data.delivery_method === "collection" ? "Collection" : null;
   const loadNote = `Load: ${pallets} pallet${pallets === 1 ? "" : "s"}, ${Math.round(weightKg)} kg. ${quote.yard}. ${quote.quoted ? `${quote.band} band.` : "Long-distance — delivery fee to follow."}`;
-  const notes = [data.notes?.trim(), loadNote].filter(Boolean).join("\n");
+  const expressNote = expressSupplier
+    ? `AA 60/120 from ${expressSupplier.name}, ${expressSupplier.km.toFixed(1)} km. R1 000 on top of delivery. 20 min prep, 2-hour span, fee refunded if delivered after 3 hours.`
+    : "";
+  const notes = [data.notes?.trim(), loadNote, expressNote].filter(Boolean).join("\n");
+  const confirmedAt = expressSupplier ? new Date().toISOString() : null;
   try {
     await sql`insert into orders (
       id, user_id, status, email, phone, delivery_method, address_json, payment_method,
-      payment_status, payment_reference, stock_applied, subtotal, delivery_fee, vat, total, tier, carrier, tracking_ref, notes, collection_slot
+      payment_status, payment_reference, stock_applied, subtotal, delivery_fee, vat, total, tier, carrier, tracking_ref, notes, collection_slot,
+      express_fee, express_status, express_supplier_id, express_supplier_name, express_distance_km, express_place, express_lat, express_lng, express_confirmed_at
     ) values (
       ${id}, ${userId}, ${"processing"}, ${data.email}, ${data.phone}, ${data.delivery_method},
-      ${JSON.stringify({ ...data.address, quote })}, ${data.payment_method},
+      ${JSON.stringify({ ...data.address, quote, express: expressSupplier })}, ${data.payment_method},
       ${paymentStatus}, ${null}, ${true},
-      ${subtotal}, ${delivery}, ${vat}, ${total}, ${tier}, ${carrier}, ${null}, ${notes}, ${collectionSlot}
+      ${subtotal}, ${delivery}, ${vat}, ${total}, ${tier}, ${carrier}, ${null}, ${notes}, ${collectionSlot},
+      ${expressFee}, ${expressSupplier ? "open" : null}, ${expressSupplier?.id ?? null}, ${expressSupplier?.name ?? null},
+      ${expressSupplier ? expressSupplier.km : null}, ${data.place ?? null}, ${data.lat ?? null}, ${data.lng ?? null}, ${confirmedAt}
     )`;
     for (const line of resolved) {
       await sql`insert into order_lines (order_id, sku, name, qty, unit_price, fulfilment)
@@ -385,6 +415,12 @@ function mapOrder(r: Record<string, unknown>) {
     collection_slot: r.collection_slot == null ? null : String(r.collection_slot),
     notes: r.notes == null ? null : String(r.notes),
     created_at: String(r.created_at),
+    express_fee: num(r.express_fee),
+    express_status: r.express_status == null ? null : String(r.express_status),
+    express_supplier_name: r.express_supplier_name == null ? null : String(r.express_supplier_name),
+    express_distance_km: r.express_distance_km == null ? null : num(r.express_distance_km),
+    express_confirmed_at: r.express_confirmed_at == null ? null : String(r.express_confirmed_at),
+    express_delivered_at: r.express_delivered_at == null ? null : String(r.express_delivered_at),
   };
 }
 
@@ -458,11 +494,18 @@ export const addReview = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: { sku: string; rating: number; title: string; body: string }) => d)
   .handler(async ({ context, data }) => {
-    const sql = await getSql();
-    const bought = await sql`select o.id from orders o join order_lines l on l.order_id = o.id where o.user_id = ${context.userId} and l.sku = ${data.sku} limit 1`;
-    await sql`insert into reviews (user_id, sku, rating, title, body, verified, status)
-      values (${context.userId}, ${data.sku}, ${data.rating}, ${data.title}, ${data.body}, ${Boolean(bought[0])}, ${"pending"})`;
-    return { ok: true as const };
+    const stars = Math.round(Number(data.rating));
+    const body = String(data.body ?? "").trim();
+    const title = String(data.title ?? "").trim();
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) throw new Error("Choose 1 to 5 stars");
+    if (body.length < 12) throw new Error("Write a review of at least a sentence");
+    const { saveWrittenReview } = await import("@/lib/express.server");
+    return saveWrittenReview(context.userId, {
+      sku: String(data.sku ?? "").trim().slice(0, 40),
+      stars,
+      title: title.slice(0, 80),
+      body: body.slice(0, 2000),
+    });
   });
 
 export const listQuestions = createServerFn({ method: "POST" })
@@ -804,7 +847,8 @@ export const trackOrder = createServerFn({ method: "POST" })
     const sql = await getSql();
     const orders = await sql<Record<string, unknown>>`
       select id, status, delivery_method, payment_method, payment_status, payment_reference,
-             collection_slot, carrier, tracking_ref, created_at, subtotal, delivery_fee, vat, total
+             collection_slot, carrier, tracking_ref, created_at, subtotal, delivery_fee, vat, total,
+             express_fee, express_status, express_supplier_name, express_distance_km, express_confirmed_at, express_delivered_at
       from orders where id = ${id}
     `;
     const order = orders[0];
@@ -830,6 +874,12 @@ export const trackOrder = createServerFn({ method: "POST" })
       delivery_fee: num(order.delivery_fee),
       vat: num(order.vat),
       total: num(order.total),
+      express_fee: num(order.express_fee),
+      express_status: order.express_status == null ? null : String(order.express_status),
+      express_supplier_name: order.express_supplier_name == null ? null : String(order.express_supplier_name),
+      express_distance_km: order.express_distance_km == null ? null : num(order.express_distance_km),
+      express_confirmed_at: order.express_confirmed_at == null ? null : String(order.express_confirmed_at),
+      express_delivered_at: order.express_delivered_at == null ? null : String(order.express_delivered_at),
       lines: lines.map((l) => ({ sku: String(l.sku), name: String(l.name), qty: num(l.qty) })),
       eft: eftDetails(),
       events: events.map((e) => ({
@@ -1099,6 +1149,8 @@ export const loadInvoice = createServerFn({ method: "POST" })
       delivery_fee: num(order.delivery_fee),
       vat: num(order.vat),
       total: num(order.total),
+      express_fee: num(order.express_fee),
+      express_status: order.express_status == null ? null : String(order.express_status),
       address,
       vat_number: vatNo,
       lines: lines.map((l) => ({

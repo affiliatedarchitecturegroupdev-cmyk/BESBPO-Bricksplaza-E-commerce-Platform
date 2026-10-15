@@ -103,10 +103,31 @@ function InvoicePage() {
           <dt>Goods excl. VAT</dt>
           <dd className="tabular-nums">{formatZar(invoice.subtotal)}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt>Delivery excl. VAT</dt>
-          <dd className="tabular-nums">{formatZar(invoice.delivery_fee)}</dd>
-        </div>
+        {invoice.express_fee > 0 ? (
+          <>
+            <div className="flex justify-between">
+              <dt>Delivery excl. VAT</dt>
+              <dd className="tabular-nums">
+                {formatZar(
+                  invoice.express_status === "fee_refunded"
+                    ? invoice.delivery_fee
+                    : Math.round((invoice.delivery_fee - invoice.express_fee) * 100) / 100,
+                )}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>{invoice.express_status === "fee_refunded" ? "AA 60/120 refunded" : "AA 60/120 excl. VAT"}</dt>
+              <dd className="tabular-nums">
+                {formatZar(invoice.express_status === "fee_refunded" ? 0 : invoice.express_fee)}
+              </dd>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between">
+            <dt>Delivery excl. VAT</dt>
+            <dd className="tabular-nums">{formatZar(invoice.delivery_fee)}</dd>
+          </div>
+        )}
         <div className="flex justify-between">
           <dt>VAT 15%</dt>
           <dd className="tabular-nums">{formatZar(invoice.vat)}</dd>
@@ -123,6 +144,11 @@ function InvoicePage() {
         {invoice.delivery_method === "delivery" && invoice.delivery_fee === 0
           ? " Delivery is past 250 km and is still to be quoted."
           : ""}
+        {invoice.express_status === "fee_refunded"
+          ? " The R1 000 AA 60/120 fee and its VAT were taken off this total because the load was marked at 3 hours or later. The ordinary delivery fee stands. The fee is not added again."
+          : invoice.express_fee > 0
+            ? " AA 60/120 sits on top of the ordinary delivery fee."
+            : ""}
       </p>
       <div className="mt-6 flex gap-4 print:hidden">
         <button type="button" className="text-sm font-medium text-clay" onClick={() => window.print()}>

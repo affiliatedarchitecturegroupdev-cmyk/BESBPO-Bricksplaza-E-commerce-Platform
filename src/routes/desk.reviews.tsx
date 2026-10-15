@@ -22,7 +22,7 @@ function ReviewsMod() {
     <div>
       <h1 className="font-display text-3xl">Reviews</h1>
       <p className="mt-1 max-w-2xl text-sm text-dim">
-        New reviews stay hidden until you publish them. Hiding a review removes it from the product page.
+        Written reviews publish as soon as a buyer who purchased the SKU submits them. Hide the text if it should leave the product page. Stars stay either way — they are counted separately and are not moderated.
       </p>
       {data && <YardClaim unclaimed={data.unclaimed} onClaimed={refresh} />}
       {data && !data.yard && !data.unclaimed && (

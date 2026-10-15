@@ -262,7 +262,7 @@ export async function homeCatalogue() {
     arrivals: [...catalogue].reverse().filter((p) => p.isNew).slice(0, 8),
     clearance: catalogue.filter((p) => p.isClearance).slice(0, 8),
     best: catalogue.filter((p) => p.isBestSeller).slice(0, 8),
-    favs: catalogue.filter((p) => p.rating >= 4.5).slice(0, 8),
+    favs: catalogue.filter((p) => p.reviewCount > 0 && p.rating >= 4.5).slice(0, 8),
     editorial: [
       firstOf(catalogue, "clay-face-bricks", "Autumn Red"),
       firstOf(catalogue, "clay-pavers", "Sandstone"),

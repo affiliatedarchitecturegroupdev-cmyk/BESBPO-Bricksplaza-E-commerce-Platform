@@ -62,6 +62,7 @@ function OrderPage() {
       <h1 className="mt-2 font-display text-4xl">{order.id}</h1>
       <Fulfilment status={order.status} carrier={order.carrier} tracking={order.tracking_ref} />
       <p className="mt-1 font-display text-3xl tabular-nums">{formatZar(order.total)}</p>
+      {order.express_fee > 0 && <ExpressPanel order={order} />}
       <p className="mt-2 text-sm text-mortar">
         Payment: {paymentCopy[order.payment_status] ?? order.payment_status}
         {order.payment_reference ? ` Reference ${order.payment_reference}.` : ""}
@@ -149,6 +150,44 @@ function OrderPage() {
 }
 
 const STEPS = ["processing", "dispatched", "in_transit", "out_for_delivery", "delivered"] as const;
+
+function ExpressPanel({ order }: { order: Tracked }) {
+  const confirmed = order.express_confirmed_at ? new Date(order.express_confirmed_at) : null;
+  const deadline = confirmed ? new Date(confirmed.getTime() + 180 * 60 * 1000) : null;
+  const status =
+    order.express_status === "fee_refunded"
+      ? "Arrived at 3 hours or later. The R1 000 fee and its VAT are off this total. The ordinary delivery fee stands."
+      : order.express_status === "delivered"
+        ? "Arrived inside 3 hours. The R1 000 fee stands."
+        : "Clock running. The fee is kept only if the load is marked arrived before 3 hours.";
+  return (
+    <div className="mt-4 rounded-xl bg-card p-4 text-sm">
+      <p className="font-medium">AA 60/120 Express</p>
+      <p className="mt-2 text-mortar">
+        {order.express_supplier_name ?? "Supplier pin"}
+        {order.express_distance_km != null ? ` · ${order.express_distance_km.toFixed(1)} km` : ""}
+      </p>
+      {confirmed && (
+        <p className="mt-1 text-mortar">
+          Confirmed {saTime(confirmed)}
+          {deadline ? `. Fee stays only before ${saTime(deadline)}.` : "."}
+        </p>
+      )}
+      <p className="mt-2 text-mortar">{status}</p>
+      <p className="mt-2 text-xs text-muted">
+        Marking arrival is the yard’s clock for the fee. It does not send an unpaid load. An EFT still waits on a matched reference, and trade still has to be on account. Nothing on this order was captured by a card.
+      </p>
+    </div>
+  );
+}
+
+function saTime(date: Date) {
+  return new Intl.DateTimeFormat("en-ZA", {
+    timeZone: "Africa/Johannesburg",
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
 
 function Fulfilment({ status, carrier, tracking }: { status: string; carrier: string | null; tracking: string | null }) {
   const ref = tracking && !tracking.startsWith("TRK-") ? tracking : null;
