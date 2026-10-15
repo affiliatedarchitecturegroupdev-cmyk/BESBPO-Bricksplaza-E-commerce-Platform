@@ -18,7 +18,7 @@ export function ProductCard({
     <Link
       to="/product/$sku"
       params={{ sku: product.sku }}
-      className="group flex flex-col overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)] transition-[box-shadow,transform] duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
+      className="group flex h-full flex-col overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)] transition-[box-shadow,transform] duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-card">
         <ProductMedia product={product} className="absolute inset-0" alt={product.productName} />

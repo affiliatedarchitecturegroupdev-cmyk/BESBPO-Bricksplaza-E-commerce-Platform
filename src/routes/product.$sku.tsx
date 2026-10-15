@@ -8,6 +8,7 @@ import { Stars } from "@/components/stars";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { ProductCard } from "@/components/product-card";
+import { RAIL_CARD, ScrollRail } from "@/components/scroll-rail";
 import { ProductMedia } from "@/components/product-media";
 import { addQuestion, addReview, listQuestions, listReviews } from "@/lib/commerce";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -309,13 +310,21 @@ function ProductPage() {
 
       {matched.length > 0 && (
         <section className="mt-8">
-          <h2 className="font-display text-2xl">Colour-matched</h2>
-          <p className="mt-1 text-sm text-mortar">Same colourway · face, semi-face, paver, slips, coping</p>
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {matched.slice(0, 4).map((p) => (
-              <ProductCard key={p.sku} product={p} />
+          <ScrollRail
+            label="Colour-matched"
+            header={
+              <>
+                <h2 className="font-display text-2xl">Colour-matched</h2>
+                <p className="mt-1 text-sm text-mortar">Same colourway · face, semi-face, paver, slips, coping</p>
+              </>
+            }
+          >
+            {matched.map((p) => (
+              <div key={p.sku} className={RAIL_CARD}>
+                <ProductCard product={p} />
+              </div>
             ))}
-          </div>
+          </ScrollRail>
         </section>
       )}
       {fbt.length > 0 && (
@@ -328,14 +337,17 @@ function ProductPage() {
           </div>
         </section>
       )}
-      <section className="mt-12">
-        <h2 className="font-display text-2xl">You may also like</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {related.slice(0, 4).map((p) => (
-            <ProductCard key={p.sku} product={p} />
-          ))}
-        </div>
-      </section>
+      {related.length > 0 && (
+        <section className="mt-12">
+          <ScrollRail label="You may also like" header={<h2 className="font-display text-2xl">You may also like</h2>}>
+            {related.map((p) => (
+              <div key={p.sku} className={RAIL_CARD}>
+                <ProductCard product={p} />
+              </div>
+            ))}
+          </ScrollRail>
+        </section>
+      )}
       <div className="mx-auto mt-10 w-full max-w-[800px]">
         <AdBanner slot={crossSellBanner(product.categorySlug)} contained />
       </div>

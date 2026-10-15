@@ -14,6 +14,7 @@ import { AdBanner } from "@/components/ad-banner";
 import { adSlot } from "@/data/ads";
 import { listPublishedPosts } from "@/lib/posts";
 import { SourcingCarousel } from "@/components/sourcing-carousel";
+import { RAIL_CARD, RAIL_STORY, ScrollRail } from "@/components/scroll-rail";
 import { PitchDeck } from "@/components/pitch-deck";
 import { BRAND_MEDIA } from "@/data/brand-media";
 import { formatZar } from "@/lib/format";
@@ -60,7 +61,7 @@ function Home() {
       <Bundles />
       <Rail title="Clearance" kicker="Overstock & discontinued colourways" href="/search" products={clearance} />
       <ShopByCategory />
-      <MasterCatalogue entries={journal.items.slice(0, 4)} />
+      <MasterCatalogue entries={journal.items} />
       <SpecifiedBrands shops={brands} />
       <AdBanner slot={adSlot("midpage-banner")} />
       <ShopBySector />
@@ -258,21 +259,27 @@ function Rail({
 }) {
   if (!products.length) return null;
   return (
-    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-      <div className="mb-6 flex items-end justify-between">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">{kicker}</p>
-          <h2 className="mt-1 font-display text-3xl">{title}</h2>
-        </div>
-        <a href={href} className="hidden text-sm font-medium text-clay hover:underline sm:inline">
-          View all
-        </a>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <ScrollRail
+        label={title}
+        header={
+          <>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-clay">{kicker}</p>
+            <h2 className="mt-1 font-display text-3xl">{title}</h2>
+          </>
+        }
+        action={
+          <a href={href} className="text-sm font-medium text-clay hover:underline">
+            View all
+          </a>
+        }
+      >
         {products.map((p) => (
-          <ProductCard key={p.sku} product={p} />
+          <div key={p.sku} className={RAIL_CARD}>
+            <ProductCard product={p} />
+          </div>
         ))}
-      </div>
+      </ScrollRail>
     </section>
   );
 }
@@ -386,20 +393,26 @@ function MasterCatalogue({ entries }: { entries: Product[] }) {
   if (!entries.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Newest first</p>
-          <h2 className="mt-1 font-display text-3xl">Master catalogue</h2>
-        </div>
-        <Link to="/catalogue" className="text-sm font-medium text-clay">
-          Open the full list <ArrowRight className="inline size-4" />
-        </Link>
-      </div>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ScrollRail
+        label="Master catalogue"
+        header={
+          <>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Newest first</p>
+            <h2 className="mt-1 font-display text-3xl">Master catalogue</h2>
+          </>
+        }
+        action={
+          <Link to="/catalogue" className="text-sm font-medium text-clay">
+            Open the full list <ArrowRight className="inline size-4" />
+          </Link>
+        }
+      >
         {entries.map((product) => (
-          <ProductCard key={product.sku} product={product} />
+          <div key={product.sku} className={RAIL_CARD}>
+            <ProductCard product={product} />
+          </div>
         ))}
-      </div>
+      </ScrollRail>
     </section>
   );
 }
@@ -415,22 +428,28 @@ function ShopBySector() {
   return (
     <section className="bg-card py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Specify by job</p>
-        <h2 className="mt-1 font-display text-3xl">Shop by sector</h2>
-        <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-5">
+        <ScrollRail
+          label="Shop by sector"
+          header={
+            <>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Specify by job</p>
+              <h2 className="mt-1 font-display text-3xl">Shop by sector</h2>
+            </>
+          }
+        >
           {SECTORS.map((s) => (
             <Link
               key={s}
               to="/sectors/$slug"
               params={{ slug: s.toLowerCase() }}
-              className="group relative aspect-[3/4] overflow-hidden rounded-xl"
+              className="group relative aspect-[3/4] w-[68%] shrink-0 snap-start overflow-hidden rounded-xl sm:w-[calc((100%-1rem)/2.15)] lg:w-[calc((100%-3rem)/4.3)]"
             >
               <img src={img[s]} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-kiln to-transparent" />
               <span className="absolute bottom-4 left-4 font-display text-xl text-bisque">{s}</span>
             </Link>
           ))}
-        </div>
+        </ScrollRail>
       </div>
     </section>
   );
@@ -443,12 +462,23 @@ function ColourCollections({
 }) {
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-clay">The core differentiator</p>
-      <h2 className="mt-1 font-display text-3xl">Colour-matched collections</h2>
-      <p className="mt-2 max-w-2xl text-mortar">
-        Face brick, semi-face and clay paver fired in the same colourway — specify once, lay three surfaces.
-      </p>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ScrollRail
+        label="Colour-matched collections"
+        header={
+          <>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-clay">The core differentiator</p>
+            <h2 className="mt-1 font-display text-3xl">Colour-matched collections</h2>
+            <p className="mt-2 max-w-2xl text-mortar">
+              Face brick, semi-face and clay paver fired in the same colourway — specify once, lay three surfaces.
+            </p>
+          </>
+        }
+        action={
+          <Link to="/collections" className="text-sm font-medium text-clay hover:underline">
+            All 14 colourways
+          </Link>
+        }
+      >
         {colours.map((row) => {
           const { colour, face, semi, paver } = row;
           return (
@@ -456,9 +486,9 @@ function ColourCollections({
               key={colour}
               to="/product/$sku"
               params={{ sku: face.sku }}
-              className="overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]"
+              className={`${RAIL_STORY} flex-col overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]`}
             >
-              <div className="flex h-24">
+              <div className="flex h-24 w-full">
                 {[face, semi, paver].filter(Boolean).map((p) => (
                   <div key={p!.sku} className="flex-1" style={{ background: p!.colourHex }} />
                 ))}
@@ -472,12 +502,7 @@ function ColourCollections({
             </Link>
           );
         })}
-      </div>
-      <div className="mt-6">
-        <Link to="/collections" className="text-sm font-medium text-clay hover:underline">
-          All 14 colourways →
-        </Link>
-      </div>
+      </ScrollRail>
     </section>
   );
 }
@@ -492,11 +517,18 @@ function NewToRange() {
   return (
     <section className="bg-kiln py-16 text-bisque">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Just added</p>
-        <h2 className="mt-1 font-display text-3xl">New to the range</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ScrollRail
+          label="New to the range"
+          tone="dark"
+          header={
+            <>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Just added</p>
+              <h2 className="mt-1 font-display text-3xl">New to the range</h2>
+            </>
+          }
+        >
           {items.map((it) => (
-            <Link key={it.slug} to="/shop/$slug" params={{ slug: it.slug }} className="overflow-hidden rounded-xl bg-kiln-2">
+            <Link key={it.slug} to="/shop/$slug" params={{ slug: it.slug }} className={`${RAIL_CARD} flex-col overflow-hidden rounded-xl bg-kiln-2`}>
               <img src={it.img} alt="" className="aspect-[4/3] w-full object-cover" />
               <div className="p-4">
                 <h3 className="font-display text-xl">{it.title}</h3>
@@ -504,7 +536,7 @@ function NewToRange() {
               </div>
             </Link>
           ))}
-        </div>
+        </ScrollRail>
       </div>
     </section>
   );
@@ -514,24 +546,30 @@ function BrowseByColour() {
   return (
     <section className="bg-card py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-clay">All 14 finishes</p>
-        <h2 className="mt-1 font-display text-3xl">Browse by colour</h2>
-        <p className="mt-2 max-w-2xl text-mortar">
-          Pick a colourway and see every category that fires it — not a curated trio, the whole yard.
-        </p>
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        <ScrollRail
+          label="Browse by colour"
+          header={
+            <>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-clay">All 14 finishes</p>
+              <h2 className="mt-1 font-display text-3xl">Browse by colour</h2>
+              <p className="mt-2 max-w-2xl text-mortar">
+                Pick a colourway and see every category that fires it — not a curated trio, the whole yard.
+              </p>
+            </>
+          }
+        >
           {COLOURS.map((c) => (
             <Link
               key={c.slug}
               to="/search"
               search={{ colour: c.name }}
-              className="rounded-xl bg-paper p-3 shadow-[var(--shadow-card)] hover:ring-2 hover:ring-clay"
+              className="w-36 shrink-0 snap-start rounded-xl bg-paper p-3 shadow-[var(--shadow-card)] hover:ring-2 hover:ring-clay"
             >
               <span className="block h-16 rounded-md" style={{ background: c.hex }} />
               <span className="mt-2 block text-sm font-medium">{c.name}</span>
             </Link>
           ))}
-        </div>
+        </ScrollRail>
       </div>
     </section>
   );
@@ -570,11 +608,17 @@ function ShopByProject() {
   ];
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-clay">How the job is actually planned</p>
-      <h2 className="mt-1 font-display text-3xl">Shop by project</h2>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ScrollRail
+        label="Shop by project"
+        header={
+          <>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-clay">How the job is actually planned</p>
+            <h2 className="mt-1 font-display text-3xl">Shop by project</h2>
+          </>
+        }
+      >
         {projects.map((p) => (
-          <Link key={p.title} to="/shop/$slug" params={{ slug: p.slug }} className="group overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]">
+          <Link key={p.title} to="/shop/$slug" params={{ slug: p.slug }} className={`${RAIL_STORY} group flex-col overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card)]`}>
             <img src={p.img} alt="" className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105" />
             <div className="p-4">
               <h3 className="font-display text-xl">{p.title}</h3>
@@ -582,7 +626,7 @@ function ShopByProject() {
             </div>
           </Link>
         ))}
-      </div>
+      </ScrollRail>
     </section>
   );
 }
@@ -591,14 +635,26 @@ function TradeBulk({ products }: { products: Product[] }) {
   return (
     <section className="bg-kiln py-16 text-bisque">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Volume tier on the homepage</p>
-        <h2 className="mt-1 font-display text-3xl">Trade & bulk specials</h2>
-        <p className="mt-2 max-w-2xl text-dim">
-          Volume is 20% off retail. Trade accounts open at 12%. These are list comparisons, not discontinued stock.
-        </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ScrollRail
+          label="Trade and bulk specials"
+          tone="dark"
+          header={
+            <>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-gold">Volume tier on the homepage</p>
+              <h2 className="mt-1 font-display text-3xl">Trade & bulk specials</h2>
+              <p className="mt-2 max-w-2xl text-dim">
+                Volume is 20% off retail. Trade accounts open at 12%. These are list comparisons, not discontinued stock.
+              </p>
+            </>
+          }
+          action={
+            <Link to="/trade" className="text-sm text-gold hover:underline">
+              Trade account
+            </Link>
+          }
+        >
           {products.map((p) => (
-            <Link key={p.sku} to="/product/$sku" params={{ sku: p.sku }} className="rounded-xl bg-kiln-2 p-4">
+            <Link key={p.sku} to="/product/$sku" params={{ sku: p.sku }} className={`${RAIL_CARD} flex-col rounded-xl bg-kiln-2 p-4`}>
               <p className="text-[11px] uppercase tracking-[0.14em] text-gold">{p.category}</p>
               <h3 className="mt-1 font-display text-lg">{p.productType}</h3>
               <p className="text-sm text-dim">{p.colourFinish}</p>
@@ -608,10 +664,7 @@ function TradeBulk({ products }: { products: Product[] }) {
               </p>
             </Link>
           ))}
-        </div>
-        <Link to="/trade" className="mt-6 inline-flex text-sm text-gold hover:underline">
-          Open a trade account →
-        </Link>
+        </ScrollRail>
       </div>
     </section>
   );
@@ -620,19 +673,23 @@ function TradeBulk({ products }: { products: Product[] }) {
 function Gallery() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="mb-6 flex items-end justify-between">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Reference photos</p>
-          <h2 className="mt-1 font-display text-3xl">Project inspiration</h2>
-        </div>
-        <Link to="/projects" className="text-sm font-medium text-clay hover:underline">
-          All reference photos
-        </Link>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <ScrollRail
+        label="Project inspiration"
+        header={
+          <>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-clay">Reference photos</p>
+            <h2 className="mt-1 font-display text-3xl">Project inspiration</h2>
+          </>
+        }
+        action={
+          <Link to="/projects" className="text-sm font-medium text-clay hover:underline">
+            All reference photos
+          </Link>
+        }
+      >
         {PROJECTS.map((p) => (
-          <Link key={p.slug} to="/projects" className="group overflow-hidden rounded-xl">
-            <div className="aspect-[4/3] overflow-hidden">
+          <Link key={p.slug} to="/projects" className={`${RAIL_STORY} group flex-col overflow-hidden rounded-xl`}>
+            <div className="aspect-[4/3] w-full overflow-hidden">
               <img src={p.image} alt={p.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
             </div>
             <div className="bg-paper p-4 shadow-[var(--shadow-card)]">
@@ -643,7 +700,7 @@ function Gallery() {
             </div>
           </Link>
         ))}
-      </div>
+      </ScrollRail>
     </section>
   );
 }
@@ -783,12 +840,16 @@ function RecentlyViewed() {
   if (!ready || !products.length) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-      <h2 className="font-display text-3xl">Recently viewed</h2>
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ScrollRail
+        label="Recently viewed"
+        header={<h2 className="font-display text-3xl">Recently viewed</h2>}
+      >
         {products.map((p) => (
-          <ProductCard key={p.sku} product={p} />
+          <div key={p.sku} className={RAIL_CARD}>
+            <ProductCard product={p} />
+          </div>
         ))}
-      </div>
+      </ScrollRail>
     </section>
   );
 }

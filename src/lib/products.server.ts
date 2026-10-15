@@ -255,7 +255,7 @@ export async function homeCatalogue() {
     if (seen.has(p.categorySlug)) continue;
     seen.add(p.categorySlug);
     restocked.push(p);
-    if (restocked.length === 4) break;
+    if (restocked.length === 8) break;
   }
   return {
     trending: catalogue.filter((p) => p.isTrending).slice(0, 8),
