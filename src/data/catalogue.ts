@@ -1,4 +1,5 @@
 import type { ColourName, DutyClass, Fulfilment } from "./taxonomy";
+import { PRODUCT_PHOTO_FILES } from "./product-photos";
 
 export type Product = {
   sku: string;
@@ -51,9 +52,43 @@ const PHOTO_BY_SKU = new Map(
   }),
 );
 
-/** Resolved URL when `public/images/products/{SKU}.jpg` (or png/webp) is present. */
+/** Price-list photo codes. Semi-face and clay maxi share the face-brick pool; there is no separate set. */
+const CATEGORY_PHOTO: Record<string, string> = {
+  "clay-face-bricks": "CFB",
+  "semi-face-bricks": "CFB",
+  "clay-maxi-bricks": "CFB",
+  "stock-bricks": "CCB",
+  "engineering-bricks": "CEB",
+  "fire-bricks": "FBR",
+  "clay-specials": "SSB",
+  "concrete-blocks": "CMB",
+  "concrete-maxi": "CNB",
+  "aac-blocks": "AAC",
+  cseb: "CSE",
+  "mortar-accessories": "MJS",
+  "clay-pavers": "CPB",
+  "concrete-pavers": "ICP",
+  cobbles: "CST",
+  slabs: "CPS",
+  "retaining-blocks": "RWB",
+  "brick-slips": "BST",
+  "braai-kits": "BFK",
+};
+
+function photoKey(value: string) {
+  let h = 2166136261;
+  for (let i = 0; i < value.length; i++) h = Math.imul(h ^ value.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+/** A file named `{SKU}.jpg` wins. Otherwise a stable photo from that category's library. */
 export function productImage(p: Product): string | null {
-  return PHOTO_BY_SKU.get(p.sku) ?? null;
+  const own = PHOTO_BY_SKU.get(p.sku);
+  if (own) return own;
+  const pool = PRODUCT_PHOTO_FILES[CATEGORY_PHOTO[p.categorySlug] ?? ""];
+  if (!pool?.length) return null;
+  const file = pool[photoKey(`${p.productType}|${p.colourFinish}`) % pool.length];
+  return file ? `/images/products/library/${file}` : null;
 }
 
 export function findProduct(products: Product[], sku: string) {
