@@ -5,11 +5,14 @@ import { getSql } from "@/lib/db";
 import { assertYard } from "@/lib/commerce";
 
 const COVERS: Record<string, string> = {
-  "colour-matching-elevations": "images/hero/colour-match.jpg",
-  "sans-227-on-site": "images/hero/slides/brick-courses.jpg",
-  "trade-account-guide": "images/hero/slides/apartment-grid.jpg",
-  "paver-coverage": "images/types/cobbles.jpg",
+  "colour-matching-elevations": "brand/shops/bosun/smooth-ethnic.jpg",
+  "sans-227-on-site": "brand/shops/corobrik/wall/010.jpg",
+  "trade-account-guide": "images/context/bokaap-street.jpg",
+  "paver-coverage": "brand/shops/bosun/kerbs.jpg",
 };
+
+const COVER_REV = "sa-context-2026-10";
+let coverRefresh: Promise<void> | null = null;
 
 export type PostCard = {
   slug: string;
@@ -56,19 +59,36 @@ async function tableReady() {
   return Boolean(rows[0]?.name);
 }
 
+async function refreshEditorialCovers() {
+  if (coverRefresh) return coverRefresh;
+  coverRefresh = (async () => {
+    const sql = await getSql();
+    await sql`alter table posts add column if not exists cover_rev text not null default ''`;
+    for (const [slug, rel] of Object.entries(COVERS)) {
+      const rows = await sql<{ cover_rev: string | null }>`select cover_rev from posts where slug = ${slug}`;
+      if (!rows[0] || rows[0].cover_rev === COVER_REV) continue;
+      const bytes = await readFile(join(process.cwd(), "public", rel));
+      await sql`update posts set cover = ${bytes}, cover_type = ${"image/jpeg"}, cover_rev = ${COVER_REV}, updated_at = now() where slug = ${slug}`;
+    }
+  })();
+  return coverRefresh;
+}
+
 async function ensureSeeded() {
   if (!(await tableReady())) return;
   const sql = await getSql();
   const count = await sql<{ n: number }>`select count(*)::int as n from posts`;
-  if (Number(count[0]?.n ?? 0) > 0) return;
-  for (const post of BLOG) {
-    const rel = COVERS[post.slug];
-    if (!rel) continue;
-    const bytes = await readFile(join(process.cwd(), "public", rel));
-    await sql`insert into posts (slug, title, tag, excerpt, body, cover_type, cover, status, published_at)
-      values (${post.slug}, ${post.title}, ${post.tag}, ${post.excerpt}, ${post.body}, ${"image/jpeg"}, ${bytes}, ${"published"}, ${post.date})
-      on conflict (slug) do nothing`;
+  if (Number(count[0]?.n ?? 0) === 0) {
+    for (const post of BLOG) {
+      const rel = COVERS[post.slug];
+      if (!rel) continue;
+      const bytes = await readFile(join(process.cwd(), "public", rel));
+      await sql`insert into posts (slug, title, tag, excerpt, body, cover_type, cover, cover_rev, status, published_at)
+        values (${post.slug}, ${post.title}, ${post.tag}, ${post.excerpt}, ${post.body}, ${"image/jpeg"}, ${bytes}, ${COVER_REV}, ${"published"}, ${post.date})
+        on conflict (slug) do nothing`;
+    }
   }
+  await refreshEditorialCovers();
 }
 
 function staticCards(): PostCard[] {
@@ -78,7 +98,7 @@ function staticCards(): PostCard[] {
     tag: post.tag,
     excerpt: post.excerpt,
     date: post.date,
-    image: `/${COVERS[post.slug] ?? "images/hero/slides/apartment-grid.jpg"}`,
+    image: `/${COVERS[post.slug] ?? "brand/shops/corobrik/wall/035.jpg"}`,
   }));
 }
 
@@ -91,7 +111,7 @@ function staticPost(slug: string): PublicPost | null {
     tag: post.tag,
     excerpt: post.excerpt,
     date: post.date,
-    image: `/${COVERS[post.slug] ?? "images/hero/slides/apartment-grid.jpg"}`,
+    image: `/${COVERS[post.slug] ?? "brand/shops/corobrik/wall/035.jpg"}`,
     body: post.body,
     skus: [],
     origin: origin(),

@@ -325,11 +325,12 @@ export async function productsBySkus(skus: string[]): Promise<Product[]> {
   return catalogue.filter((p) => want.has(p.sku));
 }
 
-export async function suggestProducts(q: string): Promise<Product[]> {
+export async function suggestProducts(q: string) {
   const query = q.trim().slice(0, 80);
-  if (query.length < 2) return [];
-  const { suggest } = await import("@/lib/search");
-  return suggest(await cachedProducts(), query, 6);
+  const { suggest, explainQuery } = await import("@/lib/search");
+  if (query.length < 2) return { products: [] as Product[], hints: explainQuery(query) };
+  const products = await cachedProducts();
+  return { products: suggest(products, query, 6), hints: explainQuery(query) };
 }
 
 export async function colourIndex() {

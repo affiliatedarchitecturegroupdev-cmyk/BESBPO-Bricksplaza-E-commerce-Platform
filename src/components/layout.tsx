@@ -7,6 +7,8 @@ import { CONTACTS, GROUP, GROUP_SOCIAL, PAYMENT_METHODS } from "@/data/content";
 import { BRAND_MEDIA } from "@/data/brand-media";
 import type { Product } from "@/data/catalogue";
 import { suggestProducts } from "@/lib/products";
+import { explainQuery, type SearchHint } from "@/lib/search";
+import { YardChat } from "@/components/yard-chat";
 import { cn } from "@/lib/utils";
 import {
   ChevronDown,
@@ -16,7 +18,6 @@ import {
   X,
   MapPin,
   Phone,
-  MessageCircle,
 } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -33,7 +34,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
-      <ChatWidget />
+      <YardChat />
       <CookieNotice />
       <Toaster position="top-center" richColors />
     </div>
@@ -111,11 +112,11 @@ function Header() {
           >
             <Menu className="size-5" />
           </button>
-          <Link to="/" className="flex shrink-0 items-center">
-            <img src="/brand/lockup_light.svg" alt="Bricksplaza" className="h-9 w-auto sm:h-10" />
+          <Link to="/" className="flex min-w-0 shrink items-center">
+            <img src="/brand/lockup_light.svg" alt="Bricksplaza" className="h-8 w-auto max-w-[34vw] sm:h-10 sm:max-w-none" />
           </Link>
-          <SearchBox />
-          <div className="ml-auto flex items-center gap-1">
+          <SearchBox className="relative ml-auto hidden min-w-0 flex-1 md:block md:max-w-md" />
+          <div className="ml-auto flex shrink-0 items-center gap-1">
             {user ? (
               <SignedIn>
                 <Link to="/account" className="hidden h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card sm:inline-flex">
@@ -124,7 +125,7 @@ function Header() {
                 <UserButton />
               </SignedIn>
             ) : (
-              <Link to="/login" className="inline-flex h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-card">
+              <Link to="/login" className="inline-flex h-11 items-center rounded-md px-2 text-sm font-medium hover:bg-card sm:px-3">
                 Sign in
               </Link>
             )}
@@ -137,6 +138,9 @@ function Header() {
               )}
             </Link>
           </div>
+        </div>
+        <div className="border-t border-line/70 px-4 py-2 md:hidden">
+          <SearchBox className="relative w-full" />
         </div>
         <nav ref={navRef} className="mx-auto hidden max-w-7xl flex-wrap items-center gap-1 px-4 pb-2 lg:flex sm:px-6">
           <div className="relative">
@@ -232,13 +236,16 @@ function Header() {
   );
 }
 
-function SearchBox() {
+function SearchBox({ className, onPick }: { className: string; onPick?: () => void }) {
   const [q, setQ] = useState("");
   const [focus, setFocus] = useState(false);
   const [hits, setHits] = useState<Product[]>([]);
+  const [hints, setHints] = useState<SearchHint[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
+    const local = explainQuery(q);
+    setHints(local);
     const qv = q.trim();
     if (qv.length < 2) {
       setHits([]);
@@ -248,7 +255,9 @@ function SearchBox() {
     const t = window.setTimeout(() => {
       suggestProducts({ data: { q: qv } })
         .then((rows) => {
-          if (!cancel) setHits(rows);
+          if (cancel) return;
+          setHits(rows.products);
+          if (rows.hints.length) setHints(rows.hints);
         })
         .catch(() => {
           if (!cancel) setHits([]);
@@ -260,13 +269,16 @@ function SearchBox() {
     };
   }, [q]);
 
+  const open = focus && q.trim().length >= 2 && (hits.length > 0 || hints.length > 0);
+
   return (
-    <div className="relative ml-auto hidden min-w-0 flex-1 max-w-md md:block">
+    <div className={className}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (q.trim()) navigate({ to: "/search", search: { q } });
           setFocus(false);
+          onPick?.();
         }}
       >
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
@@ -274,19 +286,37 @@ function SearchBox() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setFocus(true)}
-          onBlur={() => setTimeout(() => setFocus(false), 160)}
+          onBlur={() => setTimeout(() => setFocus(false), 180)}
           placeholder="Search SKU, colour, SANS…"
+          aria-label="Search the catalogue"
+          autoComplete="off"
           suppressHydrationWarning
           className="h-11 w-full rounded-md border border-line bg-card pl-9 pr-3 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-clay/30"
         />
       </form>
-      {focus && hits.length > 0 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl bg-paper shadow-[var(--shadow-card-hover)]">
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-[min(70vh,24rem)] overflow-y-auto rounded-xl bg-paper shadow-[var(--shadow-card-hover)]">
+          {hints.length > 0 && (
+            <div className="border-b border-line px-3 py-2">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Understood as</p>
+              <ul className="mt-1 space-y-1">
+                {hints.map((hint) => (
+                  <li key={hint.href}>
+                    <a href={hint.href} onClick={() => onPick?.()} className="block rounded-md px-1 py-1 hover:bg-card">
+                      <span className="block text-sm font-medium text-clay">{hint.label}</span>
+                      <span className="block truncate text-xs text-muted">{hint.detail}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {hits.map((p) => (
             <Link
               key={p.sku}
               to="/product/$sku"
               params={{ sku: p.sku }}
+              onClick={() => onPick?.()}
               className="flex items-center gap-3 px-3 py-2 hover:bg-card"
             >
               <ProductMedia product={p} labelled={false} className="size-10 shrink-0 rounded-md" />
@@ -296,12 +326,13 @@ function SearchBox() {
                   {p.sku} · {p.colourFinish}
                 </p>
               </div>
-              <span className="ml-auto text-sm tabular-nums">{formatZar(p.retailPrice, true)}</span>
+              <span className="ml-auto shrink-0 text-sm tabular-nums">{formatZar(p.retailPrice, true)}</span>
             </Link>
           ))}
           <Link
             to="/search"
             search={{ q }}
+            onClick={() => onPick?.()}
             className="block border-t border-line px-3 py-2 text-sm font-medium text-clay"
           >
             View all results
@@ -342,16 +373,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
             <X />
           </button>
         </div>
-        <form
-          className="mb-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const q = new FormData(e.currentTarget).get("q") as string;
-            window.location.href = `/search?q=${encodeURIComponent(q)}`;
-          }}
-        >
-          <input name="q" placeholder="Search catalogue" className="h-11 w-full rounded-md border border-line bg-card px-3 text-sm" />
-        </form>
+        <SearchBox className="relative mb-4 w-full" onPick={onClose} />
         {links.map(([to, label]) => (
           <Link key={to} to={to} onClick={onClose} className="block py-2 font-medium">
             {label}
@@ -569,7 +591,7 @@ function Footer() {
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-[11px] uppercase tracking-[0.16em] text-gold">Ways to pay</p>
             <Link to="/ways-to-pay" className="text-xs text-dim hover:text-bisque">
-              All 19 methods
+              All {PAYMENT_METHODS.length} methods
             </Link>
           </div>
           <ul className="mt-3 flex flex-wrap items-center gap-2">
@@ -639,73 +661,43 @@ function Footer() {
   );
 }
 
-function ChatWidget() {
-  const [open, setOpen] = useState(false);
-  const [sent, setSent] = useState(false);
-  return (
-    <div className="fixed bottom-5 right-5 z-40">
-      {open && (
-        <div className="mb-3 w-[min(100vw-2.5rem,22rem)] rounded-xl bg-paper p-4 shadow-[var(--shadow-card-hover)]">
-          <p className="font-display text-lg">Yard desk</p>
-          <p className="mt-1 text-sm text-mortar">Weekdays 07:00–16:30 SAST. Leave a note and a merchandiser will pick it up.</p>
-          {sent ? (
-            <p className="mt-3 rounded-md bg-card px-3 py-2 text-sm">Message received — we’ll reply to the email on your account.</p>
-          ) : (
-            <form
-              className="mt-3 space-y-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSent(true);
-              }}
-            >
-              <textarea required name="m" rows={3} className="w-full rounded-md border border-line p-2 text-sm" placeholder="Ask about a SKU, a load or a trade account…" />
-              <button className="h-10 w-full rounded-md bg-clay text-sm font-medium text-paper">Send</button>
-            </form>
-          )}
-        </div>
-      )}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-12 items-center gap-2 rounded-full bg-clay px-4 font-medium text-paper shadow-[var(--shadow-card-hover)]"
-      >
-        <MessageCircle className="size-4" /> Live chat
-      </button>
-    </div>
-  );
-}
-
 function CookieNotice() {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
   useEffect(() => {
-    if (localStorage.getItem("bp-cookies")) setShow(false);
+    try {
+      if (!localStorage.getItem("bp-cookies-v2")) setShow(true);
+    } catch {
+      setShow(true);
+    }
   }, []);
   if (!show) return null;
+  function choose(value: "all" | "essential") {
+    try {
+      localStorage.setItem("bp-cookies-v2", value);
+    } catch {
+      /* private mode still dismisses for this view */
+    }
+    setShow(false);
+  }
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-paper/95 p-4 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-mortar">
-          We use essential cookies to run checkout and optional analytics to improve the catalogue.{" "}
-          <Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="text-clay underline">
-            Cookie policy
-          </Link>
-        </p>
-        <div className="flex gap-2">
-          <button
-            className="h-10 rounded-md bg-kiln px-4 text-sm text-bisque"
-            onClick={() => {
-              localStorage.setItem("bp-cookies", "all");
-              setShow(false);
-            }}
-          >
+    <div className="fixed inset-x-3 bottom-28 z-[90] sm:inset-x-auto sm:bottom-24 sm:left-4 sm:w-[min(28rem,calc(100vw-8rem))]">
+      <div role="dialog" aria-labelledby="cookie-title" className="rounded-xl border border-line bg-paper p-4 shadow-[var(--shadow-card-hover)]">
+        <div className="flex items-start justify-between gap-3">
+          <p id="cookie-title" className="min-w-0 text-sm leading-snug text-mortar">
+            We use essential cookies to run checkout and optional analytics to improve the catalogue. This stays until you choose.{" "}
+            <Link to="/legal/$slug" params={{ slug: "cookie-policy" }} className="text-clay underline">
+              Cookie policy
+            </Link>
+          </p>
+          <button type="button" className="inline-flex size-11 shrink-0 items-center justify-center rounded-md hover:bg-card" aria-label="Dismiss cookie notice" onClick={() => choose("essential")}>
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" className="h-11 rounded-md bg-kiln px-4 text-sm text-bisque" onClick={() => choose("all")}>
             Accept
           </button>
-          <button
-            className="h-10 rounded-md border border-line px-4 text-sm"
-            onClick={() => {
-              localStorage.setItem("bp-cookies", "essential");
-              setShow(false);
-            }}
-          >
+          <button type="button" className="h-11 rounded-md border border-line px-4 text-sm" onClick={() => choose("essential")}>
             Essential only
           </button>
         </div>
@@ -729,7 +721,7 @@ export function PageHeader({
         {kicker && (
           <p className="text-[11px] uppercase tracking-[0.18em] text-clay">{kicker}</p>
         )}
-        <h1 className="mt-2 font-display text-3xl sm:text-4xl">{title}</h1>
+        <h1 className="mt-2 break-words font-display text-3xl leading-tight sm:text-4xl">{title}</h1>
         {body && <p className="mt-3 max-w-2xl text-mortar">{body}</p>}
       </div>
     </div>

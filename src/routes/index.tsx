@@ -598,9 +598,9 @@ function SpecifiedBrands({ shops }: { shops: { brand: string; brand_slug: string
 
 function ShopByCategory() {
   const images: Record<string, string> = {
-    "clay-masonry": "/images/bricks/autumn-red.jpg",
+    "clay-masonry": "/brand/shops/corobrik/wall/035.jpg",
     concrete: "/images/types/blocks.jpg",
-    "hard-landscaping": "/images/hero/driveway.jpg",
+    "hard-landscaping": "/brand/shops/technicrete/hero-wall.jpg",
     specialist: "/images/types/slips.jpg",
   };
   return (
@@ -667,11 +667,11 @@ function MasterCatalogue({ entries }: { entries: Product[] }) {
 
 function ShopBySector() {
   const img: Record<string, string> = {
-    Residential: "/images/hero/slides/delivery.jpg",
-    Commercial: "/images/hero/commercial.jpg",
-    Industrial: "/images/hero/slides/garden-wall.jpg",
-    Institutional: "/images/bricks/burgundy.jpg",
-    Civil: "/images/hero/slides/face-house.jpg",
+    Residential: "/images/context/cape-town-street.jpg",
+    Commercial: "/images/context/cape-town-city.jpg",
+    Industrial: "/brand/shops/bosun/interlock-80.jpg",
+    Institutional: "/images/context/stone-arch.jpg",
+    Civil: "/brand/shops/technicrete/hero-road.jpg",
   };
   return (
     <section className="bg-card py-16">
@@ -757,8 +757,8 @@ function ColourCollections({
 
 function NewToRange() {
   const items = [
-    { slug: "aac-blocks", title: "AAC Blocks", img: "/images/types/aac.jpg", blurb: "Light, insulated, Agrément-certified autoclaved aerated concrete." },
-    { slug: "cseb", title: "CSEB", img: "/images/types/cseb.jpg", blurb: "Compressed stabilised earth blocks for low-carbon walls." },
+    { slug: "aac-blocks", title: "AAC Blocks", img: "/brand/shops/infraset/loffelstein.jpg", blurb: "Light, insulated, Agrément-certified autoclaved aerated concrete." },
+    { slug: "cseb", title: "CSEB", img: "/brand/shops/infraset/infrablok-350.jpg", blurb: "Compressed stabilised earth blocks for low-carbon walls." },
     { slug: "brick-slips", title: "Brick Slips", img: "/images/types/slips.jpg", blurb: "Thin clay cladding, colour-matched to the facing range." },
     { slug: "braai-kits", title: "Braai Kits", img: "/images/types/braai.jpg", blurb: "Scheduled outdoor kits — brick, firebrick, grate." },
   ];
@@ -830,7 +830,7 @@ function ShopByProject() {
       blurb: "Pavers and cobbles planned as a surface, not a category.",
       href: "/shop/clay-pavers" as const,
       slug: "clay-pavers",
-      img: "/images/hero/driveway.jpg",
+      img: "/brand/shops/infraset/bush-stone.jpg",
     },
     {
       title: "Garden wall & landscaping",

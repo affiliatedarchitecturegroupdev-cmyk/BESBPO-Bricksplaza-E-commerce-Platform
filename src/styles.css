@@ -80,18 +80,13 @@
   }
 }
 
-/* Ad slots keep their design ratio on desktop. Photo slots grow on phones so the CTA is not cropped. */
+/* HTML ads grow with their copy so the button is never cropped by the design ratio. */
 .ad-frame {
   aspect-ratio: var(--ad-w) / var(--ad-h);
 }
-@media (max-width: 639px) {
-  .ad-frame[data-kind="html"] {
-    aspect-ratio: auto;
-    min-height: 15rem;
-  }
-  .ad-frame[data-kind="html"][data-compact="true"] {
-    min-height: 9.5rem;
-  }
+.ad-frame[data-kind="html"]:not([data-compact="true"]) {
+  aspect-ratio: auto;
+  min-height: 16.5rem;
 }
 
 @keyframes pitch-run {

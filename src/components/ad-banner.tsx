@@ -91,10 +91,13 @@ export function AdBanner({
                 </p>
               )}
               <span
-                className={`mt-3 inline-flex w-fit max-w-full bg-clay text-left font-bold uppercase text-white group-hover:bg-[#8f3626] sm:tracking-wide ${compact ? "px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px] sm:px-6 sm:py-3 sm:text-sm"}`}
+                className={`mt-4 inline-flex w-fit max-w-full bg-clay text-left font-bold uppercase text-white group-hover:bg-[#8f3626] sm:tracking-wide ${compact ? "mt-3 px-3 py-1.5 text-[10px]" : "px-4 py-2 text-[11px] sm:px-6 sm:py-3 sm:text-sm"}`}
               >
                 {campaign.ctaText} →
               </span>
+              {campaign.credit && !compact && (
+                <p className="mt-3 max-w-[70%] text-[10px] leading-snug text-bisque/55">{campaign.credit}</p>
+              )}
             </div>
             {!compact && (
               <span className="pointer-events-none absolute right-4 bottom-3 hidden font-display text-xs font-bold tracking-[0.16em] text-bisque/90 sm:block sm:right-6 sm:bottom-4 sm:text-sm">

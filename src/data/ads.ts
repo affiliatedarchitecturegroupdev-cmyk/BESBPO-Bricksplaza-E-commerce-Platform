@@ -10,6 +10,7 @@ export type AdCampaign = {
   ctaText: string;
   ctaLink: string;
   image: string | null;
+  credit?: string;
 };
 
 export type AdSlot = {
@@ -81,7 +82,8 @@ export const AD_SLOTS: AdSlot[] = [
       subtext: "From pedestrian pathways to extra-heavy-duty industrial yards.",
       ctaText: "Shop Pavers",
       ctaLink: "/search?q=pavers",
-      image: "/images/hero/driveway.jpg",
+      image: "/brand/shops/infraset/masonique.jpg",
+      credit: "Infraset product photography",
     },
   },
   {
@@ -136,7 +138,7 @@ export const AD_SLOTS: AdSlot[] = [
       subtext: "The finishing kit that belongs on the same load as the pavers.",
       ctaText: "Add the finishing kit",
       ctaLink: "/bundles/paving-finishing-kit",
-      image: "/images/projects/patio.jpg",
+      image: "/brand/shops/bosun/kerbs.jpg",
     },
   },
   {
@@ -188,11 +190,12 @@ export const AD_SLOTS: AdSlot[] = [
     creativeType: "html",
     campaign: {
       eyebrow: "Affiliated Builders",
-      headline: "The brick is in the cart. Who builds the wall?",
-      subtext: "The group contractor for commercial, industrial, civil and residential work. A contract, not a checkout.",
+      headline: "Who builds the wall?",
+      subtext: "The group contractor. A contract, not a checkout.",
       ctaText: "See the build",
       ctaLink: "/divisions/affiliated-builders",
-      image: "/images/projects/commercial.jpg",
+      image: "/images/context/site-crew.jpg",
+      credit: "Jerome Govender, Pexels",
     },
   },
   {
@@ -237,7 +240,7 @@ export function searchBanner(q: string): AdSlot {
         subtext: cat.blurb,
         ctaText: `Shop ${cat.name}`,
         ctaLink: `/shop/${cat.slug}`,
-        image: cat.family === "hard-landscaping" ? "/images/hero/driveway.jpg" : "/images/bricks/autumn-red.jpg",
+        image: cat.family === "hard-landscaping" ? "/brand/shops/infraset/masonique.jpg" : cat.family === "clay-masonry" ? "/brand/shops/corobrik/wall/035.jpg" : "/images/types/blocks.jpg",
       },
     };
   }
@@ -252,7 +255,7 @@ export function searchBanner(q: string): AdSlot {
         subtext: "Hard landscaping in the same colourways as the facing range.",
         ctaText: "Shop hard landscaping",
         ctaLink: "/shop/clay-pavers",
-        image: "/images/hero/driveway.jpg",
+        image: "/brand/shops/infraset/masonique.jpg",
       },
     };
   }

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader } from "@/components/layout";
 import { Listing } from "@/components/listing";
-import { closestCategory } from "@/lib/search";
+import { closestCategory, explainQuery } from "@/lib/search";
 import { queryListing } from "@/lib/products";
 import { searchBrandRanges } from "@/lib/brands";
 import { Input } from "@/components/ui/input";
@@ -35,22 +35,36 @@ function SearchPage() {
   const { listing, brands } = Route.useLoaderData();
   const navigate = useNavigate();
   const fallback = closestCategory(q);
+  const hints = explainQuery(q);
 
   return (
     <>
       <PageHeader kicker="Search" title={q ? `Results for “${q}”` : "Search the catalogue"} />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
         <form
-          className="mb-8 flex gap-2"
+          className="mb-6 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             const next = new FormData(e.currentTarget).get("q") as string;
             navigate({ to: "/search", search: { q: next } });
           }}
         >
-          <Input name="q" defaultValue={q} placeholder="pavers for driveway, BP-CFB-0001, SANS 227…" />
-          <Button type="submit">Search</Button>
+          <Input name="q" defaultValue={q} placeholder="pavers for driveway, BP-CFB-0001, SANS 227…" className="min-w-0 flex-1" />
+          <Button type="submit" className="shrink-0">Search</Button>
         </form>
+        {hints.length > 0 && (
+          <ul className="mb-6 grid gap-2 sm:grid-cols-2">
+            {hints.map((hint) => (
+              <li key={hint.href}>
+                <a href={hint.href} className="block h-full rounded-xl border border-line bg-paper px-4 py-3 hover:border-clay">
+                  <span className="block text-[10px] uppercase tracking-[0.16em] text-muted">Understood as</span>
+                  <span className="mt-1 block text-sm font-medium text-clay">{hint.label}</span>
+                  <span className="mt-1 block text-xs leading-snug text-muted">{hint.detail}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="mb-8">
           <AdBanner slot={searchBanner(q)} contained />
         </div>
